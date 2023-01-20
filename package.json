@@ -7,7 +7,7 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "prod": "next export",
+    "export": "next export",
     "analyze": "NODE_ENV=production BUNDLE_ANALYZE=browser next build",
     "lint": "eslint src/**/*.tsx --fix"
   },
