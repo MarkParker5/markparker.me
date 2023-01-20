@@ -1,4 +1,4 @@
-module.exports =  {
+module.exports = {
   parser: '@typescript-eslint/parser',
   extends: [
     'plugin:react/recommended',
@@ -33,10 +33,18 @@ module.exports =  {
     'immutable/no-mutation': 'error',
     'react/react-in-jsx-scope': 'off',
     'react-hooks/rules-of-hooks': 'error',
+    'react/no-unknown-property': [
+      2,
+      {
+        'ignore': [
+          'jsx', 'global'
+        ]
+      }
+    ]
   },
   settings: {
     react: {
       version: 'detect',
     },
   },
-};
+}

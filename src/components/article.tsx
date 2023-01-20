@@ -25,7 +25,10 @@ export function ArticleComponent({ article, children }: Props) {
         <meta name="keywords" content={article.keywords.join(',')} />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content={`https://markparker.me/articles/${article.id}/meta.jpg`} />
+        <meta
+          name="twitter:image"
+          content={`https://markparker.me/articles/${article.id}/meta.jpg`}
+        />
         <meta name="twitter:title" content={article.title} />
         <meta name="twitter:description" content={article.description} />
       </Head>

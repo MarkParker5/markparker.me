@@ -35,7 +35,7 @@ export function Link(props: LinkProps) {
   }
 
   return (
-    <NextLink {...passProps}>
+    <NextLink {...(passProps as NextLinkProps)}>
       <a className={className} {...targetProps}>
         {props.children}
       </a>

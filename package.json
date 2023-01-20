@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "next",
+    "build": "next build",
+    "start": "next start",
+    "prod": "next export",
     "analyze": "NODE_ENV=production BUNDLE_ANALYZE=browser next build",
-    "lint": "eslint src/**/*.{ts,tsx} --fix"
+    "lint": "eslint src/**/*.tsx --fix"
   },
   "repository": {
     "type": "git",
