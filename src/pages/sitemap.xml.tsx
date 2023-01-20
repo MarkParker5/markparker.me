@@ -12,7 +12,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     .filter((article) => !article.hidden && !article.origin)
     .map((article) => `/blog/${article.id}`)
 
-  const urls = ['/', '/blog', '/feed.xml', ...articleUrls] as const // TODO: rename feed.xml to blog.xml
+  const urls = ['/', '/blog', '/feed.xml', ...articleUrls] as const
 
   const sitemapXmlString = (
     await streamToPromise(

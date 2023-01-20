@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { Link } from '../components/link'
 
 export default function Index() {
-  const metaDescription = 'Mark Parker — software developer turned engineer'
+  const metaDescription = 'Mark Parker — Just an engineer'
 
   return (
     <div>
@@ -22,8 +22,8 @@ export default function Index() {
       <div className="font-serif absolute m-auto inset-0 text-center h-4/5">
         <img className="mx-auto h-64 w-64 rounded-full" src="/mark-parker.jpg" />
         <h1 className="mt-6 text-7xl leading-tight">Mark Parker</h1>
-        <p className="mb-3 text-2xl">Just an engineer</p>
-        <ul className="list-none my-3 leading-none">
+        <p className="text-2xl mb-5">Just an engineer</p>
+        <ul className="list-none leading-none">
           <li className="inline-block w-12 mx-2">
             <a href="mailto:markparker.it@gmail.com" title="Email">
               <svg
@@ -112,12 +112,12 @@ export default function Index() {
             </a>
           </li>
         </ul>
-        <p className="text-2xl">
+        {/* <p className="text-2xl">
           And also{' '}
           <Link href="/blog" style={2}>
             Blog
           </Link>
-        </p>
+        </p> */}
         <br />
         <br />
       </div>

@@ -23,7 +23,7 @@ export type ArticleMeta = {
   imageUrl?: string
 }
 const articles: ArticleMeta[] = [
-  {
+  /*{
     id: 'hello-world',
     date: '2022-01-20',
     title: 'Hello World',
@@ -31,7 +31,7 @@ const articles: ArticleMeta[] = [
 
 It took even more to learn to write stupid code again.`,
     keywords: ['hello', 'world'],
-  },
+  },*/
 ]
 
 export function renderArticle(
