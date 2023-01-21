@@ -25,6 +25,7 @@ jobs:
           npm i
           npm run build
           npm run export
+          rm out/*.gen.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
