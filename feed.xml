@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://markparker.me/blog</id>
+    <title>Mark Parker</title>
+    <updated>2022-04-25T00:00:00.000Z</updated>
+    <generator>---</generator>
+    <author>
+        <name>Mark Parker</name>
+        <email>markparker.it@gmail.com</email>
+        <uri>https://markparker.me</uri>
+    </author>
+    <link rel="alternate" href="https://markparker.me/blog"/>
+    <link rel="self" href="https://markparker.me/feed.xml"/>
+    <subtitle>Mark Parker's blog</subtitle>
+    <logo>https://markparker.me/mark-parker.jpg</logo>
+    <icon>https://markparker.me/favicon.png</icon>
+    <rights>All rights reserved 2023, Mark Parker</rights>
+</feed>
