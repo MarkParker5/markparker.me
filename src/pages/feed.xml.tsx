@@ -1,12 +1,13 @@
 import { Feed } from 'feed'
-import { GetServerSideProps } from 'next'
+import { GetStaticProps } from 'next'
 import { getPublicArticles } from '../article'
+import fs from 'fs'
 
 const FeedComponent = () => {
   return null
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+export const getStaticProps: GetStaticProps = async (config) => {
   const author = {
     name: 'Mark Parker',
     email: 'markparker.it@gmail.com',
@@ -44,11 +45,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     })
   }
 
-  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate')
-  res.setHeader('Content-Type', 'text/xml')
-
-  res.write(feed.atom1())
-  res.end()
+  const path = `${process.cwd()}/public/sitemap.xml`
+  fs.writeFileSync(path, feed.atom1(), 'utf8')
 
   return {
     props: {},

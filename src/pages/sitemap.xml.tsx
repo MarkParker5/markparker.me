@@ -1,13 +1,14 @@
-import { GetServerSideProps } from 'next'
+import { GetStaticProps } from 'next'
 import { streamToPromise, SitemapStream } from 'sitemap'
 import { Readable } from 'stream'
 import { getPublicArticles } from '../article'
+import fs from 'fs'
 
 const Sitemap = () => {
   return null
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+export const getStaticProps: GetStaticProps = async (config) => {
   const articleUrls = getPublicArticles()
     .filter((article) => !article.hidden && !article.origin)
     .map((article) => `/blog/${article.id}`)
@@ -24,11 +25,10 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     )
   ).toString()
 
-  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate')
-  res.setHeader('Content-Type', 'text/xml')
+  const path = `${process.cwd()}/public/sitemap.xml`
+  fs.writeFileSync(path, sitemapXmlString, 'utf8')
 
-  res.write(sitemapXmlString)
-  res.end()
+  console.log(`generated sitemap`)
 
   return {
     props: {},
