@@ -6,7 +6,7 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <PosthogAnalytics />
+          {/* <PosthogAnalytics /> */}
           <link rel="icon" type="image/x-icon" href="/favicon.png" />
         </Head>
         <body className="text-primary">

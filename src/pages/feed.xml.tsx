@@ -22,7 +22,7 @@ export const getStaticProps: GetStaticProps = async (config) => {
     language: 'en',
     image: 'https://markparker.me/mark-parker.jpg',
     favicon: 'https://markparker.me/favicon.png',
-    copyright: 'All rights reserved 2022, Mark Parker',
+    copyright: 'All rights reserved 2023, Mark Parker',
     updated: new Date('2022-04-25'),
     generator: '---',
     feedLinks: {
@@ -45,8 +45,9 @@ export const getStaticProps: GetStaticProps = async (config) => {
     })
   }
 
-  const path = `${process.cwd()}/public/sitemap.xml`
+  const path = `${process.cwd()}/public/feed.xml`
   fs.writeFileSync(path, feed.atom1(), 'utf8')
+  console.log('generated feed.xml')
 
   return {
     props: {},
