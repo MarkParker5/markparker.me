@@ -1,4 +1,4 @@
-export const GA_TRACKING_ID = ''
+export const GA_TRACKING_ID = 'G-MPVB5GN2QR'
 
 export function GoogleAnalytics() {
   return (
