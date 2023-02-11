@@ -10,7 +10,7 @@ const FeedComponent = () => {
 export const getStaticProps: GetStaticProps = async (config) => {
   const author = {
     name: 'Mark Parker',
-    email: 'markparker.it@gmail.com',
+    email: 'mark@parker-programs.com',
     link: 'https://markparker.me',
   }
 
