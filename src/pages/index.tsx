@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import { Link } from '../components/link'
 
 export default function Index() {
   const metaDescription = 'Mark Parker — Just an engineer'
@@ -24,7 +23,7 @@ export default function Index() {
         <h1 className="mt-6 text-7xl leading-tight">Mark Parker</h1>
         <p className="text-2xl mb-5">Just an engineer</p>
         <ul className="list-none leading-none">
-        <li className="inline-block w-12 mx-2">
+          <li className="inline-block w-12 mx-2">
             <a href="https://github.com/MarkParker5" title="GitHub">
               <svg
                 version="1.1"

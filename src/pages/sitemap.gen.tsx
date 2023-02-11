@@ -8,7 +8,7 @@ const Sitemap = () => {
   return null
 }
 
-export const getStaticProps: GetStaticProps = async (config) => {
+export const getStaticProps: GetStaticProps = async () => {
   const articleUrls = getPublicArticles()
     .filter((article) => !article.hidden && !article.origin)
     .map((article) => `/blog/${article.id}`)

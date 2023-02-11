@@ -7,7 +7,7 @@ const FeedComponent = () => {
   return null
 }
 
-export const getStaticProps: GetStaticProps = async (config) => {
+export const getStaticProps: GetStaticProps = async () => {
   const author = {
     name: 'Mark Parker',
     email: 'mark@parker-programs.com',
