@@ -5,6 +5,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:promise/recommended',
     'plugin:prettier/recommended',
+    'plugin:@next/next/recommended',
   ],
   parserOptions: {
     ecmaVersion: 2018,
@@ -29,6 +30,7 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': ['error', 'nofunc'],
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     // 'immutable/no-let': 'error',
+    'array-element-newline': 'off',
     'immutable/no-this': 'error',
     'immutable/no-mutation': 'error',
     'react/react-in-jsx-scope': 'off',

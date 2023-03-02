@@ -19,9 +19,7 @@ export const ArticleList = ({ articles }: Props) => (
               {article.title}
             </Link>
           )}
-          <span className="block text-base italic">
-            — {article.date}
-          </span>
+          <span className="block text-base italic">— {article.date}</span>
           <span className="block text-base">{article.description}</span>
         </li>
       ))}

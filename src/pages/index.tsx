@@ -113,7 +113,7 @@ export default function Index() {
           </li>
         </ul>
         <p className="text-2xl mt-5">
-          Sometimes I write on the {' '}
+          Sometimes I write on the{' '}
           <Link href="/blog" style={2}>
             Blog
           </Link>
