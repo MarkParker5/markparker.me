@@ -23,15 +23,13 @@ export type ArticleMeta = {
   imageUrl?: string
 }
 const articles: ArticleMeta[] = [
-  /*{
-    id: 'hello-world',
-    date: '2022-01-20',
-    title: 'Hello World',
-    description: `It took me several years to learn how to write code that scales to 10s of team members and a million lines of code.
-
-It took even more to learn to write stupid code again.`,
-    keywords: ['hello', 'world'],
-  },*/
+  {
+    id: 'localize-ios-app-in-5-minutes',
+    date: '2023-03-01',
+    title: 'How to Localize All Your iOS Apps into 20 Languages in 5 Minutes',
+    description: `I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.`,
+    keywords: ['ios', 'xcode', 'localization', 'localize', 'translate', 'ios development', 'mobile development'],
+  },
 ]
 
 export function renderArticle(

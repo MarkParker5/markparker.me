@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import { Link } from '../components/link'
 
 export default function Index() {
   const metaDescription = 'Mark Parker — Just an engineer'
@@ -111,12 +112,12 @@ export default function Index() {
             </a>
           </li>
         </ul>
-        {/* <p className="text-2xl">
-          And also{' '}
+        <p className="text-2xl mt-5">
+          Sometimes I write on the {' '}
           <Link href="/blog" style={2}>
             Blog
           </Link>
-        </p> */}
+        </p>
         <br />
         <br />
       </div>
