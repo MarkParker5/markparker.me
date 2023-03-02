@@ -25,7 +25,7 @@ export type ArticleMeta = {
 const articles: ArticleMeta[] = [
   {
     id: 'localize-ios-app-in-5-minutes',
-    date: '2023-03-01',
+    date: 'March 1, 2023',
     title: 'How to Localize All Your iOS Apps into 20 Languages in 5 Minutes',
     description: `I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.`,
     keywords: ['ios', 'xcode', 'localization', 'localize', 'translate', 'ios development', 'mobile development'],

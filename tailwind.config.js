@@ -4,6 +4,20 @@ module.exports = {
     fontFamily: {
       serif: ['"Open Sans"', 'sans-serif'],
     },
+    fontSize: {
+      sm: '0.8rem',
+      base: '1rem',
+      l: '1.25rem',
+      'xl': '1.4rem',
+      '2xl': '1.563rem',
+      '3xl': '1.953rem',
+      '4xl': '2.441rem',
+      '5xl': '2.8rem',
+      '6xl': '3.5rem',
+      '7xl': '4.5rem',
+      '8xl': '6rem',
+      '9xl': '8rem',
+    },
     colors: {
       back: '#ffffff',
       primary: '#333333',
@@ -11,8 +25,8 @@ module.exports = {
       faded: '#dddddd',
       link1: '#777777',
       link1hover: '#777777',
-      link2: '#d07070',
-      link2hover: '#f08080',
+      link2: '#4c31c4',
+      link2hover: '#8553fa',
     },
     extend: {
       height: {
@@ -23,6 +37,7 @@ module.exports = {
       },
       listStyleType: {
         square: 'square',
+        bullet: 'disc',
       },
     },
   },

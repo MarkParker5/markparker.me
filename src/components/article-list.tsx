@@ -9,7 +9,7 @@ export const ArticleList = ({ articles }: Props) => (
   <div className="mx-auto">
     <ul>
       {articles.map((article) => (
-        <li key={article.id} className="text-xl mb-8 list-square">
+        <li key={article.id} className="text-xl mb-8 list-none">
           {article.origin ? (
             <Link style={2} href={article.origin} newTab>{`${article.title}, ${
               new URL(article.origin).hostname
@@ -19,11 +19,10 @@ export const ArticleList = ({ articles }: Props) => (
               {article.title}
             </Link>
           )}
-          <span className="text-sm">
-            <span> — </span>
-            {article.date}
+          <span className="block text-base italic">
+            — {article.date}
           </span>
-          <span className="block text-sm whitespace-pre-line">{article.description}</span>
+          <span className="block text-base">{article.description}</span>
         </li>
       ))}
     </ul>

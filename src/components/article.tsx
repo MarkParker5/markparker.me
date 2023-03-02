@@ -34,10 +34,10 @@ export function ArticleComponent({ article, children }: Props) {
       </Head>
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
       <Link style={1} href="/blog">
-        {'<-'} Back to the list
+        {'<'} Back to the list
       </Link>
       <div className="mb-12">
-        <h1 className="text-link2 text-5xl leading-tight">{article.title}</h1>
+        <h1 className="text-5xl leading-tight">{article.title}</h1>
         <div className="italic">Published {article.date}</div>
       </div>
 
@@ -94,7 +94,7 @@ export function ArticleComponent({ article, children }: Props) {
         .markdown h2 {
           font-size: 34px;
           line-height: 39px;
-          margin: 56px 0 0 0;
+          margin: 30px 0 0 0;
         }
         .markdown h2 + p {
           margin-top: 13px;
@@ -107,7 +107,7 @@ export function ArticleComponent({ article, children }: Props) {
           margin-top: 13px;
         }
         .markdown p {
-          margin: 29px 0 0 0;
+          margin: 15px 0;
         }
         .markdown ul,
         .markdown ol {
@@ -115,13 +115,23 @@ export function ArticleComponent({ article, children }: Props) {
           padding-left: 40px;
         }
         .markdown ul li {
-          list-style-type: square;
+          list-style-type: disc;
         }
         .markdown ol li {
           list-style-type: decimal;
         }
         .markdown code {
           font-size: 18px;
+          background-color: #f0f0f0;
+          padding: 0 5px;
+          border-radius: 5px;
+        }
+        .markdown pre code {
+          font-size: 18px;
+          background-color: #f0f0f0;
+          display: inline-block;
+          padding: 10px 5px;
+          border-radius: 7px;
         }
         .markdown blockquote {
           padding: 0 1em;
@@ -145,7 +155,7 @@ function OtherArticles({ currentArticleId }: { currentArticleId: string }) {
 
   return (
     <div>
-      <h3 className="text-xl mb-4">Other articles:</h3>
+      <h3 className="text-l mb-4">Other articles:</h3>
       <ArticleList articles={articles} />
     </div>
   )
