@@ -46,7 +46,7 @@ export function ArticleComponent({ article, children }: Props) {
       <Separator />
 
       <div>
-        <div className="text-center mb-2">
+        <div className="text-center mb-10">
           {article.tweetId ? (
             <>
               <Link
