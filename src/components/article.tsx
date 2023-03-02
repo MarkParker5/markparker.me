@@ -132,6 +132,8 @@ export function ArticleComponent({ article, children }: Props) {
           display: inline-block;
           padding: 10px 5px;
           border-radius: 7px;
+          max-width: 100%;
+          overflow-x: auto;
         }
         .markdown blockquote {
           padding: 0 1em;
