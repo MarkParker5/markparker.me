@@ -19,7 +19,7 @@
         <title type="html"><![CDATA[How to Localize All Your iOS Apps into 20 Languages in 5 Minutes]]></title>
         <id>https://markparker.me/blog/localize-ios-app-in-5-minutes</id>
         <link href="https://markparker.me/blog/localize-ios-app-in-5-minutes"/>
-        <updated>2023-02-28T23:00:00.000Z</updated>
+        <updated>2023-03-01T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.]]></summary>
         <author>
             <name>Mark Parker</name>
