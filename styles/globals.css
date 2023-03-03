@@ -51,7 +51,7 @@
 }
 .markdown pre code {
     display: inline-block;
-    padding: 10px 5px;
+    padding: 10px 15px;
     border-radius: 7px;
     width: 100%;
     overflow-x: auto;
