@@ -6,13 +6,13 @@ In today's globalized world, the demand for mobile applications that cater to us
 - **Improve user experience**: Users are more likely to use and enjoy an app that is available in their native language. Localizing your app can help you provide a better user experience, which can lead to better reviews, ratings, and retention rates. Localizing your app can give you a competitive advantage in regions where your competitors may not have localized their apps.
 - **Increase revenue**: Localizing your app can lead to increased revenue, as users are more likely to make in-app purchases or pay for subscriptions if the app is available in their native language.
 
-But there are also a few problems and potential issues that developers may run into. Localizing an app can be time consuming and resource intensive, especially for apps with a large amount of content and a long list of languages. Developers must allocate sufficient time and resources to ensure effective localization.
+But there are also a few problems and potential issues that developers may run into. Localizing an app can be time-consuming and resource intensive, especially for apps with a large amount of content and a long list of languages. Developers must allocate sufficient time and resources to ensure effective localization.
 
 But we wouldn't be developers if we didn't always try to automate everything. Automated localization can translate content quickly and efficiently, reduce the costs associated with manual translation, such as hiring professional translators or dedicating internal resources to the task. This is especially effective if the application is being created by a single developer.
 
 ## Prepare your project
 
-I won't go into detail about how localization of strings works in an xcode project, there are already many other tutorials on this subject. I'll just highlight a few key steps:
+I won't go into detail about how localization of strings works in a xcode project, there are already many other tutorials on this subject. I'll just highlight a few key steps:
 
 1.  Create Localizable.strings file and fill it with strings you want to localize.
     ```
@@ -29,17 +29,17 @@ I won't go into detail about how localization of strings works in an xcode proje
 
 Unexpectedly, the ios development tool turned out to be written in python, so make sure you have python 3.9+
 
-After that install the tool using [pip](https://pypi.org/project/xcodelocalize/):
+After that, install the tool using [pip](https://pypi.org/project/xcodelocalize/):
 
 ```
 pip3 install xcodelocalize 
 ```
 
-Аlso available installations from .whl file from [github releases](https://github.com/MarkParker5/XCodeLocalize/releases/latest) or via poetry from [source code](https://github.com/MarkParker5/XCodeLocalize).
+Also, available installations from .whl file from [github releases](https://github.com/MarkParker5/XCodeLocalize/releases/latest) or via poetry from [source code](https://github.com/MarkParker5/XCodeLocalize).
 
 ## Run automatic localization
 
-`cd` to the project root folder and run
+`cd` to the project root folder and run
 
 ```
 xcodelocalize [OPTIONS]
@@ -53,26 +53,25 @@ python3 -m xcodelocalize [OPTIONS]
 
 ### Options
 
--   `--base-language`: code of the language from which all strings will be translated. _[default: 'en']_
--   `--override / --no-override`: a boolean value that indicates whether strings that already exist in the file will be translated. Retranslate if `override`, skip if `no-override`. _[default: no-override]_
--   `--format-base / --no-format-base`: sort base file strings by key. _[default: no-format-base]_
--   `--file`: Names of the strings files to be translated. Multiple files can be specified. If not specified, all files will be translated. _[default: None]_
+-   `--base-language`: code of the language from which all strings will be translated. _[default: 'en']_
+-   `--override / --no-override`: a boolean value that indicates whether strings that already exist in the file will be translated. Retranslate if `override`, skip if `no-override`. _[default: no-override]_
+-   `--format-base / --no-format-base`: sort base file strings by key. _[default: no-format-base]_
+-   `--file`: Names of the strings files to be translated. Multiple files can be specified. If not specified, all files will be translated. _[default: None]_
     Example:
     ```
     xcodelocalize --file InfoPlist
     xcodelocalize --file InfoPlist --file MainStoryboard --file Localizable 
     ```
 
--   `--key`: Keys of the strings to be translated. Multiple keys can be specified. If not specified, all keys will be translated. _[default: None]_
--   `--language`: Language codes of the strings files to be translated. Multiple language codes can be specified. If not specified, all files will be translated. _[default: None]_
--   `--log-level`: One from [progress|errors|group|string]. _[default: group]_
+-   `--key`: Keys of the strings to be translated. Multiple keys can be specified. If not specified, all keys will be translated. _[default: None]_
+-   `--language`: Language codes of the strings files to be translated. Multiple language codes can be specified. If not specified, all files will be translated. _[default: None]_
+-   `--log-level`: One from [progress|errors|group|string]. _[default: group]_
 -   `--help`: Show info
 
 ## Automation
 
-You can go to `Target -> Build Phases -> New Run Script Phase` in your xcode project and paste `xcodelocalize` there. It will localize necessary strings during build and your localization files will always be up to date.
+You can go to `Target -> Build Phases -> New Run Script Phase` in your xcode project and paste `xcodelocalize` there. It will localize necessary strings during every build and your localization files will always be up-to-date.
 
 ## Conclusion
 
 Now you know how to quickly localize your iOS applications in many other languages. Add a star to the [repo](https://github.com/MarkParker5/XCodeLocalize) if you like it.
-
