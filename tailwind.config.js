@@ -1,4 +1,5 @@
 module.exports = {
+  darkMode: 'media',
   content: ['./src/**/*.{js,ts,jsx,tsx}', 'articles/**/*.{md,mdx}'],
   theme: {
     fontFamily: {
@@ -19,14 +20,30 @@ module.exports = {
       '9xl': '8rem',
     },
     colors: {
-      back: '#ffffff',
-      primary: '#333333',
-      opaque: '#666666',
-      faded: '#dddddd',
+      back: {
+        light: '#ffffff',
+        dark: '#0d1117',
+        secondary: {
+          light: '#f0f0f0',
+          dark: '#161b22',
+        },
+      },
+      primary: {
+        light: '#333333',
+        dark: '#c9d1d9',
+      },
+      link2: {
+        light: '#4c31c4',
+        dark: '#656fff',
+      },
+      link2hover: {
+        light: '#8553fa',
+        dark: '#9a85fc',
+      },
       link1: '#777777',
       link1hover: '#777777',
-      link2: '#4c31c4',
-      link2hover: '#8553fa',
+      opaque: '#666666',
+      faded: '#dddddd',
     },
     extend: {
       height: {

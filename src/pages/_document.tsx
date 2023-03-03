@@ -9,7 +9,7 @@ export default class MyDocument extends Document {
           <GoogleAnalytics />
           <link rel="icon" type="image/x-icon" href="/favicon.png" />
         </Head>
-        <body className="text-primary">
+        <body className="text-primary bg-back dark:text-primary-dark dark:bg-back-dark">
           <Main />
           <NextScript />
         </body>

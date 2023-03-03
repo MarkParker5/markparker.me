@@ -79,68 +79,6 @@ export function ArticleComponent({ article, children }: Props) {
       </div>
 
       <OtherArticles currentArticleId={article.id} />
-
-      <style jsx global>{`
-        .markdown {
-          font-size: 21px;
-          letter-spacing: 0px;
-          line-height: 32px;
-          text-align: start;
-        }
-        .markdown img {
-          width: 100%;
-          margin-top: 15px;
-        }
-        .markdown h2 {
-          font-size: 34px;
-          line-height: 39px;
-          margin: 30px 0 0 0;
-        }
-        .markdown h2 + p {
-          margin-top: 13px;
-        }
-        .markdown h3 {
-          font-size: 28px;
-          margin: 28px 0 0 0;
-        }
-        .markdown h3 + p {
-          margin-top: 13px;
-        }
-        .markdown p {
-          margin: 15px 0;
-        }
-        .markdown ul,
-        .markdown ol {
-          margin-top: 5px;
-          padding-left: 40px;
-        }
-        .markdown ul li {
-          list-style-type: disc;
-        }
-        .markdown ol li {
-          list-style-type: decimal;
-        }
-        .markdown code {
-          font-size: 18px;
-          background-color: #f0f0f0;
-          padding: 0 5px;
-          border-radius: 5px;
-        }
-        .markdown pre code {
-          font-size: 18px;
-          background-color: #f0f0f0;
-          display: inline-block;
-          padding: 10px 5px;
-          border-radius: 7px;
-          max-width: 100%;
-          overflow-x: auto;
-        }
-        .markdown blockquote {
-          padding: 0 1em;
-          color: #57606a;
-          border-left: 0.25em solid #d0d7de;
-        }
-      `}</style>
     </ArticleLayout>
   )
 }

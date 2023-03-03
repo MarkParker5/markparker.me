@@ -12,7 +12,7 @@ export function Link(props: LinkProps) {
       case 1:
         return 'text-link1 hover:text-link1hover underline hover:no-underline'
       case 2:
-        return 'text-link2 hover:text-link2hover font-semibold'
+        return 'text-link2-light hover:text-link2hover-light dark:text-link2-dark dark:hover:text-link2hover-dark font-semibold'
       case undefined:
         return ''
     }
