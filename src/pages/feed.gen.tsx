@@ -23,7 +23,7 @@ export const getStaticProps: GetStaticProps = async () => {
     image: 'https://markparker.me/mark-parker.jpg',
     favicon: 'https://markparker.me/favicon.png',
     copyright: 'All rights reserved 2023, Mark Parker',
-    updated: new Date('2022-04-25'),
+    updated: new Date('2023-03-04'),
     generator: '---',
     feedLinks: {
       atom: 'https://markparker.me/feed.xml',

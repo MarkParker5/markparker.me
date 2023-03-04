@@ -13,6 +13,7 @@ import { Separator } from './components/separator'
 export type ArticleMeta = {
   id: string
   date: string
+  date_pretty: string
   read_time: string
   title: string
   description: string
@@ -23,10 +24,12 @@ export type ArticleMeta = {
   tweetId?: string
   imageUrl?: string
 }
+
 const articles: ArticleMeta[] = [
   {
     id: 'localize-ios-app-in-5-minutes',
-    date: 'March 1st, 2023',
+    date: '2023-03-01',
+    date_pretty: 'March 1st, 2023',
     read_time: '3 min',
     title: 'How to Localize All Your iOS Apps into 20 Languages in 5 Minutes',
     description: `I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.`,
