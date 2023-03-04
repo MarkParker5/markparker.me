@@ -6,6 +6,19 @@ import { Separator } from './separator'
 import { ArticleMeta, getPublicArticles } from '../article'
 import { Link } from './link'
 import { PropsWithChildren } from 'react'
+import { useEffect } from "react"
+
+// Import Highlight.js languages
+import hljs from 'highlight.js/lib/core';
+import shell from 'highlight.js/lib/languages/shell';
+import python from 'highlight.js/lib/languages/python';
+import swift from 'highlight.js/lib/languages/swift';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('shell', shell);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('swift', swift);
+
 
 type Props = PropsWithChildren<{
   article: ArticleMeta
@@ -13,6 +26,11 @@ type Props = PropsWithChildren<{
 
 export function ArticleComponent({ article, children }: Props) {
   const router = useRouter()
+
+  useEffect(() => {
+    hljs.initHighlighting();
+  }, []);
+  
   return (
     <ArticleLayout>
       <Head>
@@ -31,11 +49,18 @@ export function ArticleComponent({ article, children }: Props) {
         />
         <meta name="twitter:title" content={article.title} />
         <meta name="twitter:description" content={article.description} />
+
+        {/* Highlight.js  */}
+        <link rel="stylesheet" href="/highlight/styles/atom-one-light.min.css" />
+        <link rel="stylesheet" href="/highlight/styles/atom-one-dark.min.css" media="(prefers-color-scheme: dark)" />
       </Head>
+      
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
+      
       <Link style={1} href="/blog">
         {'<'} Back to the list
       </Link>
+      
       <div className="mb-12">
         <h1 className="text-5xl leading-tight">{article.title}</h1>
         <div className="italic">Published on {article.date}</div>
@@ -79,6 +104,7 @@ export function ArticleComponent({ article, children }: Props) {
       </div>
 
       <OtherArticles currentArticleId={article.id} />
+
     </ArticleLayout>
   )
 }

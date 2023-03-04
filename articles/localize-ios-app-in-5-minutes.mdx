@@ -31,7 +31,7 @@ Unexpectedly, the ios development tool turned out to be written in python, so ma
 
 After that, install the tool using [pip](https://pypi.org/project/xcodelocalize/):
 
-```
+```shell
 pip3 install xcodelocalize 
 ```
 
@@ -41,13 +41,13 @@ Also, available installations from .whl file from [github releases](https://gith
 
 `cd` to the project root folder and run
 
-```
+```shell
 xcodelocalize [OPTIONS]
 ```
 
 or
 
-```
+```shell
 python3 -m xcodelocalize [OPTIONS]
 ```
 
@@ -58,7 +58,7 @@ python3 -m xcodelocalize [OPTIONS]
 -   `--format-base / --no-format-base`: sort base file strings by key. _[default: no-format-base]_
 -   `--file`: Names of the strings files to be translated. Multiple files can be specified. If not specified, all files will be translated. _[default: None]_
     Example:
-    ```
+    ```shell
     xcodelocalize --file InfoPlist
     xcodelocalize --file InfoPlist --file MainStoryboard --file Localizable 
     ```
