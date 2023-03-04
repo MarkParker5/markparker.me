@@ -12,11 +12,12 @@ export default class MyDocument extends Document {
           <link rel="stylesheet" href="/highlight/styles/atom-one-light.min.css" />
           <link rel="stylesheet" href="/highlight/styles/atom-one-dark.min.css" media="(prefers-color-scheme: dark)" />
           <script src="/highlight/highlight.min.js" />
-          <script>hljs.initHighlightingOnLoad();</script>
         </Head>
         <body className="text-primary bg-back dark:text-primary-dark dark:bg-back-dark">
           <Main />
           <NextScript />
+          <script>hljs.initHighlightingOnLoad();</script>
+          <script src="/add-snippet-copy.js" />
         </body>
       </Html>
     )
