@@ -65,7 +65,7 @@ export function ArticleComponent({ article, children }: Props) {
       
       <div className="mb-12">
         <h1 className="text-5xl leading-tight">{article.title}</h1>
-        <div className="italic">Published on {article.date}</div>
+        <div className="italic">Published on {article.date} · {article.read_time} read</div>
       </div>
 
       <div className="markdown mb-10">{children}</div>
