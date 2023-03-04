@@ -13,7 +13,7 @@ export default function Index() {
           name="keywords"
           content="Mark Parker, Parker Programs, Parker Industries, developer, software engineer, engineer"
         ></meta>
-        <meta name="og:title" content="Mark Parker — website"></meta>
+        <meta name="og:title" content="Mark Parker"></meta>
         <meta name="og:image" content="https://markparker.me/mark-parker.jpg"></meta>
         <meta name="og:description" content={metaDescription}></meta>
         <meta name="description" content={metaDescription}></meta>

@@ -37,7 +37,7 @@ export function ArticleComponent({ article, children }: Props) {
     <ArticleLayout>
       <Head>
         <title>{article.title + ' — Mark Parker'}</title>
-        <meta name="og:title" content={article.title} />
+        <meta name="og:title" content={article.title + ' — Mark Parker'} />
         <meta name="og:image" content={`https://markparker.me/articles/${article.id}/meta.jpg`} />
 
         <meta name="description" content={article.description} />

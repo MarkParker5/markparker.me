@@ -34,6 +34,7 @@ const articles: ArticleMeta[] = [
     title: 'How to Localize All Your iOS Apps into 20 Languages in 5 Minutes',
     description: `I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.`,
     keywords: ['ios', 'xcode', 'localization', 'localize', 'translate', 'ios development', 'mobile development'],
+    tweetId: '1632052543613198336'
   },
 ]
 
