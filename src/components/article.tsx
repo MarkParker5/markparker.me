@@ -1,12 +1,13 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { PropsWithChildren } from 'react'
+import { useEffect } from 'react'
 import { ArticleLayout } from '../components/articles-layout'
 import { ArticleList } from '../components/article-list'
 import { Separator } from './separator'
 import { ArticleMeta, getPublicArticles } from '../article'
 import { Link } from './link'
-import { PropsWithChildren } from 'react'
-import { useEffect } from "react"
+import { addCopyButtons } from '../general/add-snippet-copy'
 
 // Import Highlight.js languages
 import hljs from 'highlight.js/lib/core';
@@ -29,6 +30,7 @@ export function ArticleComponent({ article, children }: Props) {
 
   useEffect(() => {
     hljs.initHighlighting();
+    addCopyButtons();      
   }, []);
   
   return (
