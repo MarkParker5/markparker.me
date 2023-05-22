@@ -11,23 +11,47 @@ const links: LinkMeta[] = [
         href: 'https://github.com/MarkParker5',
         title: 'GitHub',
         icon:'fab fa-github',
-    },{
-        href: 'https://instagram.com/markparker_5',
-        title: 'Instagram',
-        icon: 'fab fa-instagram',
-    }, {
-        href: 'https://t.me/parker_is_typing',
-        title: 'Telegram',
-        icon: 'fab fa-telegram',
-    }, {
+    },
+    {
         href: 'https://twitter.com/MarkParker_5',
         title: 'Twitter',
         icon: 'fab fa-twitter',
-    }, {
+    },
+    {
+        href: 'https://instagram.com/markparker_5',
+        title: 'Instagram',
+        icon: 'fab fa-instagram',
+    },
+    {
+        href: 'https://t.me/parker_is_typing',
+        title: 'Telegram Channel',
+        icon: 'fab fa-telegram',
+    },
+    {
+        href: 'https://t.me/parker_is_typing_chat',
+        title: 'Telegram Chat',
+        icon: 'fab fa-telegram',  
+    },
+    {
+        href: 'https://youtube.com/@markparker5',
+        title: 'YouTube',
+        icon: 'fab fa-youtube',
+    },
+    {
+        href: 'https://youtube.com/@markparker_5',
+        title: 'YouTube (RU)',
+        icon: 'fab fa-youtube',
+    },
+    {
         href: 'mailto:mark@parker-programs.com',
         title: 'Email',
         icon: 'fas fa-envelope',
-    }
+    },
+    {
+        href: 'https://habr.com/users/MarkParker5/posts/',
+        title: 'Habr (articles in russian)',
+        icon: 'fas fa-comment',
+    },
 ]
 
 export function Profile() {
@@ -52,7 +76,7 @@ function LinksList() {
     return (
         <ul className="list-none leading-none">
         {links.map((link) => (
-            <li key={link.href} className="w-full border my-5 hover:bg-back-light hover:text-back-dark duration-300">
+            <li key={link.href} className="w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300">
                 <a href={link.href} title={link.title} className="flex flex-row items-center">
                     <i className={link.icon + " w-8 h-8 m-2 fa-2x"}/>
                     <div className="text-center w-full">
