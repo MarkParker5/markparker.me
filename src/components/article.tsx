@@ -59,13 +59,9 @@ export function ArticleComponent({ article, children }: Props) {
       
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
       
-      <Link style={1} href="/blog">
-        {'<'} Back to the list
-      </Link>
-      
-      <div className="mb-12">
-        <h1 className="text-5xl leading-tight">{article.title}</h1>
-        <div className="italic">Published on {article.date_pretty} · {article.read_time} read</div>
+      <div className="mb-3">
+        <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
+        <div className="italic mt-2 text-l opacity-50">Published on {article.date_pretty} · {article.read_time} read</div>
       </div>
 
       <div className="markdown mb-10">{children}</div>
