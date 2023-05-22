@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { PropsWithChildren } from 'react'
 import { useEffect } from 'react'
 import { ArticleLayout } from './article-layout'
-import { ArticleList } from '../components/article-list'
+import { ArticlesList } from './articles-list'
 import { Separator } from './separator'
 import { ArticleMeta, getPublicArticles } from '../article'
 import { Link } from './link'
@@ -124,7 +124,7 @@ function OtherArticles({ currentArticleId }: { currentArticleId: string }) {
   return (
     <div>
       <h3 className="text-l mb-4">Other articles:</h3>
-      <ArticleList articles={articles} />
+      <ArticlesList articles={articles} />
     </div>
   )
 }

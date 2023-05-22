@@ -5,8 +5,8 @@ type Props = {
   articles: ArticleMeta[]
 }
 
-export const ArticleList = ({ articles }: Props) => (
-  <div className="mx-auto">
+export const ArticlesList = ({ articles }: Props) => (
+  <div className="mx-auto font-serif">
     <ul>
       {articles.map((article) => (
         <li key={article.id} className="text-xl mb-8 list-none">

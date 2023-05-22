@@ -1,13 +1,13 @@
 import Head from 'next/head'
 import { Profile } from '../components/profile'
-import { ArticleList } from '../components/article-list'
+import { ArticlesList } from '../components/articles-list'
 import { getPublicArticles } from '../article'
 
 export default function Index() {
   const metaDescription = 'Mark Parker — Just an engineer'
 
   return (
-    <div className="font-serif" style={{ maxWidth: "90%" }}>
+    <div className="" style={{ maxWidth: "90%" }}>
       <Head>
         <meta charSet="utf-8"></meta>
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
@@ -27,7 +27,7 @@ export default function Index() {
           <Profile/>
         </div>
         <div className="m-10 w-2/3">
-          <ArticleList articles={getPublicArticles()} />
+          <ArticlesList articles={getPublicArticles()} />
         </div>
       </div>
 

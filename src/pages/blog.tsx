@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { ArticleLayout } from '../components/article-layout'
-import { ArticleList } from '../components/article-list'
+import { ArticlesList } from '../components/articles-list'
 import { getPublicArticles } from '../article'
 
 export default function Blog() {
@@ -10,7 +10,7 @@ export default function Blog() {
         <Head>
           <title>Mark Parker — Blog</title>
         </Head>
-        <ArticleList articles={getPublicArticles()} />
+        <ArticlesList articles={getPublicArticles()} />
       </ArticleLayout>
     </div>
   )
