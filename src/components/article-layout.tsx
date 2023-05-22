@@ -8,7 +8,6 @@ export const ArticleLayout = (props: PropsWithChildren<unknown>) => (
       <Link href="/">
         <h1 className="text-center block mt-12 mb-1 text-5xl">Mark Parker</h1>
       </Link>
-      <div className="mx-auto text-lg text-center"></div>
       <div className="text-center">
         <Link style={1} href="/">
           About

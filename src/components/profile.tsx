@@ -49,7 +49,7 @@ const links: LinkMeta[] = [
     },
     {
         href: 'https://habr.com/users/MarkParker5/posts/',
-        title: 'Habr (articles in russian)',
+        title: 'Habr (статьи на русском)',
         icon: 'fas fa-comment',
     },
 ]
@@ -78,8 +78,8 @@ function LinksList() {
         {links.map((link) => (
             <li key={link.href} className="w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300">
                 <a href={link.href} title={link.title} className="flex flex-row items-center">
-                    <i className={link.icon + " w-8 h-8 m-2 fa-2x"}/>
-                    <div className="text-center w-full">
+                    <i className={link.icon + " w-8 h-8 my-2 ml-2 fa-2x"}/>
+                    <div className="w-full">
                         {link.title}
                     </div>
                 </a>
