@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { ArticleLayout } from '../components/articles-layout'
+import { ArticleLayout } from '../components/article-layout'
 import { ArticleList } from '../components/article-list'
 import { getPublicArticles } from '../article'
 
