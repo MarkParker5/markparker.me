@@ -27,7 +27,7 @@ export default function Index() {
         <div className="mt-5 lg:w-1/3">
           <Profile/>
         </div>
-        <div className="mt-10 lg:w-2/3">
+        <div className="mt-10 lg:w-2/3 lg:mx-10">
           <div className="text-center w-full">
             <p className="text-4xl font-serif">
               Blog
