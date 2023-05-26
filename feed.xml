@@ -16,6 +16,18 @@
     <icon>https://markparker.me/favicon.png</icon>
     <rights>All rights reserved 2023, Mark Parker</rights>
     <entry>
+        <title type="html"><![CDATA[Building a Smart Home - from Voice Assistant to MajorDom v1.0]]></title>
+        <id>https://markparker.me/blog/building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0</id>
+        <link href="https://markparker.me/blog/building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0"/>
+        <updated>2023-05-26T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <email>mark@parker-programs.com</email>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[How to Localize All Your iOS Apps into 20 Languages in 5 Minutes]]></title>
         <id>https://markparker.me/blog/localize-ios-app-in-5-minutes</id>
         <link href="https://markparker.me/blog/localize-ios-app-in-5-minutes"/>
