@@ -15,10 +15,12 @@ import shell from 'highlight.js/lib/languages/shell';
 import python from 'highlight.js/lib/languages/python';
 import swift from 'highlight.js/lib/languages/swift';
 import javascript from 'highlight.js/lib/languages/javascript';
+import php from 'highlight.js/lib/languages/php';
 hljs.registerLanguage('javascript', javascript);
 hljs.registerLanguage('shell', shell);
 hljs.registerLanguage('python', python);
 hljs.registerLanguage('swift', swift);
+hljs.registerLanguage('php', php);
 
 
 type Props = PropsWithChildren<{
@@ -58,10 +60,14 @@ export function ArticleComponent({ article, children }: Props) {
       </Head>
       
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
+
+      <Link style={1} href="/">
+        {'<-'} Back to home
+      </Link>
       
-      <div className="mb-3">
+      <div className="mb-3 mt-1">
         <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
-        <div className="italic mt-2 text-l opacity-50">Published on {article.date_pretty} · {article.read_time} read</div>
+        <div className="italic mt-1 text-md opacity-50">Published on {article.date_pretty} · {article.read_time} read</div>
       </div>
 
       <div className="markdown mb-10">{children}</div>
@@ -77,13 +83,9 @@ export function ArticleComponent({ article, children }: Props) {
                 href={`https://twitter.com/MarkParker_5/status/${article.tweetId}`}
                 newTab
               >
-                Discuss
+                Comment
               </Link>{' '}
-              or{' '}
-              <Link style={2} href={makeTwitterUrl(article.title, router.asPath)} newTab>
-                Share
-              </Link>{' '}
-              on Twitter
+              this post on Twitter
             </>
           ) : (
             <>
@@ -91,7 +93,7 @@ export function ArticleComponent({ article, children }: Props) {
               <Link style={2} href="https://twitter.com/MarkParker_5" newTab>
                 Twitter
               </Link>{' '}
-              or{' '}
+              and{' '}
               <Link style={2} href={makeTwitterUrl(article.title, router.asPath)} newTab>
                 Share
               </Link>{' '}
@@ -100,6 +102,8 @@ export function ArticleComponent({ article, children }: Props) {
           )}
         </div>
       </div>
+
+      <Separator />
 
       <OtherArticles currentArticleId={article.id} />
 
@@ -119,7 +123,7 @@ function OtherArticles({ currentArticleId }: { currentArticleId: string }) {
 
   return (
     <div>
-      <h3 className="text-l mb-4">Other articles:</h3>
+      <h4 className="text-l mb-4">Other articles:</h4>
       <ArticlesList articles={articles} />
     </div>
   )
