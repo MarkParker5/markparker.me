@@ -34,7 +34,7 @@ const articles: ArticleMeta[] = [
     title: 'Building a Smart Home - from Voice Assistant to MajorDom v1.0',
     description: `The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.`,
     keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development'],
-    tweetId: ''
+    tweetId: '1661971621274370048'
   },
   {
     id: 'localize-ios-app-in-5-minutes',
