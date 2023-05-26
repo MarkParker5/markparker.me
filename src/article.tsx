@@ -27,6 +27,16 @@ export type ArticleMeta = {
 
 const articles: ArticleMeta[] = [
   {
+    id: 'building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0',
+    date: '2023-05-26',
+    date_pretty: 'May 26th, 2023',
+    read_time: '5 min',
+    title: 'Building a Smart Home - from Voice Assistant to MajorDom v1.0',
+    description: `The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.`,
+    keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development'],
+    tweetId: ''
+  },
+  {
     id: 'localize-ios-app-in-5-minutes',
     date: '2023-03-01',
     date_pretty: 'March 1st, 2023',
