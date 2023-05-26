@@ -33,7 +33,7 @@ const articles: ArticleMeta[] = [
     read_time: '5 min',
     title: 'Building a Smart Home - from Voice Assistant to MajorDom v1.0',
     description: `The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.`,
-    keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development'],
+    keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development', 'raspberry pi', 'arduino', 'nrf24l01'],
     tweetId: '1661971621274370048'
   },
   {
