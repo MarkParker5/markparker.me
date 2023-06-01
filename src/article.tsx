@@ -27,6 +27,16 @@ export type ArticleMeta = {
 
 const articles: ArticleMeta[] = [
   {
+    id: 'inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system',
+    date: '2023-06-01',
+    date_pretty: 'June 1st, 2023',
+    read_time: '3 min',
+    title: 'Inside MajorDom v1.0: Exploring the Architecture of a New Smart Home System',
+    description: 'Exploring the Architecture of MajorDom v1.0: Dive into the inner workings of MajorDom v1.0. Learn about its core components, fault tolerance and offline capabilities.',
+    keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development', 'raspberry pi', 'arduino'],
+    tweetId: ''
+  },
+  {
     id: 'building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0',
     date: '2023-05-26',
     date_pretty: 'May 26th, 2023',
