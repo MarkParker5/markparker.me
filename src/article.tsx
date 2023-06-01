@@ -34,7 +34,7 @@ const articles: ArticleMeta[] = [
     title: 'Inside MajorDom v1.0: Exploring the Architecture of a New Smart Home System',
     description: 'Exploring the Architecture of MajorDom v1.0: Dive into the inner workings of MajorDom v1.0. Learn about its core components, fault tolerance and offline capabilities.',
     keywords: ['majordom', 'smarthome', 'smart home', 'voice assistant', 'home automation', 'smart home system', 'smart devices', 'mobile development', 'backend development', 'raspberry pi', 'arduino'],
-    tweetId: ''
+    tweetId: '1664284619909521409'
   },
   {
     id: 'building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0',
