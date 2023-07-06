@@ -1,4 +1,6 @@
 import Head from "next/head"
+import { Link } from './link'
+
 
 type LinkMeta = {
     href: string
@@ -65,7 +67,9 @@ export function Profile() {
         <div className="font-serif">
             <img className="mx-auto h-36 w-36 rounded-full" src="/mark-parker.jpg" />
             <h1 className="mt-6 text-4xl leading-tight">Mark Parker</h1>
-            <p className="text-xl mb-5">Just an engineer</p>
+            <p className="text-l mb-5">
+                Just an engineer | Making <Link style={2} href="https://majordom.io">MajorDom</Link> 
+            </p>
         </div>
         <LinksList />
     </div>
@@ -82,6 +86,7 @@ function LinksList() {
                     <div className="w-full">
                         {link.title}
                     </div>
+                    <div className="w-10 mx-2"></div>
                 </a>
             </li>
         ))}
