@@ -16,6 +16,18 @@
     <icon>https://markparker.me/favicon.png</icon>
     <rights>All rights reserved 2023, Mark Parker</rights>
     <entry>
+        <title type="html"><![CDATA[S.T.A.R.K - The First Voice Assistant's Framework]]></title>
+        <id>https://markparker.me/blog/stark-the-voice-assistants-framework</id>
+        <link href="https://markparker.me/blog/stark-the-voice-assistants-framework"/>
+        <updated>2023-09-20T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[I published a framework that allows you to build your own amazing voice assistant.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <email>mark@parker-programs.com</email>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Inside MajorDom v1.0: Exploring the Architecture of a New Smart Home System]]></title>
         <id>https://markparker.me/blog/inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system</id>
         <link href="https://markparker.me/blog/inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system"/>
