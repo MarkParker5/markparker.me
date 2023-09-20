@@ -34,6 +34,7 @@ const articles: ArticleMeta[] = [
     title: 'S.T.A.R.K - The First Voice Assistant\'s Framework',
     description: `I published a framework that allows you to build your own amazing voice assistant.`,
     keywords: ["python", "open-source", "natural-language-processing", "framework", "cross-platform", "natural-language", "voice", "voice-commands", "python3", "voice-recognition", "speech-recognition", "speech-to-text", "community-project", "voice-assistant", "voice-interface", "NLP", "machine-learning", "AI", "text-analysis", "stark", "stark-place", "mark parker"],
+    tweetId: '1704418665335021942'
   },
   {
     id: 'inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system',
