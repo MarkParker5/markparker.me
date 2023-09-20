@@ -27,6 +27,15 @@ export type ArticleMeta = {
 
 const articles: ArticleMeta[] = [
   {
+    id: 'stark-the-voice-assistants-framework',
+    date: '2023-09-20',
+    date_pretty: 'September 20th, 2023',
+    read_time: '2 min',
+    title: 'S.T.A.R.K - The First Voice Assistant\'s Framework',
+    description: `I published a framework that allows you to build your own amazing voice assistant.`,
+    keywords: ["python", "open-source", "natural-language-processing", "framework", "cross-platform", "natural-language", "voice", "voice-commands", "python3", "voice-recognition", "speech-recognition", "speech-to-text", "community-project", "voice-assistant", "voice-interface", "NLP", "machine-learning", "AI", "text-analysis", "stark", "stark-place", "mark parker"],
+  },
+  {
     id: 'inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system',
     date: '2023-06-01',
     date_pretty: 'June 1st, 2023',
@@ -55,7 +64,7 @@ const articles: ArticleMeta[] = [
     description: `I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.`,
     keywords: ['ios', 'xcode', 'localization', 'localize', 'translate', 'ios development', 'mobile development'],
     tweetId: '1632052543613198336'
-  },
+  }
 ]
 
 export function renderArticle(
