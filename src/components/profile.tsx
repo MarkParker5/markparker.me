@@ -30,6 +30,11 @@ const links: LinkMeta[] = [
         icon: 'fab fa-twitter',
     },
     {
+        href: 'https://linkedin.com/in/MarkParker5',
+        title: 'LinkedIn',
+        icon: 'fab fa-linkedin',
+    },
+    {
         href: 'https://instagram.com/markparker_5',
         title: 'Instagram',
         icon: 'fab fa-instagram',
