@@ -9,16 +9,16 @@ type LinkMeta = {
 }
 
 const links: LinkMeta[] = [
-    {
-        href: 'https://buymeacoffee.com/markparker5',
-        title: 'Support my work | Buy Me a Coffee',
-        icon: 'fas fa-coffee',
-    },
-    {
-        href: 'https://patreon.com/markparker5',
-        title: 'Support my work | Patreon',
-        icon: 'fab fa-patreon',
-    },
+    // {
+    //     href: 'https://buymeacoffee.com/markparker5',
+    //     title: 'Support my work | Buy Me a Coffee',
+    //     icon: 'fas fa-coffee',
+    // },
+    // {
+    //     href: 'https://patreon.com/markparker5',
+    //     title: 'Support my work | Patreon',
+    //     icon: 'fab fa-patreon',
+    // },
     {
         href: 'https://github.com/MarkParker5',
         title: 'GitHub',
@@ -45,11 +45,6 @@ const links: LinkMeta[] = [
         icon: 'fas fa-envelope',
     },
     {
-        href: 'https://t.me/markparker5',
-        title: 'Personal Telegram',
-        icon: 'fab fa-telegram',
-    },
-    {
         href: 'https://t.me/parker_is_typing',
         title: 'Telegram Channel',
         icon: 'fab fa-telegram',
@@ -60,15 +55,20 @@ const links: LinkMeta[] = [
         icon: 'fab fa-telegram',  
     },
     {
-        href: 'https://youtube.com/@markparker5',
-        title: 'YouTube',
-        icon: 'fab fa-youtube',
+        href: 'https://t.me/markparker5',
+        title: 'Personal Telegram',
+        icon: 'fab fa-telegram',
     },
-    {
-        href: 'https://youtube.com/@markparker_5',
-        title: 'YouTube (RU)',
-        icon: 'fab fa-youtube',
-    },
+    // {
+    //     href: 'https://youtube.com/@markparker5',
+    //     title: 'YouTube',
+    //     icon: 'fab fa-youtube',
+    // },
+    // {
+    //     href: 'https://youtube.com/@markparker_5',
+    //     title: 'YouTube (RU)',
+    //     icon: 'fab fa-youtube',
+    // },
     {
         href: 'https://habr.com/users/MarkParker5/posts/',
         title: 'Habr (статьи на русском)',
