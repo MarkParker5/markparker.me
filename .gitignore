@@ -4,3 +4,5 @@ out
 public/sitemap.xml
 public/feed.xml
 .DS_Store
+.zed
+.vscode

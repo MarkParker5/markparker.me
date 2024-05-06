@@ -1,0 +1,630 @@
+Previous articles:
+
+- [How We Built an AI Startup in a Weekend Hackathon in Germany](/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany)
+- [Dr. House - AI Diagnostician in Your Phone: Passing the Startup Torch](/blog/house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands)
+
+This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.
+
+## Why We Need a Backend
+
+Someone might say that you can just cram all the logic into the application, send requests to chatgpt directly and make a backendless app. And I agree, it is indeed possible (and I'll show it later), but the backend provides several important advantages.
+
+The backend serves as the backbone for any sophisticated app, especially those requiring secure data management, business logic processing, and service integration. Here’s why a robust backend is crucial:
+
+1. **Security**: A backend helps protect sensitive data and user authentication tokens from MITM (Man-in-the-Middle) attacks. It acts as a secure gateway between the user's device and the database or external services, ensuring that all data exchanges are encrypted and authenticated.
+
+2. **Control Over Service Usage**: By managing APIs and user interactions through the backend, you can monitor and control how the app is used. This includes throttling to manage load, preventing abuse, and ensuring that resources are used efficiently.
+
+3. **Database Integration**: A backend allows for seamless integration with databases, enabling dynamic data storage, retrieval, and real-time updates. This is essential for apps that require user accounts, store user preferences, or need to retrieve large amounts of data quickly and securely.
+
+4. **Subscription and Freemium Models**: Implementing subscription services or a freemium model requires a backend to handle billing, track usage, and manage user tiers. The backend can securely process payments and subscriptions, providing a seamless user experience while ensuring compliance with data protection regulations.
+
+5. **Scalability and Maintenance**: With a backend, you can scale your application more effectively. Server-side logic can be updated without needing to push updates to the client, facilitating easier maintenance and quicker rollouts of new features.
+
+In essence, a backend is not just about functionality — it's about creating a secure, scalable, and sustainable environment for your app to thrive.
+
+## Explaining the Tech Stack
+
+- **SwiftUI**: The go-to for native iOS apps now that UIKit is on its way out. It's declarative and streamlined, with XCode as the indispensable editor. For android, the code can be easily translated to Kotlin using Jetpack Compose.
+- **FastAPI**: Chosen for the backend for its speed, minimal boilerplate, and declarative nature, edited with the superb Zed.dev.
+- **ChatGPT API**: Used here as a large language model (LLM); choice may vary based on the need for customization (see [Technical Info](github.com/HouseMDAI/house-notebook/blob/main/Technical Info.md)).
+- **Ngrok**: Implements tunneling with a simple CLI command to expose your local server to the internet.
+
+## Building the iOS App
+
+### Theory: Architecture Patterns
+
+1.  **Model View ViewModel Presenter (MVVMP)**:
+
+    - **Model**: Represents the data structures used in the app, such as Question, Answer, Questionary, and FilledQuestionary. These models are simple and only hold data, following the KISS principle.
+    - **View**: SwiftUI views are responsible only for UI presentation and delegate all data and logic to presenters. They contain no business logic and are designed to be simple and focused on UI rendering.
+    - **ViewModel**: In SwiftUI, ViewModel is represented by ObservableObject, which serves as a data-only observable model. No methods or logic here.
+    - **Presenter**: The Presenter manages all logic related to the module (screen or view), but not the business logic. It communicates with the domain layer for business logic operations, such as interacting with APIs or managing data persistence.
+    - **Domain Layer**: This layer encapsulates the business logic of the application and interacts with external resources such as databases, APIs, or other services. It consists of several components, such as Services, Providers, Managers, Repositories, Mappers, Factories, etc.
+    - Actually, the MP in MVVMP stands for Mark Parker and the full form is "Model View ViewModel by Mark Parker"
+
+2.  **SOLID Principles**:
+
+    - **Single-responsibility Principle**: Each class should have only one reason to change.
+    - **Open-closed Principle**: Components should be open for extension but closed for modification.
+    - **Liskov Substitution Principle**: Objects of a superclass should be replaceable with objects of subclasses.
+    - **Interface Segregation Principle**: No client should be forced to depend on interfaces it doesn't use.
+    - **Dependency Inversion Principle**: Depend on abstractions, not concretes, facilitated by DI.
+
+3.  **Dependency Injection (DI)**: a programming technique in which an object or function receives other objects or functions that it requires, as opposed to creating them internally.
+
+## Drafting the Backend
+
+The [backend's code](https://github.com/HouseMDAI/house-backend/blob/master/backend) is quite simple. Endpoints (main.py):
+
+```python
+from typing import Callable
+import json
+from fastapi import FastAPI, Body, Request, Response
+from .models import (Question, FilledQuestionary, DoctorResponseAnswer, DoctorResponseQuestionary)
+from .user_card import UserCardSimple
+from .prompting import get_response
+
+
+@app.get("/onboarding", response_model = DoctorResponseQuestionary)
+def onboarding():
+    return DoctorResponseQuestionary(question=[Question(text=text) for text in UserCardSimple.__fields__.keys()])
+
+@app.post("/doctor")
+def doctor(user_card: UserCardSimple, filled_questionary: FilledQuestionary, message: str = Body(...)):
+    json_string = get_response(user_card, message, filled_questionary)
+    loaded = json.loads(json_string.strip())
+    return loaded
+```
+
+There are two endpoints. The "onboarding" provides a list of anamnesis questions that needs to be filled at the first launch of the app. Answers will be stored on the device and used for personalized future diagnosis. The "doctor" is the main endpoint: it generates questions based on earlier answers and user's card, or returns the result of diagnosis.
+
+Models:
+
+```python
+from pydantic import BaseModel
+
+
+class Question(BaseModel):
+    text: str
+
+class FilledQuestionary(BaseModel):
+    filled_questions: dict[str, str]
+
+class DoctorResponseAnswer(BaseModel):
+    text: str
+
+class DoctorResponseQuestionary(BaseModel):
+    questions: list[str]
+
+class UserCardSimple(BaseModel):
+    sex: str
+    age: int
+    weight: int
+    height: int
+    special_conditions: str
+```
+
+Prompting:
+
+```python
+import os
+from openai import OpenAI
+from .models import FilledQuestionary
+
+
+api_key = os.environ.get("API_KEY")
+client = OpenAI(api_key=api_key)
+
+def get_response(user_card: str, message: str, filled_questionary: FilledQuestionary, max_tokens=200):
+    format_question = """{"questions":[{"text":"first question"},{"text":"second question"}]}"""
+    format_advice = """{"text":"Advice: Drink more water"}"""
+
+    system_prompt = f"""
+    You are a doctor that gives user an opportunity to swiftly check up health and diagnos an illness using anamnes and a short questionary.
+    Your task is to ask short questions and give your opinion and advices.
+    Your questions are accamulated in the filled questionary, which is empty in the first itteration.
+
+    Strive to about 1-2 questions per iteration and up to 6 questions in total (can be less). Questions must be short, clear, shouldn't repeat,
+    and should be relevant to the user's health condition, and should require easy answers.
+    Ask questions only in the json format {format_question}.
+
+    Number of answered questions: {len(filled_questionary.filled_questions)}
+    If the Number of answered questions is more then 6, you should stop asking questions an`d provide an give your final opinion,
+    an assumption or an advice in the json format {format_advice}.
+    """
+
+    prompt = f"""request message: {message}; anamnesis: {user_card}; filled questionary: {filled_questionary};"""
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": f"{system_prompt}",
+            },
+            {
+                "role": "user",
+                "content": f"{prompt}",
+            },
+        ],
+        model="gpt-3.5-turbo",
+        max_tokens=max_tokens
+    )
+    return chat_completion.choices[0].message.content
+```
+
+The prompting module utilizes OpenAI's GPT-3.5 to generate responses based on user input, anamnesis, and filled questionnaires. It prompts the user with relevant questions and advice for health diagnosis. As you can see, there is nothing complicated here. The code is elementary, and the prompt is just a set of clear instructions for the LLM.
+
+Setup the env and run the server using `fastapi dev main.py`.
+
+Details:
+
+- [fastapi.tiangolo.com/tutorial/first-steps](https://fastapi.tiangolo.com/tutorial/first-steps)
+- [pypi.org/project/openai](https://pypi.org/project/openai)
+
+### Making Localhost Accessible Over the Internet
+
+1. Sign up at ngrok.com and get an access token.
+2. Install ngrok from ngrok.com/download.
+3. Run `ngrok config add-authtoken <TOKEN>`.
+4. Start the service with `ngrok http http://localhost:8080` (adjust the port as necessary).
+
+Find detailed setup instructions at [ngrok documentation](https://ngrok.com/docs/getting-started).
+
+### Coding the App
+
+I won't show the entire source code here, this is what GitHub is for. Find the code at: [HouseMDAI iOS App](https://github.com/HouseMDAI/house-ios/tree/main/HouseMDAI). Instead, I'll focus only on the important (IMO) points.
+
+Let's start with a quick description of the task: we need an app with a textfield on the home screen, ability to ask a set of dynamic questions, and show the answer. Also, we require a one-time onboarding. Okay, let's code.
+
+First thing first, we need some models, and they are pretty simple (KISS principle).
+
+```swift
+struct Question {
+    var text: String
+}
+
+struct Answer {
+    var text: String
+}
+
+struct Questionary {
+    var questions: [Question]
+}
+
+struct FilledQuestionary {
+    var filledQuestions: [String: String]
+}
+```
+
+Now, let's do the onboarding. Keep following the KISS and SRP (Single Responsibility Principle), no business logic in views either, only UI. In this case, just the list of questions with scroll. All data and logic is delegated to the presenter. The only interesting thing here is a small helper method `bindingForQuestion`, which probably should be in the presenter but it doesn't matter now.
+
+```swift
+import SwiftUI
+
+struct OnboardingView: View {
+
+    @StateObject var presenter: OnboardingPresenter
+
+    var body: some View {
+        ScrollView {
+            Spacer()
+            VStack {
+                ForEach(presenter.questions.questions) { question in
+                    VStack {
+                        Text(question.text)
+                        TextField("", text: bindingForQuestion(question))
+                            .formItem()
+                    }
+                    .padding()
+                }
+            }.padding()
+
+            Button("Save", action: presenter.save)
+            Spacer()
+        }
+    }
+
+    private func bindingForQuestion(_ question: Question) -> Binding<String> {
+        Binding(
+            get: { presenter.answers.filledQuestions[question.text] ?? "" },
+            set: { presenter.answers.filledQuestions[question.text] = $0 }
+        )
+    }
+}
+```
+
+You will be surprised, but there is no business logic in the presenter either!
+
+```swift
+class OnboardingPresenter: ObservableObject {
+
+    @Published public var answers: FilledQuestionary
+    private(set) public var questions: Questionary
+    private var completion: (FilledQuestionary) -> Void
+
+    init(questions: Questionary, answers: FilledQuestionary, completion: @escaping (FilledQuestionary) -> Void) {
+        self.questions = questions
+        self.answers = answers
+        self.completion = completion
+    }
+
+    func save() {
+        completion(answers)
+    }
+}
+```
+
+Still everything is _simple, stupid_, and have only a _single responsibility_. Presenter must contain only the logic of its view. App-level business-logic is out of its jurisdiction, so the presenter is just delegating it to the top.
+
+Also, you can see that both View and Presenter don't instantiate any of the dependencies but receive them as init parameters. This follows the Dependency Inversion Principle, where high-level modules should not depend on low-level modules, but both should depend on abstractions. This allows for flexibility and easier testing, as well as making it straightforward to replace dependencies or inject mocks for testing purposes.
+
+Using the Dependency Injection Pattern, dependencies are provided from outside the class rather than being instantiated internally. This promotes decoupling and allows for easier maintenance and testing.
+
+Although protocols are not explicitly used in this example, it's worth mentioning that protocols can play a crucial role in code, especially for abstraction and easier testing. By defining protocols for views, presenters, and dependencies, it becomes easier to swap out implementations or provide mocks during testing.
+
+> If you're considering using protocols in SwiftUI Views, there's an important consideration to keep in mind. Since View in SwiftUI is a structure, it requires explicit specification of its property types. This means you'll need to make it a generic structure and pass the type through all the call stack, resulting in a lot of boilerplate code.
+>
+> However, there's an alternative approach offered by [MarkParker5/AnyObservableObject](https://github.com/MarkParker5/AnyObservableObject). This library works similarly to native SwiftUI property wrappers but removes the compile-time type check in favor of a runtime one. While this approach may introduce some risks, they are easily mitigated by writing elementary Xcode tests that simply instantiate the views in the same way you do it at runtime.
+>
+> By using this alternative, you can simplify your code and streamline the process of working with protocols in SwiftUI Views.
+
+So, if the presenter doesn't contain the business logic, then who does? This is the task for the domain layer, which usually contains Services, Providers, and Managers. They have very similar destiny and the difference between them still is a subject of discussions. Let's create the `OnboardingProvider` that will contain all business-logic of the onboarding process.
+
+```swift
+class OnboardingProvider: ObservableObject {
+
+    init() {
+        loadFilledOnboardingFromDefaults()
+    }
+
+    // MARK: Interface
+
+	@Published private(set) var needsOnboarding: Bool = true
+
+    private(set) var filledOnboarding: FilledQuestionary? {
+        didSet {
+            if let filledOnboarding {
+                saveFilledOnboardingToDefaults(filledQuestionary: filledOnboarding)
+            }
+        }
+    }
+
+    func getOnboardingQuestionary() -> Questionary {
+        // NOTE: it's better to take the questions from the backend
+        Questionary(questions: [
+            Question(text: "sex"),
+            Question(text: "age"),
+            Question(text: "weight"),
+            Question(text: "height"),
+            Question(text: "special_conditions"),
+        ])
+    }
+
+    func saveOnboardingAnswers(filledQuestionary: FilledQuestionary) {
+        needsOnboarding = false
+        filledOnboarding = filledQuestionary
+    }
+
+    // MARK: - Private
+
+    private func saveFilledOnboardingToDefaults(filledQuestionary: FilledQuestionary) {
+        UserDefaults.standard.removeObject(forKey: "filledOnboarding")
+        let encoder = JSONEncoder()
+        let encoded = try! encoder.encode(filledQuestionary)
+        UserDefaults.standard.set(encoded, forKey: "filledOnboarding")
+    }
+
+    private func loadFilledOnboardingFromDefaults() {
+        guard let object = UserDefaults.standard.object(forKey: "filledOnboarding") else {
+            needsOnboarding = true
+            return
+        }
+        let savedFilledQuestionary = object as! Data
+        let decoder = JSONDecoder()
+        let loadedQuestionary = try! decoder.decode(FilledQuestionary.self, from: savedFilledQuestionary)
+        self.filledOnboarding = loadedQuestionary
+        self.needsOnboarding = false
+    }
+}
+```
+
+Again, it handles only one responsibility: managing the business logic of the onboarding process. This _encapsulation_ allows other classes to interact with it without needing to worry about its internal implementation details, promoting a cleaner and more maintainable codebase.
+
+Now, let's put everything together in the entry point.
+
+```swift
+import SwiftUI
+
+@main
+struct HouseMDAI: App {
+
+    @StateObject private var onboardingProvider: OnboardingProvider
+    @StateObject private var onboardingPresenter: OnboardingPresenter
+    @StateObject private var homePresenter: HomePresenter
+
+    init() {
+        let onboardingProvider = OnboardingProvider()
+
+        let onboardingPresenter = OnboardingPresenter(
+            questions: onboardingProvider.getOnboardingQuestionary(),
+            answers: FilledQuestionary(filledQuestions: [:]),
+            completion: onboardingProvider.saveOnboardingAnswers
+        )
+
+        let homePresenter = HomePresenter()
+
+        _onboardingProvider = StateObject(wrappedValue: onboardingProvider)
+        _onboardingPresenter = StateObject(wrappedValue: onboardingPresenter)
+        _homePresenter = StateObject(wrappedValue: homePresenter)
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            if onboardingProvider.needsOnboarding {
+                OnboardingView(presenter: onboardingPresenter)
+            } else {
+                TabView {
+                    HomeView(presenter: homePresenter)
+
+                    if let profile = onboardingProvider.filledOnboarding {
+                        ProfileView(profile: profile)
+                    }
+                }
+            }
+        }
+    } // body
+}
+```
+
+This SwiftUI app sets up its initial state using `StateObject` property wrappers. It initializes an `OnboardingProvider`, `OnboardingPresenter`, and `HomePresenter` in its init method. The `OnboardingProvider` is responsible for managing onboarding-related data, while the `OnboardingPresenter` handles the logic for the onboarding view. The `HomePresenter` manages the main home view.
+
+The body of the app's scene checks if onboarding is needed. If so, it presents the `OnboardingView` with the `OnboardingPresenter`. Otherwise, it presents a `TabView` containing the `HomeView` with the `HomePresenter` and, if available, the `ProfileView`.
+
+Now it's time for the home view. The logic is simple:
+
+1. Get a message from user
+2. Using the message, request a list of questions from the backend
+3. Show the questions one by one using the native push navigation
+4. Add answers to the request and repeat 2-4 until the backend-doctor returns a final result
+5. Show the final result
+
+```swift
+struct HomeView: View {
+
+    @StateObject var presenter: HomePresenter
+
+    var body: some View {
+        NavigationStack(path: $presenter.navigationPath) {
+            VStack {
+	            // 1
+                Text("How are you?")
+                TextField("...", text: $presenter.message)
+                    .lineLimit(5...10)
+                    .formItem()
+
+				// 2
+                Button("Send", action: presenter.onSend)
+            }
+            .padding()
+            .navigationDestination(for: NavigationPage.self) { page in
+                switch page {
+                case .questinary(let questions, let answers):
+	                // 3
+                    QuestionaryView(
+                        presenter: QuestionaryPresenter(
+                            questions: questions,
+                            answers: answers,
+                            completion: presenter.onQuestionaryFilled
+                        )
+                    )
+                case .answer(let string):
+	                // 5
+                    VStack {
+                        Text("The doctor says...")
+                        Text(string)
+                            .font(.title2)
+                            .padding()
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+Looks like I've missed the 4th point... or not? Since the view can't content any logic, this part in handled by its presenter.
+
+```swift
+enum NavigationPage: Hashable {
+    case questinary(Questionary, FilledQuestionary)
+    case answer(String)
+}
+
+class HomePresenter: ObservableObject {
+
+    @Published var message: String = ""
+    @Published var navigationPath: [NavigationPage] = []
+
+    init(message: String = "") {
+        self.message = message
+    }
+
+    func onSend() {
+        Task {
+            let doctor = DoctorProvider()
+            let answer = try! await doctor.sendMessage(message: message)
+
+            switch answer {
+            case .questions(let questions):
+                navigationPath.append(.questinary(questions, FilledQuestionary(filledQuestions: [:])))
+            case .answer(let string):
+                navigationPath.append(.answer(string))
+            }
+        }
+    }
+
+    func onQuestionaryFilled(filled: FilledQuestionary) {
+        Task {
+            let doctor = DoctorProvider()
+            let answer = try! await doctor.sendAnswers(message: message, answers: filled)
+
+            switch answer {
+            case .questions(let newQuestions):
+                navigationPath.append(.questinary(newQuestions, filled))
+            case .answer(let string):
+                navigationPath.append(.answer(string))
+            }
+        }
+    }
+}
+```
+
+It manages the user's message input and updates the navigation path based on responses from the backend.
+
+Upon sending a message, the `onSend()` method sends the message to the backend using the `DoctorProvider` and awaits a response. Depending on the response type, it updates the navigation path to either display a set of questions or show a final answer.
+
+Similarly, when a questionary is filled, the `onQuestionaryFilled()` method sends the filled questionary to the backend and updates the navigation path accordingly.
+
+There's a slight code duplication here between the `onSend()` and `onQuestionaryFilled()` methods, which could be refactored into a single method to handle both cases (DRY principle - Don't Repeat Yourself). However, this is left as an exercise for further refinement.
+
+The Questionary module (View+Presenter) is almost a copy of the Onboarding and simply delegates the logic up to `HomePresenter`, so I don't see a need to show the code. Again, there is github for that.
+
+The last things I want to show are two implementations of `DoctorProvider` which the only responsibility is to call the API and return `DoctorResponse`. The first one uses our backend.
+
+```swift
+import Alamofire
+
+enum DoctorResponse {
+    case questions(Questionary)
+    case answer(String)
+
+    init(from string: String) throws {
+        if let data = string.data(using: .utf8) {
+            if string.contains("\"questions\""){
+                let decoded = try! JSONDecoder().decode(Questionary.self, from: data)
+                self = .questions(decoded)
+            } else if string.contains("\"text\"") {
+                let decoded = try! JSONDecoder().decode(Answer.self, from: data)
+                self = .answer(decoded.text)
+            } else {
+                throw NSError(domain: "DoctorResponseError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unknown response format"])
+            }
+        } else {
+            throw NSError(domain: "DoctorResponseError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid string encoding"])
+        }
+    }
+}
+
+class DoctorProvider {
+
+    private let baseUrl = ""
+
+    func sendMessage(message: String) async throws -> DoctorResponse {
+        try! await sendAnswers(message: message, answers: FilledQuestionary(filledQuestions: [:]))
+    }
+
+    func sendAnswers(message: String, answers: FilledQuestionary) async throws -> DoctorResponse {
+
+        struct DoctorParams: Codable {
+            var message: String
+            var userCard: [String: String]
+            var filledQuestionary: FilledQuestionary
+        }
+
+        let onboard = OnboardingProvider()
+
+        let paramsObject = DoctorParams(
+            message: message,
+            userCard: onboard.filledOnboarding!.filledQuestions,
+            filledQuestionary: answers
+        )
+
+        let encoder = JSONParameterEncoder.default
+        encoder.encoder.keyEncodingStrategy = .convertToSnakeCase
+
+        let responseString = try await AF.request(
+            baseUrl + "/doctor",
+            method: .post,
+            parameters: paramsObject,
+            encoder: encoder
+        ).serializingString().value
+
+        return try! DoctorResponse(from: responseString)
+    }
+}
+```
+
+The second one calls openai api directly (backendless approach) and is almost a copy of the prompting module from the backend.
+
+```swift
+
+class PromptsProvider {
+
+    private(set) public var homeRole = "" // TODO: take from the backend
+
+    func message(message: String) -> String {
+        return message
+    }
+
+    func profile(profile: FilledQuestionary) -> String {
+        return try! jsonify(object: profile)
+    }
+
+    func answers(filled: FilledQuestionary) -> String {
+        return try! jsonify(object: filled)
+    }
+
+    // MARK: - Private
+
+    private func jsonify(object: Encodable) throws -> String {
+        let coder = JSONEncoder()
+        return String(data: try coder.encode(object), encoding: .utf8) ?? ""
+    }
+}
+
+class HouseMDAIProvider {
+
+    private var openAI: OpenAI
+
+    init() {
+        openAI = OpenAI(apiToken: "")
+    }
+
+    func sendMessage(message: String) async throws -> DoctorResponse {
+        try! await sendAnswers(message: message, answers: FilledQuestionary(filledQuestions: [:]))
+    }
+
+    func sendAnswers(message: String, answers: FilledQuestionary) async throws -> DoctorResponse {
+		// NOTE: Draft version, DI should be used instead!
+        let promptProvider = PromptsProvider()
+        let profile = OnboardingProvider().filledOnboarding!
+
+        let query = ChatQuery(model: .gpt3_5Turbo, messages: [
+            Chat(role: .system, content: promptProvider.homeRole),
+            Chat(role: .user, content: promptProvider.profile(profile: profile)),
+            Chat(role: .user, content: promptProvider.message(message: message)),
+            Chat(role: .user, content: promptProvider.answers(filled: answers)),
+        ])
+
+        let result = try await openAI.chats(query: query)
+        return try! DoctorResponse(from: result.choices[0].message.content ?? "")
+    }
+}
+```
+
+Both classes expose the same interface, so they can (should) implement the same protocol and be easily interchangeable thanks to protocol and DI. We didn't get around to this during development, so let this also remain homework.
+
+### Another Example
+
+Explore a more refined example of this architecture in my project TwiTreads at [github.com/MarkParker5/TwiTreads](https://github.com/MarkParker5/TwiTreads)
+
+### What to Do Next
+
+- Integrate authentication and user database into the backend. Utilize the official FastAPI's template from [FastAPI Project Generation](https://fastapi.tiangolo.com/project-generation).
+- Implement authentication flow in the app.
+- Focus on enhancing the app's design to improve user experience. Let's make beautiful apps!
+
+## Conclusion
+
+The projects and code links included serve as real-world examples to jumpstart your own development. Remember, the beauty of technology lies in iteration. Start simple, build a prototype, and continuously refine it. Each step forward brings you closer to mastering the art of software development and potentially the next big breakthrough in tech. Happy coding!

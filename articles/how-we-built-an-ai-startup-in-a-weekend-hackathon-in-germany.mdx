@@ -1,0 +1,97 @@
+Here's a rundown of my weekend at a Cologne hackathon, where we aimed to start an AI startup in just two days. We went from pitching ideas on Friday night to demoing a working app by Sunday. It involved coding late into the night, figuring out last-minute tech snags, and even putting together a presentation minutes before our demo. As a bonus, I have highlighted a to-do list of the main points for creating a startup.
+
+<Img src="@mediapark.webp" caption="MediaPark, Cologne"/>
+
+A few weeks ago, I found myself in Cologne for an electrifying AI Startup Hackathon hosted by [Startplatz](https://www.startplatz.de/en), situated in the heart of [MediaPark](https://de.wikipedia.org/wiki/Mediapark). The venue buzzed with ideas on the third floor of a vibrant office building, setting the stage for a weekend of innovative frenzy.
+
+### Day 1: Ideation and Team Formation (Friday, 6pm to 10pm)
+
+The event kicked off with around 40 participants, each pitching their ideas anonymously. After a democratic voting process, the top eight concepts were selected for development. These ideas ranged from an AI for paramedics (our baby, dubbed "AI Dr. House") to something as quirky as AI evaluating scores in Warhammer — quite the spectrum!
+
+> Step 1: **Start with an Idea** <br></br>
+> Pinpoint a unique concept that addresses an unsolved problem or improves on existing solutions.
+
+Here's a snapshot of the diversity and creativity showcased in the pitches:
+
+- **Paramedic AI (ours)**: Enhancing emergency medical responses with AI.
+- **LLM without Hallucination**: Aiming to create a more reliable language model.
+- **Knowledge Management Through & With AI**: Harnessing AI to optimize information flow.
+- **Gesture Recognition for Contactless Playback Control**: Innovating user interfaces with computer vision.
+- **SchoolGPT**: Applying groundbreaking technology in educational settings.
+- **Evaluate Scores in Warhammer with AI**: Bringing AI to the fantasy battlefield.
+- And a couple more, each brimming with potential.
+
+> Step 2: **Determine the Pain You Solve** <br></br>
+> Identify the specific challenges your potential customers face and how your product can address these issues effectively.
+
+Each team then refined their ideas, weighing pros and cons, potential impacts, and business models. The day wrapped up with networking over pizza, setting a casual yet ambitious tone for the weekend.
+
+### Night 1: Exploring Cologne
+
+While others retreated for the night, I embraced the Cologne nightlife, from bustling business districts to tranquil residential areas. My detour included culinary stops and riverside reflections. However, the relentless drive of a startup founder never truly powers down; I coded an early draft of our diagnostician app in Xcode. Later, duty called from my primary venture, [MajorDom](https://www.majordom.io), requiring a few dedicated hours in Jira to keep our other projects on track until dawn.
+
+### Day 2: Intensive Development and Unexpected Pivots (Saturday, 8am-10pm)
+
+Grateful for the coworking space's hospitality, I managed to sneak in a breakfast and an hour of 'meditative' closed-eye thinking before diving into the fray at 9:15am.
+
+Energized, we started with a lively warm-up session followed by an insightful lecture on customer development and product positioning. We immediately put this newfound knowledge to the test by drafting a questionnaire to better gauge public opinion and refine our project's direction.
+
+> 3: **CustDev: Define the Target Audience** <br></br>
+> Understand who your customers are, what their needs are, and how they behave. Engage with them early through customer development interviews to refine your product's focus.
+
+It's also important to ask questions about the past and present, such as "How often do you visit the doctor?", but not questions about the future, such as "Would you use an app instead?". The first questions give a real picture, while the second are unreliable hallucinations. Also, don’t start an interview like “We’re developing an app to replace a doctor”, because then the conversation will become emotional and people will tailor the answers you want to hear instead of telling the truth, which you might not like. Instead, ask questions that are as neutral as possible.
+
+Some of our custdev interviews can be found [here](<https://github.com/HouseMDAI/house-notebook/blob/main/CustDev%20(Customer%20Development).md>).
+
+Also, interviews with potential customers may give you the first FAQ list, which helps to improve the pitch. Our FAQ can be found [here](https://github.com/HouseMDAI/house-notebook/blob/main/FAQ.md).
+
+> 4: **Analyze Alternatives and Your Competitors** <br></br>
+> Conduct thorough research on both direct competitors and adjacent market players. Understand their strengths, weaknesses, and how they meet customer needs.
+
+Although we did not find any direct competitors, we still noted down other projects in this area that might be useful to us. The list is [here](<https://github.com/HouseMDAI/house-notebook/blob/main/General%20(Other%20Thoughts%20and%20Notes).md>).
+
+> 5: **Develop a UVP and a Pitch** <br></br>
+> Craft a Unique Value Proposition that clearly articulates why your product is different and better than others. Perfect a compelling pitch for different stakeholders (investors, customers, partners).
+
+Since we found no direct competitors, creating a unique offer was not difficult, so we simply described our updated vision.
+
+> 6: **Figure Out the Monetization Model and Business Model** <br></br>
+> Determine how your business will make money — through subscriptions, ads, direct sales, etc. Decide whether you'll operate on a B2B (business-to-business), B2C (business-to-consumer), or another framework like SaaS (Software as a Service). Consider the scalability and potential for recurring revenue.
+
+Our project turned out to be quite flexible in terms of monetization, so we can experiment with different options: from SaaS to B2B partnership with hospitals. The list can be found [here](https://github.com/HouseMDAI/house-notebook/blob/main/Business%20Model.md).
+
+Mid-morning brought a welcome surprise — two engineers from Microsoft dropped by to impart wisdom on data science, GPT models, and the broader AI landscape, sprinkling in valuable tips and tricks. Admittedly, I may have nodded off during the 20-minute segment on prompt engineering, but I assure you, the rest was captivating.
+
+> 7: **Create a PoC to Test the Idea** <br></br>
+> Develop a Proof of Concept to demonstrate the feasibility of your idea in solving the problem at hand. Use this to gather feedback and make necessary adjustments.
+
+The bulk of the day was spent on development. While rival teams wrestled with GPTs and their APIs, our squad tackled ethical dilemmas, the nuances of European regulations, and the intricacies of prompt design, leading us to pivot from a strictly medical-focused app to a broader lifestyle application. Meantime, I was fighting the urge to fall asleep under the table, but continued writing code.
+
+By late afternoon, our proof of concept was nearly operational: a sleek SwiftUI app interface with a FastAPI backend utilizing the (not so) quick ChatGPT API. A pesky 422 validation error, caused by a slight mismatch in data models between the frontend and backend, was all that stood in our way. We opted to tackle this glitch after a good night's rest.
+
+We wrapped the day with more pizza and networking. Fortunately, this time I managed to secure a hotel room just a five-minute walk from the hackathon venue — finally, some well-deserved sleep was within reach.
+
+### Day 3: Final Developments and Dual Demos (Sunday, 9am-2pm)
+
+The last day of development often involves refining and scaling ideas, but this time, the challenge was tougher. We were straddling the line between medical and lifestyle categories, and every tweak nudged us towards one side. I believe in creating products without limits or compromises — my philosophy is simple: if you don’t like it, don’t use it.
+
+A good night's sleep brought clarity and a bold new vision. First thing in the morning, I shared this breakthrough with the team, using a flip chart to map out our strategy. We decided to split our efforts into two distinct apps: one strictly medical, staying true to our original concept, and another purely for lifestyle purposes.
+
+We divided into two subteams of two each to tackle the projects. The medical app and its backend were quickly brought up to speed and stabilized. Thanks to Ngrok, we had a public URL for our backend, bringing "Dr. House" to life just in time for the demo. Meanwhile, the lifestyle-focused team used a more straightforward approach with the partyrock constructor from aws to finalize the "Best Friend AI" app (the demo is [here](https://partyrock.aws/u/wefersmasasana/sVROkXP6p/HealthcareHelper/snapshot/eKapV8IL7)).
+
+With only 20 minutes to the curtain call, we realized we hadn't prepared a formal presentation — ironically, that had been our morning's mission! With the clock ticking, we rapidly assembled a coherent plan and cobbled together several impactful keynote slides.
+
+The challenge intensified as each team was allocated just five minutes for their pitch and an additional five for questions — hardly enough to cover one product, let alone two. The clock wound down right before the demo, but we were lucky (or we planned it, nobody knows): the first question from the audience was to show the demo. This "accidental" timing allowed us to sneak in some extra minutes under the guise of answering queries. We used airplay to broadcast a live screencast from an iphone to the stage screen via my macbook, turning our presentation into an engaging showcase that resonated well with the audience. It was not only a demonstration of our apps' capabilities but also a testament to quick thinking and adaptability under pressure.
+
+## What's next?
+
+> 8: **Develop and Launch the MVP Using the Pareto (80-20) Principle** <br></br>
+> Focus on the 20% of features that deliver 80% of the value. Quickly develop and launch a Minimum Viable Product to start the learning cycle, aiming to provide maximum value while spending minimum time and resources.
+>
+> Remember, the beauty of technology lies in iteration. Start simple, build a prototype, and continuously refine it. Each step forward brings you closer to mastering the art of software development and potentially the next big breakthrough in tech.
+
+Unfortunately, our team does not have the opportunity to work on this startup full-time, so we published all the results of our work in the public domain. You can find the slides [here](https://github.com/HouseMDAI/house-notebook/blob/main/Presentation%20-%20slides%20only.pdf) and the text of my speech [here](https://github.com/HouseMDAI/house-notebook/blob/main/README.md) (written from memory a week later). For full details on the project, including all notes and the source code, check the [GitHub](https://github.com/HouseMDAI).
+
+To sum up, the hackathon was fantastic. I made new friends, expanded my network, and gained valuable knowledge, experiences, and team work skills. It was a great mix of geeks, nerds, developers, data scientists, and entrepreneurs. Potentially, each such hackathon can generate strong teams with interesting startups in a weekend. I highly recommend these events and look forward to the next one.
+
+UPD: [Next article](/blog/house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands), focusing more on the final product (House, M.D. AI) rather than the hackathon process itself.
