@@ -16,6 +16,42 @@
     <icon>https://markparker.me/favicon.png</icon>
     <rights>All rights reserved 2023, Mark Parker</rights>
     <entry>
+        <title type="html"><![CDATA[AI-powered Mobile App with Backend in Two Days (Tutorial)]]></title>
+        <id>https://markparker.me/blog/ai-powered-mobile-app-with-backend-in-two-days-tutorial</id>
+        <link href="https://markparker.me/blog/ai-powered-mobile-app-with-backend-in-two-days-tutorial"/>
+        <updated>2024-05-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <email>mark@parker-programs.com</email>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Dr. House — AI Diagnostician in your phone. Passing the Torch and Entrusting a Startup to Capable Hands]]></title>
+        <id>https://markparker.me/blog/house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands</id>
+        <link href="https://markparker.me/blog/house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands"/>
+        <updated>2024-05-04T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This article picks up where the previous one left off, [How We Built an AI Startup in a Weekend Hackathon in Germany], focusing more on the final product rather than the hackathon process itself.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <email>mark@parker-programs.com</email>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[How We Built an AI Startup in a Weekend Hackathon in Germany]]></title>
+        <id>https://markparker.me/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany</id>
+        <link href="https://markparker.me/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany"/>
+        <updated>2024-05-04T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Here's a rundown of my weekend at a Cologne hackathon, where we aimed to start an AI startup in just two days. We went from pitching ideas on Friday night to demoing a working app by Sunday. It involved coding late into the night, figuring out last-minute tech snags, and even putting together a presentation minutes before our demo. As a bonus, I have highlighted a to-do list of the main points for creating a startup.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <email>mark@parker-programs.com</email>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[S.T.A.R.K - The First Voice Assistant's Framework]]></title>
         <id>https://markparker.me/blog/stark-the-voice-assistants-framework</id>
         <link href="https://markparker.me/blog/stark-the-voice-assistants-framework"/>
