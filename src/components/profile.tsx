@@ -53,6 +53,26 @@ const links: LinkMeta[] = [
     title: 'Email',
     icon: 'fas fa-envelope',
   },
+  {
+    href: 'https://markparker5.medium.com',
+    title: 'Medium (Blog Mirror)',
+    icon: 'fab fa-medium',
+  },
+  {
+    href: 'https://markparker5.hashnode.dev/newsletter',
+    title: 'Hashnode (Blog Mirror)',
+    icon: 'fab fa-hashnode',
+  },
+  {
+    href: 'https://dev.to/markparker5',
+    title: 'Dev.To (Blog Mirror)',
+    icon: 'fab fa-dev',
+  },
+  {
+    href: 'https://habr.com/users/MarkParker5/posts/',
+    title: 'Habr (статьи на русском)',
+    icon: 'fas fa-comment',
+  },
   // {
   //     href: 'https://youtube.com/@markparker5',
   //     title: 'YouTube',
@@ -63,11 +83,6 @@ const links: LinkMeta[] = [
   //     title: 'YouTube (RU)',
   //     icon: 'fab fa-youtube',
   // },
-  {
-    href: 'https://habr.com/users/MarkParker5/posts/',
-    title: 'Habr (статьи на русском)',
-    icon: 'fas fa-comment',
-  },
 ]
 
 export function Profile() {
@@ -78,7 +93,7 @@ export function Profile() {
       <Head>
         <link
           rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
         />
       </Head>
       <div className="font-serif">
@@ -102,7 +117,7 @@ function LinksList() {
       {links.map((link) => (
         <li
           key={link.href}
-          className="w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300"
+          className="py-3 w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300"
         >
           <a href={link.href} title={link.title} className="flex flex-row items-center">
             <i className={link.icon + ' my-3 ml-3 fa-xl'} />
