@@ -40,7 +40,7 @@ const links: LinkMeta[] = [
   },
   {
     href: 'https://t.me/parker_is_typing',
-    title: 'Telegram Channel (Blog)',
+    title: 'Telegram Channel',
     icon: 'fab fa-telegram',
   },
   {

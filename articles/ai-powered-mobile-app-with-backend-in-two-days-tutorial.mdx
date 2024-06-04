@@ -3,7 +3,7 @@ Previous articles:
 - [How We Built an AI Startup in a Weekend Hackathon in Germany](/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany)
 - [Dr. House - AI Diagnostician in Your Phone: Passing the Startup Torch](/blog/house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands)
 
-This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.
+This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with the SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.
 
 ## Why We Need a Backend
 
@@ -352,7 +352,8 @@ struct HouseMDAI: App {
             completion: onboardingProvider.saveOnboardingAnswers
         )
 
-        let homePresenter = HomePresenter()
+	    let doctor = BackendDoctorProvider(baseUrl: "http://localhost:8000")
+        let homePresenter = HomePresenter(doctor: doctor)
 
         _onboardingProvider = StateObject(wrappedValue: onboardingProvider)
         _onboardingPresenter = StateObject(wrappedValue: onboardingPresenter)
@@ -366,7 +367,6 @@ struct HouseMDAI: App {
             } else {
                 TabView {
                     HomeView(presenter: homePresenter)
-
                     if let profile = onboardingProvider.filledOnboarding {
                         ProfileView(profile: profile)
                     }
@@ -446,13 +446,15 @@ class HomePresenter: ObservableObject {
     @Published var message: String = ""
     @Published var navigationPath: [NavigationPage] = []
 
-    init(message: String = "") {
+    private let doctor: any DoctorProvider
+
+    init(message: String = "", doctor: any DoctorProvider) {
         self.message = message
+        self.doctor = doctor
     }
 
     func onSend() {
         Task {
-            let doctor = DoctorProvider()
             let answer = try! await doctor.sendMessage(message: message)
 
             switch answer {
@@ -466,7 +468,6 @@ class HomePresenter: ObservableObject {
 
     func onQuestionaryFilled(filled: FilledQuestionary) {
         Task {
-            let doctor = DoctorProvider()
             let answer = try! await doctor.sendAnswers(message: message, answers: filled)
 
             switch answer {
@@ -490,35 +491,30 @@ There's a slight code duplication here between the `onSend()` and `onQuestionary
 
 The Questionary module (View+Presenter) is almost a copy of the Onboarding and simply delegates the logic up to `HomePresenter`, so I don't see a need to show the code. Again, there is github for that.
 
-The last things I want to show are two implementations of `DoctorProvider` which the only responsibility is to call the API and return `DoctorResponse`. The first one uses our backend.
+The last things I want to show are two implementations of `DoctorProvider` which the only responsibility is to call the API and return `DoctorResponse`.
 
 ```swift
-import Alamofire
+protocol DoctorProvider {
+    func sendMessage(message: String) async throws -> DoctorResponse
+    func sendAnswers(message: String, answers: FilledQuestionary) async throws -> DoctorResponse
+}
 
 enum DoctorResponse {
     case questions(Questionary)
     case answer(String)
-
-    init(from string: String) throws {
-        if let data = string.data(using: .utf8) {
-            if string.contains("\"questions\""){
-                let decoded = try! JSONDecoder().decode(Questionary.self, from: data)
-                self = .questions(decoded)
-            } else if string.contains("\"text\"") {
-                let decoded = try! JSONDecoder().decode(Answer.self, from: data)
-                self = .answer(decoded.text)
-            } else {
-                throw NSError(domain: "DoctorResponseError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unknown response format"])
-            }
-        } else {
-            throw NSError(domain: "DoctorResponseError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid string encoding"])
-        }
-    }
 }
+```
 
-class DoctorProvider {
+The first one uses our backend:
 
-    private let baseUrl = ""
+```swift
+class BackendDoctorProvider: DoctorProvider {
+
+    private let baseUrl: String
+
+    init(baseUrl: String) {
+        self.baseUrl = baseUrl
+    }
 
     func sendMessage(message: String) async throws -> DoctorResponse {
         try! await sendAnswers(message: message, answers: FilledQuestionary(filledQuestions: [:]))
@@ -532,7 +528,7 @@ class DoctorProvider {
             var filledQuestionary: FilledQuestionary
         }
 
-        let onboard = OnboardingProvider()
+        let onboard = OnboardingProvider() // TODO: DI
 
         let paramsObject = DoctorParams(
             message: message,
@@ -558,7 +554,6 @@ class DoctorProvider {
 The second one calls openai api directly (backendless approach) and is almost a copy of the prompting module from the backend.
 
 ```swift
-
 class PromptsProvider {
 
     private(set) public var homeRole = "" // TODO: take from the backend
@@ -583,12 +578,12 @@ class PromptsProvider {
     }
 }
 
-class HouseMDAIProvider {
+class DirectDoctorProvider: DoctorProvider {
 
     private var openAI: OpenAI
 
-    init() {
-        openAI = OpenAI(apiToken: "")
+    init(apiToken: String) {
+        openAI = OpenAI(apiToken: apiToken)
     }
 
     func sendMessage(message: String) async throws -> DoctorResponse {
@@ -596,9 +591,8 @@ class HouseMDAIProvider {
     }
 
     func sendAnswers(message: String, answers: FilledQuestionary) async throws -> DoctorResponse {
-		// NOTE: Draft version, DI should be used instead!
-        let promptProvider = PromptsProvider()
-        let profile = OnboardingProvider().filledOnboarding!
+        let promptProvider = PromptsProvider() // TODO: DI
+        let profile = OnboardingProvider().filledOnboarding! // TODO: DI
 
         let query = ChatQuery(model: .gpt3_5Turbo, messages: [
             Chat(role: .system, content: promptProvider.homeRole),
@@ -613,7 +607,17 @@ class HouseMDAIProvider {
 }
 ```
 
-Both classes expose the same interface, so they can (should) implement the same protocol and be easily interchangeable thanks to protocol and DI. We didn't get around to this during development, so let this also remain homework.
+Both classes implement the same protocol and are easily interchangeable via DI.
+
+```swift
+let doctor = BackendDoctorProvider(baseUrl: "http://localhost:8000")
+let homePresenter = HomePresenter(doctor: doctor)
+```
+
+```swift
+let doctor = DirectDoctorProvider(apiToken: "")
+let homePresenter = HomePresenter(doctor: doctor)
+```
 
 ### Another Example
 
