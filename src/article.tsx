@@ -11,6 +11,12 @@ import { MDXProvider, Components } from '@mdx-js/react'
 import { Separator } from './components/separator'
 import { title } from 'process'
 
+export type ArticleMirror = {
+  url: string
+  title: string
+  icon: string
+}
+
 export type ArticleMeta = {
   id: string
   date: string
@@ -22,8 +28,16 @@ export type ArticleMeta = {
 
   origin?: string
   hidden?: boolean
-  tweetId?: string
   imageUrl?: string
+
+  tweetId?: string
+
+  mediumUrl?: string
+  devtoUrl?: string
+  hashnodeUrl?: string
+  habrUrl?: string
+
+  mirrors: ArticleMirror[]
 }
 
 const articles: ArticleMeta[] = [
@@ -66,6 +80,14 @@ const articles: ArticleMeta[] = [
       'abstraction',
       'protocol',
     ],
+    tweetId: '',
+    mediumUrl:
+      'https://markparker5.medium.com/python-architecture-essentials-building-scalable-and-clean-application-for-juniors-41d59c29557c',
+    devtoUrl:
+      'https://dev.to/markparker5/python-architecture-essentials-building-scalable-and-clean-application-for-juniors-2o14',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/python-architecture-essentials-building-scalable-and-clean-application-for-juniors',
+    habrUrl: '',
   },
   {
     id: 'ai-powered-mobile-app-with-backend-in-two-days-tutorial',
@@ -116,7 +138,14 @@ const articles: ArticleMeta[] = [
       'Tutorial for app developers',
       'Xcode',
     ],
-    tweetId: '',
+    tweetId: '1795095306758926812',
+    mediumUrl:
+      'https://markparker5.medium.com/ai-powered-mobile-app-with-backend-in-two-days-mvvmp-architecture-overview-tutorial-cdaa51fb9216',
+    devtoUrl:
+      'https://dev.to/markparker5/ai-powered-mobile-app-with-backend-in-two-days-mvvmp-architecture-overview-tutorial-mh1',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/ai-powered-mobile-app-with-backend-in-two-days-mvvmp-architecture-overview-tutorial',
+    habrUrl: 'https://habr.com/ru/articles/816345/',
   },
   {
     id: 'house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands',
@@ -158,7 +187,12 @@ const articles: ArticleMeta[] = [
       'health literacy improvement',
       'emergency medical app',
     ],
-    tweetId: '',
+    tweetId: '1793260842437193816',
+    mediumUrl:
+      'https://markparker5.medium.com/dr-house-ai-diagnostician-in-your-phone-1039f8c775bb',
+    devtoUrl:
+      'https://dev.to/markparker5/dr-house-ai-diagnostician-in-your-phone-passing-the-startup-torch-to-capable-hands-13pf',
+    hashnodeUrl: 'https://markparker5.hashnode.dev/dr-house-ai-diagnostician-in-your-phone',
   },
   {
     id: 'how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany',
@@ -200,7 +234,14 @@ const articles: ArticleMeta[] = [
       'GitHub repository',
       'hackathon advice',
     ],
-    tweetId: '',
+    tweetId: '1792947045000446305',
+    mediumUrl:
+      'https://markparker5.medium.com/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany-82f69c78cf86',
+    devtoUrl:
+      'https://dev.to/markparker5/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany-2c3k',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany',
+    habrUrl: 'https://habr.com/ru/articles/816327/',
   },
   {
     id: 'stark-the-voice-assistants-framework',
@@ -234,6 +275,11 @@ const articles: ArticleMeta[] = [
       'mark parker',
     ],
     tweetId: '1704418665335021942',
+    mediumUrl:
+      'https://markparker5.medium.com/s-t-a-r-k-the-first-voice-assistants-framework-f5212cd9f87d',
+    devtoUrl: 'https://dev.to/markparker5/stark-the-first-voice-assistants-framework-i8a',
+    hashnodeUrl: 'https://markparker5.hashnode.dev/stark-the-first-voice-assistants-framework',
+    habrUrl: 'https://habr.com/ru/articles/762252/',
   },
   {
     id: 'inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system',
@@ -257,6 +303,12 @@ const articles: ArticleMeta[] = [
       'arduino',
     ],
     tweetId: '1664284619909521409',
+    mediumUrl:
+      'https://markparker5.medium.com/inside-majordom-v1-0-exploring-the-architecture-of-a-new-smart-home-system-946261890e83',
+    devtoUrl:
+      'https://dev.to/markparker5/inside-majordom-v10-exploring-the-architecture-of-a-new-smart-home-system-3i18',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/inside-majordom-v10-exploring-the-architecture-of-a-new-smart-home-system',
   },
   {
     id: 'building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0',
@@ -280,6 +332,12 @@ const articles: ArticleMeta[] = [
       'nrf24l01',
     ],
     tweetId: '1661971621274370048',
+    mediumUrl:
+      'https://markparker5.medium.com/building-a-smart-home-from-voice-assistant-to-majordom-v1-0-fc2149490997',
+    devtoUrl:
+      'https://dev.to/markparker5/building-a-smart-home-from-voice-assistant-to-majordom-v10-3f3o',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/building-a-smart-home-from-voice-assistant-to-majordom-v10',
   },
   {
     id: 'localize-ios-app-in-5-minutes',
@@ -298,8 +356,32 @@ const articles: ArticleMeta[] = [
       'mobile development',
     ],
     tweetId: '1632052543613198336',
+    mediumUrl:
+      'https://markparker5.medium.com/how-to-localize-all-your-ios-apps-into-20-languages-in-5-minutes-32e8ead5fe94',
+    devtoUrl:
+      'https://dev.to/markparker5/how-to-localize-all-your-ios-apps-into-20-languages-in-5-minutes-5b2f',
+    hashnodeUrl:
+      'https://markparker5.hashnode.dev/how-to-localize-all-your-ios-apps-into-20-languages-in-5-minutes',
+    habrUrl: 'https://habr.com/ru/articles/722172/',
   },
-]
+].map((a) => ({
+  ...a,
+  mirrors: [
+    ...(a.tweetId
+      ? [
+          {
+            url: `https://twitter.com/markparker5/status/${a.tweetId}`,
+            title: 'Twitter',
+            icon: 'fab fa-twitter',
+          },
+        ]
+      : []),
+    ...(a.mediumUrl ? [{ url: a.mediumUrl, title: 'Medium', icon: 'fab fa-medium' }] : []),
+    ...(a.hashnodeUrl ? [{ url: a.hashnodeUrl, title: 'Hashnode', icon: 'fab fa-hashnode' }] : []),
+    ...(a.devtoUrl ? [{ url: a.devtoUrl, title: 'Dev.to', icon: 'fab fa-dev' }] : []),
+    ...(a.habrUrl ? [{ url: a.habrUrl, title: 'Habr', icon: 'fas fa-comment' }] : []),
+  ],
+}))
 
 export function renderArticle(
   articleId: string,

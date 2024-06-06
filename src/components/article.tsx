@@ -10,18 +10,17 @@ import { Link } from './link'
 import { addCopyButtons } from '../general/add-snippet-copy'
 
 // Import Highlight.js languages
-import hljs from 'highlight.js/lib/core';
-import shell from 'highlight.js/lib/languages/shell';
-import python from 'highlight.js/lib/languages/python';
-import swift from 'highlight.js/lib/languages/swift';
-import javascript from 'highlight.js/lib/languages/javascript';
-import php from 'highlight.js/lib/languages/php';
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('shell', shell);
-hljs.registerLanguage('python', python);
-hljs.registerLanguage('swift', swift);
-hljs.registerLanguage('php', php);
-
+import hljs from 'highlight.js/lib/core'
+import shell from 'highlight.js/lib/languages/shell'
+import python from 'highlight.js/lib/languages/python'
+import swift from 'highlight.js/lib/languages/swift'
+import javascript from 'highlight.js/lib/languages/javascript'
+import php from 'highlight.js/lib/languages/php'
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('shell', shell)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('swift', swift)
+hljs.registerLanguage('php', php)
 
 type Props = PropsWithChildren<{
   article: ArticleMeta
@@ -31,10 +30,10 @@ export function ArticleComponent({ article, children }: Props) {
   const router = useRouter()
 
   useEffect(() => {
-    hljs.initHighlighting();
-    addCopyButtons();      
-  }, []);
-  
+    hljs.initHighlighting()
+    addCopyButtons()
+  }, [])
+
   return (
     <ArticleLayout>
       <Head>
@@ -54,27 +53,56 @@ export function ArticleComponent({ article, children }: Props) {
         <meta name="twitter:title" content={article.title} />
         <meta name="twitter:description" content={article.description} />
 
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
+
         {/* Highlight.js  */}
         <link rel="stylesheet" href="/highlight/styles/atom-one-light.min.css" />
-        <link rel="stylesheet" href="/highlight/styles/atom-one-dark.min.css" media="(prefers-color-scheme: dark)" />
+        <link
+          rel="stylesheet"
+          href="/highlight/styles/atom-one-dark.min.css"
+          media="(prefers-color-scheme: dark)"
+        />
       </Head>
-      
+
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
 
       <Link style={1} href="/">
         {'<-'} Back to home
       </Link>
-      
+
+      {article.mirrors && article.mirrors.length > 0 && (
+        <>
+          <div className="mt-5 mb-3">
+            <p className="mb-2">Read on:</p>
+            <ArticleMirrors article={article} />
+          </div>
+        </>
+      )}
+
       <div className="mb-3 mt-1">
         <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
-        <div className="italic mt-1 text-md opacity-50">Published on {article.date_pretty} · {article.read_time} read</div>
+        <div className="italic mt-1 text-md opacity-50">
+          Published on {article.date_pretty} · {article.read_time} read
+        </div>
       </div>
 
       <div className="markdown mb-10">{children}</div>
 
       <Separator />
 
-      <div>
+      {article.mirrors && article.mirrors.length > 0 && (
+        <>
+          <div className="mt-5 mb-3 text-center">
+            <p className="mb-2">Read, comment, and subscribe on:</p>
+            <ArticleMirrors article={article} />
+          </div>
+        </>
+      )}
+
+      {/* <div>
         <div className="text-center mb-10">
           {article.tweetId ? (
             <>
@@ -101,13 +129,24 @@ export function ArticleComponent({ article, children }: Props) {
             </>
           )}
         </div>
-      </div>
+      </div> */}
 
       <Separator />
 
       <OtherArticles currentArticleId={article.id} />
-
     </ArticleLayout>
+  )
+}
+
+function ArticleMirrors({ article }) {
+  return (
+    <div className="inline-flex gap-5 items-center flex-wrap">
+      {article.mirrors.map((mirror) => (
+        <a href={mirror.url} title={mirror.title} className="" target="_blank">
+          <i className={`${mirror.icon} fa-xl`} />
+        </a>
+      ))}
+    </div>
   )
 }
 
