@@ -138,7 +138,7 @@ export function ArticleComponent({ article, children }: Props) {
   )
 }
 
-function ArticleMirrors({ article }) {
+function ArticleMirrors({ article }: { article: ArticleMeta }) {
   return (
     <div className="inline-flex gap-5 items-center flex-wrap">
       {article.mirrors.map((mirror) => (
