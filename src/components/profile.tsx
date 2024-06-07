@@ -69,6 +69,11 @@ const links: LinkMeta[] = [
     icon: 'fab fa-dev',
   },
   {
+    href: '/feed.xml',
+    title: 'RSS Feed',
+    icon: 'fa-sharp fa-solid fa-square-rss',
+  },
+  {
     href: 'https://habr.com/users/MarkParker5/posts/',
     title: 'Habr (статьи на русском)',
     icon: 'fas fa-comment',
