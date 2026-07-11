@@ -29,6 +29,8 @@ export type ArticleMeta = {
   origin?: string
   hidden?: boolean
   imageUrl?: string
+  pinned?: boolean
+  tags?: string[]
 
   tweetId?: string
 
@@ -424,6 +426,12 @@ export function getAllArticles() {
 
 export function getPublicArticles() {
   return articles.filter((post) => !post.hidden)
+}
+
+// Pin affects only this single "latest" pick — never list ordering/filtering.
+export function getLatestOrPinnedArticle() {
+  const all = getPublicArticles()
+  return all.find((a) => a.pinned) ?? all[0]
 }
 
 export function getRandomArticles(number: number, exceptArticleId: string) {

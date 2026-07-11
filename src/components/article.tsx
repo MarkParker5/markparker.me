@@ -8,6 +8,7 @@ import { Separator } from './separator'
 import { ArticleMeta, getPublicArticles } from '../article'
 import { Link } from './link'
 import { addCopyButtons } from '../general/add-snippet-copy'
+import { trackOutboundClick, useReadTracking } from '../analytics'
 
 // Import Highlight.js languages
 import hljs from 'highlight.js/lib/core'
@@ -28,6 +29,7 @@ type Props = PropsWithChildren<{
 
 export function ArticleComponent({ article, children }: Props) {
   const router = useRouter()
+  useReadTracking('article', article.id)
 
   useEffect(() => {
     hljs.initHighlighting()
@@ -52,11 +54,6 @@ export function ArticleComponent({ article, children }: Props) {
         />
         <meta name="twitter:title" content={article.title} />
         <meta name="twitter:description" content={article.description} />
-
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        />
 
         {/* Highlight.js  */}
         <link rel="stylesheet" href="/highlight/styles/atom-one-light.min.css" />
@@ -84,7 +81,7 @@ export function ArticleComponent({ article, children }: Props) {
 
       <div className="mb-3 mt-1">
         <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
-        <div className="italic mt-1 text-md opacity-50">
+        <div className="italic mt-1 text-md text-muted-light dark:text-muted-dark">
           Published on {article.date_pretty} · {article.read_time} read
         </div>
       </div>
@@ -142,7 +139,15 @@ function ArticleMirrors({ article }: { article: ArticleMeta }) {
   return (
     <div className="inline-flex gap-5 items-center flex-wrap">
       {article.mirrors.map((mirror) => (
-        <a href={mirror.url} title={mirror.title} className="" target="_blank">
+        <a
+          key={mirror.url}
+          href={mirror.url}
+          title={mirror.title}
+          className=""
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => trackOutboundClick(mirror.title.toLowerCase(), `article.${article.id}`)}
+        >
           <i className={`${mirror.icon} fa-xl`} />
         </a>
       ))}
@@ -242,7 +247,7 @@ export function Img(props: ArticleImageProps) {
       <a href={props.src} target="_blank" rel="noreferrer">
         <img src={props.src} alt={props.alt ?? props.caption} className="w-full" />
       </a>
-      {caption && <div className="mt-1 text-center text-lg text-opaque">{caption}</div>}
+      {caption && <div className="mt-1 text-center text-lg text-muted-light dark:text-muted-dark">{caption}</div>}
     </div>
   )
 }
@@ -258,7 +263,7 @@ export function Video(props: ArticleVideoProps) {
   return (
     <div className={`${props.className} mt-3 flex flex-col items-center justify-center`}>
       <video autoPlay playsInline loop muted src={props.src}></video>
-      {props.caption && <div className="mt-1 text-center text-lg text-opaque">{props.caption}</div>}
+      {props.caption && <div className="mt-1 text-center text-lg text-muted-light dark:text-muted-dark">{props.caption}</div>}
     </div>
   )
 }

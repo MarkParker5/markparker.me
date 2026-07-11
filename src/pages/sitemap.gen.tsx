@@ -13,7 +13,17 @@ export const getStaticProps: GetStaticProps = async () => {
     .filter((article) => !article.hidden && !article.origin)
     .map((article) => `/blog/${article.id}`)
 
-  const urls = ['/', '/blog', '/feed.xml', ...articleUrls] as const
+  const urls = [
+    '/',
+    '/projects',
+    '/notes',
+    '/blog',
+    '/feed.xml',
+    '/notes-feed.xml',
+    '/projects-feed.xml',
+    '/llms.txt',
+    ...articleUrls,
+  ] as const
 
   const sitemapXmlString = (
     await streamToPromise(

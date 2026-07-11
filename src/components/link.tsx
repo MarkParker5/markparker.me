@@ -1,13 +1,16 @@
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
-import { PropsWithChildren } from 'react'
+import { MouseEventHandler, PropsWithChildren } from 'react'
 export type LinkProps = PropsWithChildren<
   NextLinkProps & {
     style?: 1 | 2
     newTab?: boolean
+    className?: string
+    title?: string
+    onClick?: MouseEventHandler<HTMLAnchorElement>
   }
 >
 export function Link(props: LinkProps) {
-  const className = (() => {
+  const styleClassName = (() => {
     switch (props.style) {
       case 1:
         return 'text-link1 hover:text-link1hover underline hover:no-underline'
@@ -17,6 +20,7 @@ export function Link(props: LinkProps) {
         return ''
     }
   })()
+  const className = [styleClassName, props.className].filter(Boolean).join(' ')
 
   const targetProps: { [key: string]: string } = props.newTab
     ? { target: '_blank', rel: 'noreferrer noopener' }
@@ -25,6 +29,9 @@ export function Link(props: LinkProps) {
   const passProps = { ...props }
   delete passProps.newTab
   delete passProps.style
+  delete passProps.className
+  delete passProps.title
+  delete passProps.onClick
 
   const isExternalLink = props.href.toString().startsWith('http')
 
@@ -36,7 +43,7 @@ export function Link(props: LinkProps) {
 
   return (
     <NextLink {...(passProps as NextLinkProps)}>
-      <a className={className} {...targetProps}>
+      <a className={className} title={props.title} {...targetProps} onClick={props.onClick}>
         {props.children}
       </a>
     </NextLink>

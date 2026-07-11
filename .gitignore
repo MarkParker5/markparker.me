@@ -3,6 +3,12 @@ node_modules
 out
 public/sitemap.xml
 public/feed.xml
+public/notes-feed.xml
+public/projects-feed.xml
+public/llms.txt
+src/data/notes.json
 .DS_Store
 .zed
 .vscode
+ignore/
+.claude

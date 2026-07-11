@@ -1,0 +1,61 @@
+// Source of truth for /notes. Written by hand and by the self-hosted
+// cross-posting bot (a separate project) after it publishes a note to each
+// platform. JSONC so both of us can leave comments — the app never writes
+// to this file, only reads it (via `npm run generate:notes`, wired as a
+// pre-dev/pre-build hook), so comments here survive untouched.
+//
+// Bot integration note: read/parse this file with `jsonc-parser`'s
+// `parse()`, and when APPENDING a new note, use `modify()` + `applyEdits()`
+// (same library) rather than JSON.parse + JSON.stringify — that's what
+// keeps comments and formatting intact across automated writes.
+//
+// Shape per entry — see NoteMeta in ../note.tsx:
+// { id, date: "YYYY-MM-DDTHH:mm:ss+02:00" (full ISO datetime, not just a
+//   day — needed for correct same-day ordering and for the UI's "N min/
+//   hours ago" buckets to mean anything), datePretty, body, tags?: string[],
+//   pinned?: boolean, hidden?: boolean, preview?: boolean,
+//   mirrors: [{ platform, url }] }
+// `body` is English only — a mirror on e.g. the Russian Telegram channel is
+// just a link in `mirrors`, not a second stored translation.
+//
+// `preview: true` entries below are dev-only — getPublicNotes() strips
+// them out of any production build/export, they only render under
+// `npm run dev`. Kept here as layout/copy test fixtures; delete or flip
+// to `preview: false` once real notes replace them.
+[
+  {
+    "id": "preview-1",
+    "date": "2026-07-11T14:32:00+02:00",
+    "datePretty": "July 11th, 2026, 2:32 PM",
+    "preview": true,
+    "body": "preview note #1 — checking how a short single-line note reads in the feed",
+    "tags": ["test"],
+    "mirrors": [
+      { "platform": "twitter", "url": "https://twitter.com/MarkParker_5" },
+      { "platform": "bluesky", "url": "https://bsky.app/profile/markparker5.bsky.social" },
+    ],
+  },
+  {
+    "id": "preview-2",
+    "date": "2026-07-10T09:15:00+02:00",
+    "datePretty": "July 10th, 2026, 9:15 AM",
+    "preview": true,
+    "body": "preview note #2 — a longer one, multiple lines, to see how wrapping\nlooks in the compact card layout.\n\nand a second paragraph, here.",
+    "tags": ["test", "hardware"],
+    "mirrors": [
+      { "platform": "twitter", "url": "https://twitter.com/MarkParker_5" },
+      { "platform": "telegram", "url": "https://t.me/parker_is_typing" },
+      { "platform": "threads", "url": "https://www.threads.net/@markparker_5" },
+    ],
+  },
+  {
+    "id": "preview-3",
+    "date": "2026-07-09T18:47:00+02:00",
+    "datePretty": "July 9th, 2026, 6:47 PM",
+    "preview": true,
+    "pinned": true,
+    "body": "preview note #3 — pinned, should show as the homepage's featured note while dev-only",
+    "tags": ["test"],
+    "mirrors": [{ "platform": "telegram", "url": "https://t.me/parker_is_typing" }],
+  },
+]
