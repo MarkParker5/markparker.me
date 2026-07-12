@@ -3,7 +3,10 @@ module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx}', 'articles/**/*.{md,mdx}'],
   theme: {
     fontFamily: {
-      serif: ['"Open Sans"', 'sans-serif'],
+      // Resolves through a CSS variable (styles/globals.css), not a literal
+      // name — lets the dev-only font A/B toggle swap the whole site's
+      // typeface at runtime without touching every `font-sans` usage.
+      sans: ['var(--font-sans)', 'sans-serif'],
       mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
     },
     fontSize: {

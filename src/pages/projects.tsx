@@ -1,9 +1,8 @@
-import Head from 'next/head'
 import { ArticleLayout } from '../components/article-layout'
 import { ProjectsList } from '../components/projects-list'
 import { FilterBar } from '../components/filter-bar'
 import { SectionHeader } from '../components/section-header'
-import { Separator } from '../components/separator'
+import { PageMeta } from '../components/page-meta'
 import { getPublicProjects, TAG_ORDER, PROJECT_SORT_OPTIONS, sortProjects, ProjectSort } from '../project'
 import { matchesTagExpression, useQueryParam } from '../filter'
 import { Link } from '../components/link'
@@ -26,17 +25,13 @@ export default function Projects() {
   return (
     <div>
       <ArticleLayout>
-        <Head>
-          <meta name="description" content={metaDescription}></meta>
-          <meta name="og:title" content="Mark Parker — Projects"></meta>
-          <meta name="og:description" content={metaDescription}></meta>
-          <title>Mark Parker — Projects</title>
-        </Head>
+        <PageMeta title="Mark Parker — Projects" description={metaDescription} path="/projects" />
         <SectionHeader
           title="Projects"
           titleExtra={PROJECTS_TITLE_ICON}
           subtitle={PROJECTS_SUBTITLE}
           context="projects-page"
+          hideTitleOption
         />
         <FilterBar
           paramName="projects"
@@ -46,9 +41,9 @@ export default function Projects() {
         />
         <ProjectsList projects={filtered} />
         <p className="text-base text-center text-muted-light dark:text-muted-dark mt-10">
-          My team builds any kinds of things for clients →{' '}
+          Like what you see? My team builds this kind of thing for clients too —{' '}
           <Link style={1} href="https://parker-industries.org" newTab>
-            parker-industries.org
+            work with us →
           </Link>
         </p>
       </ArticleLayout>

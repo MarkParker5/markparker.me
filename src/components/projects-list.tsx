@@ -2,6 +2,7 @@ import { Link } from './link'
 import { ProjectMeta, ProjectOwner, ProjectStatus } from '../project'
 import { getAllArticles } from '../article'
 import { useDesignToggles } from '../design-toggles'
+import { Reveal } from './reveal'
 
 type Props = {
   projects: ProjectMeta[]
@@ -21,7 +22,7 @@ const STATUS_META: Record<ProjectStatus, { label: string; color: string }> = {
 
 const ownerMeta: Record<ProjectOwner, { label: string; href?: string }> = {
   skyhigh: { label: 'SkyHigh', href: 'https://skyhighapps.com' },
-  'parker-industries-in-house': { label: 'Parker Industries — In-house', href: 'https://parker-industries.org' },
+  'parker-industries-in-house': { label: 'In-house @ Parker Industries', href: 'https://parker-industries.org' },
   'parker-industries-contract': { label: 'Contract @ Parker Industries', href: 'https://parker-industries.org' },
   freelance: { label: 'Freelance' },
   personal: { label: 'Personal' },
@@ -75,9 +76,11 @@ function OwnerLabel({ owner }: { owner?: ProjectOwner }) {
   )
 }
 
-function RelatedArticles({ ids }: { ids?: string[] }) {
-  if (!ids || ids.length === 0) return null
-  const articles = getAllArticles().filter((a) => ids.includes(a.id))
+// Derived, not stored — an article says which project it's about
+// (ArticleMeta.relatedProjectId), so a project's "Related articles" list is
+// just that relationship read backwards, not a second list to keep in sync.
+function RelatedArticles({ projectId }: { projectId: string }) {
+  const articles = getAllArticles().filter((a) => a.relatedProjectId === projectId && !a.hidden)
   if (articles.length === 0) return null
 
   return (
@@ -125,15 +128,34 @@ function ProjectLinks({ links }: { links: ProjectMeta['links'] }) {
   )
 }
 
-// Background-filled, per-tag colored pill — GitHub's topic tags, but with a
-// fixed color per tag instead of one flat neutral fill, so tags read as
-// distinct categories at a glance rather than interchangeable keywords.
-// Still real filter links: clicking one jumps straight to /projects?...
+// Background-filled pill — GitHub's topic tags. Two representations under
+// live A/B review: `colorful` (default) — a fixed hue per tag, so tags read
+// as distinct categories at a glance; `muted` — one flat neutral fill for
+// every tag, calmer/closer to GitHub's own default but tags no longer
+// visually differentiate from each other. Still real filter links either
+// way: clicking one jumps straight to /projects?...
 function TagChips({ tags }: { tags: string[] }) {
+  const { tagColorStyle } = useDesignToggles()
   if (tags.length === 0) return null
   return (
     <span className="flex flex-wrap gap-1.5">
       {tags.map((tag) => {
+        if (tagColorStyle === 'muted') {
+          return (
+            <Link
+              key={tag}
+              href={`/projects?projects=${encodeURIComponent(tag)}`}
+              className="inline-block text-base rounded-full font-medium duration-150"
+            >
+              <span
+                className="block py-1.5 px-3.5 rounded-full bg-back-secondary-light dark:bg-back-secondary-dark
+                           text-muted-light dark:text-muted-dark hover:text-primary-light dark:hover:text-primary-dark"
+              >
+                {tag}
+              </span>
+            </Link>
+          )
+        }
         const color = tagColor(tag)
         return (
           <Link
@@ -267,11 +289,14 @@ function MetaLine({ project }: { project: ProjectMeta }) {
 // dense" (= "+10% spacing"), the dev-panel slider goes to +150% for comparison.
 const BASE_ROW_GAP_REM = 0.625
 
+// A faint tint, not the old full bg-secondary swap — that read as "the
+// whole card is one clickable thing," which it isn't (only the title, tags,
+// and links inside are). This is just enough to confirm "you're over this
+// row," the same restrained affordance GitHub uses on its own list rows.
+const HOVER_TINT = 'hover:bg-black/[0.025] dark:hover:bg-white/[0.04]'
+
 function ProjectCard({ project, spotlight }: { project: ProjectMeta; spotlight?: boolean }) {
   const { cardStyle, spacing } = useDesignToggles()
-  // No hover highlight on the card as a whole — only the title, tags, and
-  // links inside it are actually clickable, so a full-card hover implied
-  // the whole thing was one link, which it isn't.
   // No `last:border-b-0` here — spotlight and others render as two separate
   // <ul>s, so "last in this list" fired on the last spotlight card (STARK)
   // even though DogCat Fund immediately follows it in the others list right
@@ -279,23 +304,37 @@ function ProjectCard({ project, spotlight }: { project: ProjectMeta; spotlight?:
   // row (including the very last project overall) keeps its border-b now;
   // a trailing rule under the last card reads as a clean close-off, not a
   // bug the way a missing one mid-list did.
-  const wrapperClass = cardStyle === 'border' ? 'rounded-xl border px-4 py-3.5' : 'border-b px-1 py-4 first:pt-0'
+  // No `rounded-lg` on the divider variant — a border-radius on a box that
+  // only has a bottom border doesn't just round the hover tint, it also
+  // curves the border-b line itself inward at both ends instead of a flat
+  // edge-to-edge divider, which is what actually looked broken.
+  const wrapperClass =
+    cardStyle === 'border'
+      ? `rounded-xl border px-4 py-3.5 ${HOVER_TINT} hover:shadow-sm hover:-translate-y-px`
+      : `border-b px-1 py-4 first:pt-0 ${HOVER_TINT}`
   const gapRem = BASE_ROW_GAP_REM * (1 + spacing / 100)
 
   return (
-    <li className={`list-none ${wrapperClass} ${spotlight ? 'text-xl' : 'text-l'}`}>
-      <div className="flex items-center gap-3 min-w-0">
-        <ProjectTitle project={project} />
-        <StatusBadge status={project.status} />
-      </div>
-      <div className="flex flex-col" style={{ gap: `${gapRem}rem`, marginTop: `${gapRem}rem` }}>
-        <ProjectImage project={project} />
-        <MetaLine project={project} />
-        <span className="block text-[1.125rem]">{project.blurb}</span>
-        <TagChips tags={project.tags} />
-        <ProjectLinks links={project.links.slice(1)} />
-        <RelatedArticles ids={project.relatedArticleIds} />
-      </div>
+    <li id={project.id} className={`list-none duration-150 ${wrapperClass} ${spotlight ? 'text-xl' : 'text-l'}`}>
+      {/* Border/hover/id stay on the <li> (instant, and HTML-valid — a <ul>
+          can only contain <li> children, so the animated wrapper has to be
+          inside it, not around it) — only the content fades+slides in, one
+          card at a time as it scrolls into view, on every page that renders
+          projects (not just the homepage). */}
+      <Reveal>
+        <div className="flex items-center gap-3 min-w-0">
+          <ProjectTitle project={project} />
+          <StatusBadge status={project.status} />
+        </div>
+        <div className="flex flex-col" style={{ gap: `${gapRem}rem`, marginTop: `${gapRem}rem` }}>
+          <ProjectImage project={project} />
+          <MetaLine project={project} />
+          <span className="block text-[1.125rem]">{project.blurb}</span>
+          <TagChips tags={project.tags} />
+          <ProjectLinks links={project.links.slice(1)} />
+          <RelatedArticles projectId={project.id} />
+        </div>
+      </Reveal>
     </li>
   )
 }
@@ -305,7 +344,7 @@ export const ProjectsList = ({ projects }: Props) => {
   const others = projects.filter((p) => !p.spotlight)
 
   return (
-    <div className="mx-auto font-serif">
+    <div className="mx-auto font-sans">
       {spotlight.length > 0 && (
         <ul className="flex flex-col gap-5 mb-11">
           {spotlight.map((project) => (

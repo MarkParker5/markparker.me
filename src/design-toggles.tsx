@@ -18,11 +18,20 @@ export type ShareIconStyle = 'upload' | 'branch' | 'branch-outline' | 'nodes'
 // line — "2022 · Personal" (chronological-first) vs "Personal · 2022"
 // (context-first).
 export type MetaOrder = 'date-first' | 'owner-first'
+export type FontFamily = 'open-sans' | 'inter'
+// 'colorful' is the current per-tag hardcoded-hue system (TAG_COLORS in
+// projects-list.tsx). 'muted' is the alternative worth comparing it
+// against: every tag pill in one flat neutral color — reads calmer/more
+// GitHub-default, at the cost of tags no longer being visually
+// distinguishable from each other at a glance.
+export type TagColorStyle = 'colorful' | 'muted'
 
 type DesignToggles = {
   statusStyle: StatusStyle
   cardStyle: CardStyle
   shareIcon: ShareIconStyle
+  fontFamily: FontFamily
+  tagColorStyle: TagColorStyle
   // 0–150, percent of extra breathing room added between a project card's
   // rows on top of the base spacing — named for what it DOES (adds space),
   // not the inverse effect that has on density, which read backwards ("50%
@@ -41,6 +50,15 @@ type DesignToggles = {
   // nav and the page's own title ("Posts"/"Projects"/"Blog"/an article) —
   // shared across every content page since they all use ArticleLayout.
   headerDivider: boolean
+  // When true, /notes, /projects, /blog hide their own big title ("Posts"/
+  // "Projects"/"Blog") — the description line and mirror icons stay. Scoped
+  // to those three pages only (see SectionHeader's `hideTitleOption` prop) —
+  // the homepage's section headings always show, they're doing real
+  // wayfinding work there (first-time visitors scanning what's on the page).
+  hidePageTitle: boolean
+  // UI-only preference for the panel itself, not a design decision — kept
+  // in the same persisted object for simplicity.
+  panelCollapsed: boolean
 }
 
 // Current best guess, not locked in — still exposed live via the panel
@@ -49,10 +67,14 @@ const DEFAULTS: DesignToggles = {
   statusStyle: 'circle',
   cardStyle: 'divider',
   shareIcon: 'branch-outline',
+  fontFamily: 'open-sans',
+  tagColorStyle: 'colorful',
   spacing: 20,
   metaOrder: 'date-first',
   hideUnavailableMirrors: true,
   headerDivider: true,
+  hidePageTitle: false,
+  panelCollapsed: false,
 }
 const STORAGE_KEY = 'design-toggles'
 
@@ -72,7 +94,13 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
     const saved = window.localStorage.getItem(STORAGE_KEY)
     if (saved) {
       try {
-        setToggles(JSON.parse(saved))
+        // Merged over DEFAULTS, not a wholesale replace — a localStorage
+        // blob saved before some toggle existed (e.g. `fontFamily` added
+        // after someone's browser already had a save) would otherwise come
+        // back `undefined` for that key forever, which then rendered as a
+        // blank button or fell through to the wrong side of a `=== x ? a :
+        // b` ternary instead of a real default.
+        setToggles({ ...DEFAULTS, ...JSON.parse(saved) })
       } catch {
         // ignore corrupt storage, fall back to defaults
       }
@@ -87,17 +115,62 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
     })
   }
 
+  // Flips the CSS variable every `font-sans` utility resolves through (see
+  // tailwind.config.js) — swaps the whole site's typeface without touching
+  // any component.
+  useEffect(() => {
+    if (!isDev) return
+    document.documentElement.style.setProperty(
+      '--font-sans',
+      toggles.fontFamily === 'inter' ? 'Inter, sans-serif' : "'Open Sans', sans-serif",
+    )
+  }, [toggles.fontFamily])
+
+  // Anchored in dvh/dvw (dynamic viewport units), not vh/vw or a plain
+  // fixed+bottom-4 — on mobile, the browser's own address/tab bar shows and
+  // hides as you scroll, which resizes the *static* viewport but not the
+  // *dynamic* one. A bottom-4-in-a-100vh world can end up positioned behind
+  // that chrome (or requiring a scroll to reach); 100dvh/100dvw always
+  // reflect whatever's actually visible right now, so the anchor point
+  // never hides behind the browser's own UI.
+  const anchorClass = 'fixed z-50'
+  const anchorStyle = { bottom: '2dvh', right: '2dvw' } as const
+
   return (
     <DesignToggleContext.Provider value={toggles}>
       {children}
-      {isDev && (
-        <div
-          className="fixed bottom-4 right-4 z-50 rounded-xl border bg-back-light dark:bg-back-dark
-                     shadow-lg p-4 font-serif flex flex-col gap-3 w-64"
+      {isDev && toggles.panelCollapsed && (
+        <button
+          onClick={() => update({ panelCollapsed: false })}
+          title="Open design A/B panel"
+          aria-label="Open design A/B panel"
+          className={`${anchorClass} w-10 h-10 rounded-full border bg-back-light dark:bg-back-dark shadow-lg
+                      flex items-center justify-center text-muted-light dark:text-muted-dark
+                      hover:text-primary-light dark:hover:text-primary-dark duration-150`}
+          style={anchorStyle}
         >
-          <p className="text-xs font-semibold text-faint-light dark:text-faint-dark uppercase tracking-wide">
-            Dev: design A/B
-          </p>
+          <i className="fas fa-sliders text-sm" />
+        </button>
+      )}
+      {isDev && !toggles.panelCollapsed && (
+        <div
+          className={`${anchorClass} rounded-xl border bg-back-light dark:bg-back-dark
+                      shadow-lg p-4 font-sans flex flex-col gap-3 w-64 max-h-[92dvh] overflow-y-auto`}
+          style={anchorStyle}
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-faint-light dark:text-faint-dark uppercase tracking-wide">
+              Dev: design A/B
+            </p>
+            <button
+              onClick={() => update({ panelCollapsed: true })}
+              title="Collapse"
+              aria-label="Collapse panel"
+              className="text-faint-light dark:text-faint-dark hover:text-primary-light dark:hover:text-primary-dark duration-150"
+            >
+              <i className="fas fa-xmark" />
+            </button>
+          </div>
           <label className="flex items-center justify-between gap-2 text-base">
             <span>Status tag</span>
             <button
@@ -175,6 +248,36 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
                          dark:hover:bg-back-secondary-dark"
             >
               {toggles.headerDivider ? 'on' : 'off'}
+            </button>
+          </label>
+          <label className="flex items-center justify-between gap-2 text-base">
+            <span>Page title (Posts/…)</span>
+            <button
+              onClick={() => update({ hidePageTitle: !toggles.hidePageTitle })}
+              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
+                         dark:hover:bg-back-secondary-dark"
+            >
+              {toggles.hidePageTitle ? 'hidden' : 'shown'}
+            </button>
+          </label>
+          <label className="flex items-center justify-between gap-2 text-base">
+            <span>Font</span>
+            <button
+              onClick={() => update({ fontFamily: toggles.fontFamily === 'open-sans' ? 'inter' : 'open-sans' })}
+              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
+                         dark:hover:bg-back-secondary-dark"
+            >
+              {toggles.fontFamily === 'open-sans' ? 'Open Sans' : 'Inter'}
+            </button>
+          </label>
+          <label className="flex items-center justify-between gap-2 text-base">
+            <span>Tag colors</span>
+            <button
+              onClick={() => update({ tagColorStyle: toggles.tagColorStyle === 'colorful' ? 'muted' : 'colorful' })}
+              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
+                         dark:hover:bg-back-secondary-dark"
+            >
+              {toggles.tagColorStyle}
             </button>
           </label>
         </div>

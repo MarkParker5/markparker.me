@@ -6,6 +6,7 @@ import { ArticleLayout } from './article-layout'
 import { ArticlesList } from './articles-list'
 import { Separator } from './separator'
 import { ArticleMeta, getPublicArticles } from '../article'
+import { getProjectById } from '../project'
 import { Link } from './link'
 import { addCopyButtons } from '../general/add-snippet-copy'
 import { trackOutboundClick, useReadTracking } from '../analytics'
@@ -81,8 +82,23 @@ export function ArticleComponent({ article, children }: Props) {
 
       <div className="mb-3 mt-1">
         <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
-        <div className="italic mt-1 text-md text-muted-light dark:text-muted-dark">
-          Published on {article.date_pretty} · {article.read_time} read
+        <div className="italic mt-1 text-md text-muted-light dark:text-muted-dark flex flex-wrap items-center gap-x-3">
+          <span>
+            Published on {article.date_pretty} · {article.read_time} read
+          </span>
+          {article.relatedProjectId &&
+            (() => {
+              const project = getProjectById(article.relatedProjectId)
+              return project ? (
+                <Link
+                  href={`/projects#${project.id}`}
+                  className="not-italic inline-flex items-center gap-1.5 hover:text-primary-light dark:hover:text-primary-dark"
+                >
+                  <i className="fas fa-diagram-project text-xs" />
+                  {project.title}
+                </Link>
+              ) : null
+            })()}
         </div>
       </div>
 

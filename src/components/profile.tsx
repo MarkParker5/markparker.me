@@ -75,7 +75,7 @@ const sectionNav = [
 export function Profile() {
   return (
     <div className="text-center">
-      <div className="font-serif">
+      <div className="font-sans">
         <img className="mx-auto h-36 w-36 rounded-full" src="/mark-parker.jpg" />
         <h1 className="mt-7 mb-1 text-4xl leading-tight">Mark Parker</h1>
         <p className="text-l mb-1 whitespace-nowrap">
@@ -87,16 +87,15 @@ export function Profile() {
         {/* Business-card audience's top next-click: the company, before
             anything personal — styled as a real CTA, not a footnote. */}
         <p className="mt-4 mb-6">
-          <a
+          <Link
             href="https://parker-industries.org"
-            target="_blank"
-            rel="noreferrer"
+            newTab
             onClick={() => trackOutboundClick('parker industries', 'profile-cta')}
             className="text-sm font-semibold border rounded-full py-1.5 px-4 inline-block
                        hover:bg-back-light hover:text-back-dark duration-200"
           >
             Work with my team →
-          </a>
+          </Link>
         </p>
       </div>
 
@@ -112,16 +111,16 @@ export function Profile() {
             key={item.href}
             className="py-3 w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300"
           >
-            <a
+            <Link
               href={item.href}
               title={`Jump to ${item.title}`}
               className="flex flex-row items-center"
               onClick={() => trackOutboundClick(item.title.toLowerCase(), 'profile-nav')}
             >
               <i className={item.icon + ' my-3 ml-3 fa-xl'} />
-              <div className="w-full font-serif">{item.title}</div>
+              <div className="w-full font-sans">{item.title}</div>
               <div className="w-10 mx-2"></div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -134,16 +133,17 @@ const listItemClass = 'py-3 w-full border my-3 hover:bg-back-light hover:text-ba
 function LinkItem({ href, title, icon }: LinkMeta) {
   return (
     <li className={listItemClass}>
-      <a
+      <Link
         href={href}
+        newTab
         title={title}
         className="flex flex-row items-center"
         onClick={() => trackOutboundClick(title.toLowerCase(), 'profile')}
       >
         <i className={icon + ' my-3 ml-3 fa-xl'} />
-        <div className="w-full font-serif">{title}</div>
+        <div className="w-full font-sans">{title}</div>
         <div className="w-10 mx-2"></div>
-      </a>
+      </Link>
     </li>
   )
 }
@@ -158,7 +158,7 @@ function LinksList() {
       <li className={listItemClass}>
         <ObfuscatedMailLink title="Email" className="flex flex-row items-center">
           <i className="fas fa-envelope my-3 ml-3 fa-xl" />
-          <div className="w-full font-serif">Email</div>
+          <div className="w-full font-sans">Email</div>
           <div className="w-10 mx-2"></div>
         </ObfuscatedMailLink>
       </li>

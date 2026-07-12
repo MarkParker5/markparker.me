@@ -39,7 +39,6 @@ export type ProjectMeta = {
   // Available on every project regardless of tier — a small graveyard entry
   // getting an image someday isn't a schema restriction, just hasn't happened.
   imageUrl?: string
-  relatedArticleIds?: string[]
 
   // Who it was for / where he worked when it happened.
   owner?: ProjectOwner
@@ -156,11 +155,6 @@ const projects: ProjectMeta[] = [
       },
       { label: 'source', href: 'https://github.com/HouseMDAI' },
     ],
-    relatedArticleIds: [
-      'how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany',
-      'house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands',
-      'ai-powered-mobile-app-with-backend-in-two-days-tutorial',
-    ],
     owner: 'personal',
   },
   {
@@ -172,7 +166,6 @@ const projects: ProjectMeta[] = [
     blurb: 'Clean-architecture example app written to accompany a Python architecture write-up: SOLID, DI, and layered structure for juniors.',
     tags: ['library', 'oss'],
     links: [{ label: 'source', href: 'https://github.com/MarkParker5/python-app-architecture-demo' }],
-    relatedArticleIds: ['python-architecture-essentials-building-scalable-and-clean-application-for-juniors'],
     owner: 'personal',
   },
   {
@@ -210,7 +203,6 @@ const projects: ProjectMeta[] = [
       { label: 'source', href: 'https://github.com/MarkParker5/XCodeLocalize' },
       { label: 'write-up', href: '/blog/localize-ios-app-in-5-minutes' },
     ],
-    relatedArticleIds: ['localize-ios-app-in-5-minutes'],
     owner: 'personal',
   },
   {
@@ -223,7 +215,6 @@ const projects: ProjectMeta[] = [
       'An abandoned idea to combine several socials into one platform: one-tap cross-posting to Telegram, Twitter, and Threads with built-in translation. Built as a clean-architecture example (MVVMP + SOLID + DI).',
     tags: ['ios', 'app', 'oss'],
     links: [{ label: 'source', href: 'https://github.com/MarkParker5/TwiTreads' }],
-    relatedArticleIds: ['ai-powered-mobile-app-with-backend-in-two-days-tutorial'],
     owner: 'personal',
   },
   {
@@ -267,7 +258,6 @@ const projects: ProjectMeta[] = [
       { label: 'majordom.io', href: 'https://www.majordom.io' },
       { label: 'dev docs', href: 'https://docs.majordom.io' },
     ],
-    relatedArticleIds: ['inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system'],
     imageUrl: '/projects/majordom.webp',
     owner: 'parker-industries-in-house',
     spotlight: true,
@@ -291,7 +281,7 @@ const projects: ProjectMeta[] = [
     interest: 20,
     title: 'AnyObservableObject',
     year: 2022,
-    status: 'hobby',
+    status: 'shipped',
     blurb: "Protocol-friendly equivalents to SwiftUI's property wrappers, but without compile-time type restrictions — use protocols in views without generics.",
     tags: ['library', 'oss', 'ios'],
     links: [{ label: 'source', href: 'https://github.com/MarkParker5/AnyObservableObject' }],
@@ -302,7 +292,7 @@ const projects: ProjectMeta[] = [
     interest: 20,
     title: 'SwiftyTranslate',
     year: 2022,
-    status: 'hobby',
+    status: 'shipped',
     blurb: 'A Swift wrapper for public Google Translate — free, no API keys needed.',
     tags: ['library', 'oss', 'ios'],
     links: [{ label: 'source', href: 'https://github.com/MarkParker5/SwiftyTranslate' }],
@@ -361,7 +351,6 @@ const projects: ProjectMeta[] = [
     blurb: "An early smart-home minimum-viable-product experiment — the direct predecessor to MajorDom's first architecture.",
     tags: ['hardware', 'raspberry-pi', 'app'],
     links: [{ label: 'source', href: 'https://github.com/MarkParker5/smarthome-mvp' }],
-    relatedArticleIds: ['building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0'],
     owner: 'personal',
   },
   {
@@ -420,7 +409,6 @@ const projects: ProjectMeta[] = [
       { label: 'stark.markparker.me', href: 'https://stark.markparker.me' },
       { label: 'source', href: 'https://github.com/MarkParker5/STARK' },
     ],
-    relatedArticleIds: ['stark-the-voice-assistants-framework'],
     imageUrl: '/projects/stark.webp',
     owner: 'personal',
     spotlight: true,
@@ -467,6 +455,16 @@ const projects: ProjectMeta[] = [
 
 export function getPublicProjects() {
   return projects.filter((p) => !p.hidden)
+}
+
+// The article→project cross-reference (ArticleMeta.relatedProjectId) is the
+// canonical direction — a project→articles list used to exist here too, but
+// that meant maintaining the same relationship in two places (and they
+// could disagree). One direction, one source of truth: articles say which
+// project they're about, and a project page derives its own "Related
+// articles" list by filtering on that instead of storing it separately.
+export function getProjectById(id: string): ProjectMeta | undefined {
+  return projects.find((p) => p.id === id)
 }
 
 export function getSpotlightProjects() {

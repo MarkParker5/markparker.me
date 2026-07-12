@@ -50,8 +50,6 @@ export default function Index() {
   return (
     <PageContainer>
       <Head>
-        <meta charSet="utf-8"></meta>
-        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
         <meta
           name="keywords"
           content="Mark Parker, Parker Programs, Parker Industries, developer, software engineer, engineer"
@@ -60,6 +58,7 @@ export default function Index() {
         <meta name="og:image" content="https://markparker.me/mark-parker.jpg"></meta>
         <meta name="og:description" content={metaDescription}></meta>
         <meta name="description" content={metaDescription}></meta>
+        <link rel="canonical" href="https://markparker.me" />
         <title>Mark Parker</title>
       </Head>
 
@@ -80,7 +79,7 @@ export default function Index() {
                 divider
               />
               <NotesList notes={notesPreview} />
-              <p className="text-center font-serif mt-4 mb-10">
+              <p className="text-center font-sans mt-4 mb-10">
                 <Link
                   style={2}
                   href={withParam('/notes', 'notes', notesFilter)}
@@ -104,7 +103,7 @@ export default function Index() {
                 divider
               />
               <ProjectsList projects={spotlightProjects} />
-              <p className="text-center font-serif mt-4 mb-10">
+              <p className="text-center font-sans mt-4 mb-10">
                 <Link
                   style={2}
                   href={withParam('/projects', 'projects', projectsFilter)}
@@ -127,7 +126,7 @@ export default function Index() {
             divider
           />
           <ArticlesList articles={latestArticles} />
-          <p className="text-center font-serif mt-4">
+          <p className="text-center font-sans mt-4">
             <Link
               style={2}
               href={withParam('/blog', 'articles', articlesFilter)}

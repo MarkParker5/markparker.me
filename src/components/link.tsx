@@ -6,6 +6,7 @@ export type LinkProps = PropsWithChildren<
     newTab?: boolean
     className?: string
     title?: string
+    'aria-label'?: string
     onClick?: MouseEventHandler<HTMLAnchorElement>
   }
 >
@@ -31,19 +32,34 @@ export function Link(props: LinkProps) {
   delete passProps.style
   delete passProps.className
   delete passProps.title
+  delete passProps['aria-label']
   delete passProps.onClick
 
   const isExternalLink = props.href.toString().startsWith('http')
 
+  // External links skip NextLink's client-side router entirely — there's
+  // nothing for it to prefetch or shallow-route to on another domain, and
+  // routing an absolute URL through it was previously silently a no-op (this
+  // branch built the <a> below but never returned it, so it never actually
+  // ran).
   if (isExternalLink) {
-    ;<a className={className} {...targetProps} href={props.href.toString()}>
-      {props.children}
-    </a>
+    return (
+      <a
+        className={className}
+        title={props.title}
+        aria-label={props['aria-label']}
+        {...targetProps}
+        href={props.href.toString()}
+        onClick={props.onClick}
+      >
+        {props.children}
+      </a>
+    )
   }
 
   return (
     <NextLink {...(passProps as NextLinkProps)}>
-      <a className={className} title={props.title} {...targetProps} onClick={props.onClick}>
+      <a className={className} title={props.title} aria-label={props['aria-label']} {...targetProps} onClick={props.onClick}>
         {props.children}
       </a>
     </NextLink>

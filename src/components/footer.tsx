@@ -4,7 +4,7 @@ import { PageContainer } from './page-container'
 export const Footer = () => (
   <footer className="mt-24 border-t">
     <PageContainer>
-      <div className="py-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-serif text-sm">
+      <div className="py-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-sans text-sm">
         {/* Muted as a solid color, not opacity on the row — opacity would
             also dim the nav Links below their own link-color contrast. */}
         <div className="text-muted-light dark:text-muted-dark">© {new Date().getFullYear()} Mark Parker</div>

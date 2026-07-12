@@ -49,8 +49,8 @@ export const FilterBar = <T extends string>({ paramName, contentType, availableT
   if (availableTags.length === 0) return null
 
   return (
-    <div className="mb-8 font-serif flex flex-col items-center gap-3">
-      <div className="w-full flex justify-center gap-2">
+    <div className="mb-8 font-sans flex flex-col items-center gap-3">
+      <div className="w-full flex justify-start gap-2">
         {showSearch ? (
           <input
             ref={inputRef}
@@ -66,15 +66,17 @@ export const FilterBar = <T extends string>({ paramName, contentType, availableT
                        dark:focus:ring-link2-dark transition"
           />
         ) : (
+          // No background/border here — a plain icon button, same visual
+          // weight as the tag-disclosure toggle below it, not another boxed
+          // control competing with the sort dropdown next to it.
           <button
             onClick={() => setSearchOpen(true)}
             title="Search"
             aria-label="Search"
-            className="rounded-lg border bg-back-secondary-light dark:bg-back-secondary-dark
-                       px-4 py-2.5 text-muted-light dark:text-muted-dark hover:text-primary-light
+            className="shrink-0 px-2 py-2.5 text-muted-light dark:text-muted-dark hover:text-primary-light
                        dark:hover:text-primary-dark duration-150"
           >
-            <i className="fas fa-magnifying-glass" />
+            <i className="fas fa-magnifying-glass text-lg" />
           </button>
         )}
         {sort && (

@@ -1,3 +1,4 @@
+import { Link } from './link'
 import { trackOutboundClick } from '../analytics'
 
 export type SocialIcon = {
@@ -20,12 +21,12 @@ type Props = {
 export const SectionSocials = ({ icons, context, className = '' }: Props) => (
   <div className={`flex justify-center gap-6 sm:gap-5 items-center ${className}`}>
     {icons.map((item) => (
-      <a
+      <Link
         key={item.href}
         href={item.href}
         title={item.title}
-        target={item.newTab === false ? undefined : '_blank'}
-        rel="noreferrer"
+        aria-label={item.title}
+        newTab={item.newTab !== false}
         onClick={() => trackOutboundClick(item.title.toLowerCase(), context)}
         // Bigger tap target than the glyph itself (padding, not just a
         // bigger icon) — on mobile this is the row people actually use to
@@ -33,7 +34,7 @@ export const SectionSocials = ({ icons, context, className = '' }: Props) => (
         className="p-1.5 -m-1.5 opacity-80 hover:opacity-100 duration-150"
       >
         <i className={`${item.icon} text-3xl sm:text-2xl`} />
-      </a>
+      </Link>
     ))}
   </div>
 )

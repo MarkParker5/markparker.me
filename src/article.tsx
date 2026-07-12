@@ -31,6 +31,13 @@ export type ArticleMeta = {
   imageUrl?: string
   pinned?: boolean
   tags?: string[]
+  // Which project this article is about, if any — not every article is
+  // (e.g. the hackathon-weekend writeup is a story, not project docs). One
+  // id, not a list: an article is cause, a project reads its coverage as
+  // effect, and cause→effect is naturally many-articles-to-one-project, so
+  // the single reference lives here rather than as a list on ProjectMeta —
+  // see getProjectById in project.tsx for the resolve side.
+  relatedProjectId?: string
 
   tweetId?: string
 
@@ -45,6 +52,7 @@ export type ArticleMeta = {
 const articles: ArticleMeta[] = [
   {
     id: 'python-architecture-essentials-building-scalable-and-clean-application-for-juniors',
+    relatedProjectId: 'python-app-architecture-demo',
     date: '2024-5-18',
     date_pretty: 'May 18th, 2024',
     read_time: '20 min',
@@ -93,6 +101,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'ai-powered-mobile-app-with-backend-in-two-days-tutorial',
+    relatedProjectId: 'dr-house-ai',
     date: '2024-5-5',
     date_pretty: 'May 5th, 2024',
     read_time: '15 min',
@@ -151,6 +160,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'house-md-ai-diagnostician-in-your-phone-passing-the-torch-and-entrusting-a-startup-to-capable-hands',
+    relatedProjectId: 'dr-house-ai',
     date: '2024-5-4',
     date_pretty: 'May 4th, 2024',
     read_time: '4 min',
@@ -198,6 +208,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany',
+    relatedProjectId: 'dr-house-ai',
     date: '2024-5-4',
     date_pretty: 'May 4th, 2024',
     read_time: '9 min',
@@ -247,6 +258,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'stark-the-voice-assistants-framework',
+    relatedProjectId: 'stark',
     date: '2023-09-20',
     date_pretty: 'September 20th, 2023',
     read_time: '2 min',
@@ -285,6 +297,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'inside-major-dom-v-1-0-exploring-the-architecture-of-a-new-smart-home-system',
+    relatedProjectId: 'majordom',
     date: '2023-06-01',
     date_pretty: 'June 1st, 2023',
     read_time: '3 min',
@@ -314,6 +327,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'building-a-smart-home-from-voice-assistant-to-major-dom-v-1-0',
+    relatedProjectId: 'smarthome-mvp',
     date: '2023-05-26',
     date_pretty: 'May 26th, 2023',
     read_time: '5 min',
@@ -343,6 +357,7 @@ const articles: ArticleMeta[] = [
   },
   {
     id: 'localize-ios-app-in-5-minutes',
+    relatedProjectId: 'ios-localizer',
     date: '2023-03-01',
     date_pretty: 'March 1st, 2023',
     read_time: '3 min',

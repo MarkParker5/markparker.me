@@ -1,8 +1,20 @@
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,600);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700);
+/* Loaded alongside Open Sans, not swapped in for it — the dev-only font A/B
+   toggle flips a CSS variable between the two, so both need to be present
+   up front rather than loaded on demand. */
+@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap);
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* `sans` in tailwind.config.js resolves through this variable instead of
+     a literal font name, so the dev A/B toggle (design-toggles.tsx) can
+     swap the whole site's typeface at runtime without touching every
+     component that uses `font-sans`. */
+  --font-sans: 'Open Sans', sans-serif;
+}
 
 html {
   scroll-behavior: smooth;
@@ -131,4 +143,24 @@ html {
 }
 .fa-xl {
   font-size: 1.5rem;
+}
+
+/* Page-to-page transitions (View Transitions API — see the router-events
+   hook in _app.tsx). Inert in browsers that don't support the API: these
+   pseudo-elements simply never get created there, so this block never
+   applies and never needs a fallback. A quick, subtle cross-fade — this is
+   a personal site, not a slideshow, so the default should barely be
+   noticed as a specific "effect," just feel less abrupt than a hard cut. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.18s;
+}
+
+/* The one named transition: a content-type heading (see
+   `view-transition-name` in section-header.tsx) morphing/sliding between
+   its homepage preview position and the top of the full page when you
+   follow an "All <content> →" link — slightly longer so the movement reads
+   clearly instead of a flash. */
+::view-transition-group(*) {
+  animation-duration: 0.32s;
 }
