@@ -21,8 +21,10 @@ export function trackFilterChange(contentType: string, filter: string) {
 // action: 'like' | 'reply' | 'repost' | 'share' — the button pressed, not
 // necessarily what happened next (that's on whichever platform the visitor
 // lands on). platform is set only once they pick a mirror from the popover.
-export function trackNoteAction(noteId: string, action: string, platform?: string) {
-  trackEvent('note_action', { note_id: noteId, action, platform })
+// Shared between notes and articles (see components/interaction-bar.tsx) —
+// contentType distinguishes them in reporting.
+export function trackInteraction(contentType: string, contentId: string, action: string, platform?: string) {
+  trackEvent('content_interaction', { content_type: contentType, content_id: contentId, action, platform })
 }
 
 // Fires once per page view (on unmount / pagehide), reporting the raw

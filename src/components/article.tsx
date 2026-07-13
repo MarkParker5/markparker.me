@@ -1,12 +1,15 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { PropsWithChildren } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ArticleLayout } from './article-layout'
 import { ArticlesList } from './articles-list'
 import { Separator } from './separator'
-import { ArticleMeta, getPublicArticles } from '../article'
+import { ArticleMeta, getArticleDirectUrl, getPublicArticles } from '../article'
 import { getProjectById } from '../project'
+import { ARTICLE_INTERACTION_PLATFORMS } from '../interactions'
+import { articleTitleTransitionStyle, articleMetaTransitionStyle } from './articles-list'
+import { InteractionBar } from './interaction-bar'
 import { Link } from './link'
 import { addCopyButtons } from '../general/add-snippet-copy'
 import { trackOutboundClick, useReadTracking } from '../analytics'
@@ -27,6 +30,76 @@ hljs.registerLanguage('php', php)
 type Props = PropsWithChildren<{
   article: ArticleMeta
 }>
+
+// A hardcoded "Back to home" always pointed to `/`, even when you actually
+// arrived from /blog, a filtered search, or another article's "Related"
+// link — landing back on the homepage instead of where you really came
+// from. `router.back()` goes to the real previous entry in *this* session's
+// history when there is one (same-origin referrer); otherwise falls back to
+// /blog, a better default for "an article" than the homepage.
+function BackLink() {
+  const [hasHistory, setHasHistory] = useState(false)
+
+  useEffect(() => {
+    const cameFromThisSite = document.referrer && new URL(document.referrer).origin === window.location.origin
+    setHasHistory(Boolean(cameFromThisSite && window.history.length > 1))
+  }, [])
+
+  // No underline (a `style={1}`/`style={2}` Link both add one) — a pill
+  // with its own hover fill reads as a real control, not a text link, and
+  // an underlined arrow glyph looked broken/accidental rather than styled.
+  const className =
+    'group inline-flex items-center gap-2 text-sm font-medium text-muted-light dark:text-muted-dark ' +
+    'hover:text-primary-light dark:hover:text-primary-dark duration-150'
+  const arrow = (
+    <span
+      className="w-6 h-6 rounded-full border flex items-center justify-center shrink-0
+                 group-hover:-translate-x-0.5 group-hover:border-primary-light dark:group-hover:border-primary-dark
+                 transition-all duration-150"
+    >
+      <i className="fas fa-arrow-left text-[0.65rem]" />
+    </span>
+  )
+
+  if (hasHistory) {
+    return (
+      <button onClick={() => window.history.back()} className={className}>
+        {arrow}
+        Back
+      </button>
+    )
+  }
+
+  return (
+    <Link href="/blog" className={className}>
+      {arrow}
+      Back to Blog
+    </Link>
+  )
+}
+
+function ArticleInteractionBar({
+  article,
+  large,
+  showFollow,
+}: {
+  article: ArticleMeta
+  large?: boolean
+  showFollow?: boolean
+}) {
+  return (
+    <InteractionBar
+      contentType="article"
+      contentId={article.id}
+      platforms={ARTICLE_INTERACTION_PLATFORMS}
+      getDirectUrl={(platform) => getArticleDirectUrl(platform, article)}
+      composeText={article.title}
+      shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${article.id}`}
+      large={large}
+      showFollow={showFollow}
+    />
+  )
+}
 
 export function ArticleComponent({ article, children }: Props) {
   const router = useRouter()
@@ -67,9 +140,7 @@ export function ArticleComponent({ article, children }: Props) {
 
       {<TwitterTweetButton text={article.title} path={router.asPath} />}
 
-      <Link style={1} href="/">
-        {'<-'} Back to home
-      </Link>
+      <BackLink />
 
       {article.mirrors && article.mirrors.length > 0 && (
         <>
@@ -81,8 +152,13 @@ export function ArticleComponent({ article, children }: Props) {
       )}
 
       <div className="mb-3 mt-1">
-        <h1 className="text-3xl leading-tight font-bold">{article.title}</h1>
-        <div className="italic mt-1 text-md text-muted-light dark:text-muted-dark flex flex-wrap items-center gap-x-3">
+        <h1 className="text-3xl leading-tight font-bold" style={articleTitleTransitionStyle(article.id)}>
+          {article.title}
+        </h1>
+        <div
+          className="italic mt-1 text-md text-muted-light dark:text-muted-dark flex flex-wrap items-center gap-x-3"
+          style={articleMetaTransitionStyle(article.id)}
+        >
           <span>
             Published on {article.date_pretty} · {article.read_time} read
           </span>
@@ -100,16 +176,23 @@ export function ArticleComponent({ article, children }: Props) {
               ) : null
             })()}
         </div>
+        {/* Duplicated at the bottom too — a reader shouldn't have to scroll
+            past a long article just to like/share it. */}
+        <div className="mt-3">
+          <ArticleInteractionBar article={article} />
+        </div>
       </div>
 
       <div className="markdown mb-10">{children}</div>
 
-      <Separator />
+      <div className="flex justify-center mb-5">
+        <ArticleInteractionBar article={article} large showFollow />
+      </div>
 
       {article.mirrors && article.mirrors.length > 0 && (
         <>
           <div className="mt-5 mb-3 text-center">
-            <p className="mb-2">Read, comment, and subscribe on:</p>
+            <p className="mb-2">Follow on:</p>
             <ArticleMirrors article={article} />
           </div>
         </>

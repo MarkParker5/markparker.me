@@ -80,23 +80,35 @@ export const FilterBar = <T extends string>({ paramName, contentType, availableT
           </button>
         )}
         {sort && (
-          <select
-            value={sortValue}
-            onChange={(e) => {
-              const next = e.target.value
-              setSortValue(next === sort.defaultValue ? '' : next)
-              trackFilterChange(`${contentType}-sort`, next)
-            }}
-            className="shrink-0 rounded-lg border bg-back-secondary-light dark:bg-back-secondary-dark
-                       py-2.5 px-3 text-sm outline-none focus:ring-2 focus:ring-link2-light
-                       dark:focus:ring-link2-dark transition"
-          >
-            {sort.options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          // `appearance-none` + a manually-positioned chevron — a native
+          // <select>'s own dropdown arrow is drawn by the browser at a
+          // fixed inset that ignores our `px-3`, so the text got 3
+          // (0.75rem) of breathing room on the left while the arrow sat
+          // almost flush against the right border. This gives both sides
+          // the same inset.
+          <div className="relative shrink-0">
+            <select
+              value={sortValue}
+              onChange={(e) => {
+                const next = e.target.value
+                setSortValue(next === sort.defaultValue ? '' : next)
+                trackFilterChange(`${contentType}-sort`, next)
+              }}
+              className="appearance-none rounded-lg border bg-back-secondary-light dark:bg-back-secondary-dark
+                         py-2.5 pl-3 pr-8 text-sm outline-none focus:ring-2 focus:ring-link2-light
+                         dark:focus:ring-link2-dark transition"
+            >
+              {sort.options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <i
+              className="fas fa-chevron-down text-xs text-muted-light dark:text-muted-dark
+                         absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            />
+          </div>
         )}
       </div>
 

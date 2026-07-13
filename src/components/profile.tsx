@@ -1,6 +1,7 @@
 import { Link } from './link'
 import { trackOutboundClick } from '../analytics'
 import { ObfuscatedMailLink } from './obfuscated-email'
+import { Reveal, useReveal } from './reveal'
 
 type LinkMeta = {
   href: string
@@ -72,21 +73,37 @@ const sectionNav = [
   { href: '#blog-section', title: 'Blog', icon: 'fas fa-newspaper' },
 ]
 
+// Applied directly to the `<li>` itself (border, background, everything) —
+// not just to a wrapper around its inner content. Wrapping only the inner
+// `<Link>` meant the border/background box appeared instantly and only the
+// text/icon inside it faded in, which looked like the reveal wasn't really
+// happening — the box is most of what's visible here.
+function Divider() {
+  const reveal = useReveal<HTMLHRElement>()
+  return <hr ref={reveal.ref} className={`my-6 border-t opacity-30 ${reveal.className}`} />
+}
+
 export function Profile() {
   return (
     <div className="text-center">
       <div className="font-sans">
-        <img className="mx-auto h-36 w-36 rounded-full" src="/mark-parker.jpg" />
-        <h1 className="mt-7 mb-1 text-4xl leading-tight">Mark Parker</h1>
-        <p className="text-l mb-1 whitespace-nowrap">
-          Engineer, co-founder of{' '}
-          <Link style={2} href="https://parker-industries.org" newTab>
-            Parker Industries
-          </Link>
-        </p>
+        <Reveal>
+          <img className="mx-auto h-36 w-36 rounded-full" src="/mark-parker.jpg" />
+        </Reveal>
+        <Reveal>
+          <h1 className="mt-7 mb-1 text-4xl leading-tight">Mark Parker</h1>
+        </Reveal>
+        <Reveal>
+          <p className="text-l mb-1 whitespace-nowrap">
+            Engineer, co-founder of{' '}
+            <Link style={2} href="https://parker-industries.org" newTab>
+              Parker Industries
+            </Link>
+          </p>
+        </Reveal>
         {/* Business-card audience's top next-click: the company, before
             anything personal — styled as a real CTA, not a footnote. */}
-        <p className="mt-4 mb-6">
+        <Reveal className="mt-4 mb-6 block">
           <Link
             href="https://parker-industries.org"
             newTab
@@ -96,32 +113,18 @@ export function Profile() {
           >
             Work with my team →
           </Link>
-        </p>
+        </Reveal>
       </div>
 
-      <hr className="my-6 border-t opacity-30" />
+      <Divider />
 
       <LinksList />
 
-      <hr className="my-6 border-t opacity-30" />
+      <Divider />
 
       <ul className="list-none leading-none">
         {sectionNav.map((item) => (
-          <li
-            key={item.href}
-            className="py-3 w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300"
-          >
-            <Link
-              href={item.href}
-              title={`Jump to ${item.title}`}
-              className="flex flex-row items-center"
-              onClick={() => trackOutboundClick(item.title.toLowerCase(), 'profile-nav')}
-            >
-              <i className={item.icon + ' my-3 ml-3 fa-xl'} />
-              <div className="w-full font-sans">{item.title}</div>
-              <div className="w-10 mx-2"></div>
-            </Link>
-          </li>
+          <NavItem key={item.href} {...item} />
         ))}
       </ul>
     </div>
@@ -130,9 +133,43 @@ export function Profile() {
 
 const listItemClass = 'py-3 w-full border my-3 hover:bg-back-light hover:text-back-dark duration-300'
 
-function LinkItem({ href, title, icon }: LinkMeta) {
+function NavItem({ href, title, icon }: { href: string; title: string; icon: string }) {
+  const reveal = useReveal<HTMLLIElement>()
   return (
-    <li className={listItemClass}>
+    <li ref={reveal.ref} className={`${listItemClass} ${reveal.className}`}>
+      <Link
+        href={href}
+        title={`Jump to ${title}`}
+        className="flex flex-row items-center"
+        onClick={(e) => {
+          trackOutboundClick(title.toLowerCase(), 'profile-nav')
+          // Next's router does its own same-page hash navigation — an
+          // instant jump via scrollIntoView(), not a smooth one — which
+          // overrides the CSS `scroll-behavior: smooth` on <html> a plain
+          // anchor click would otherwise get. Handling the scroll here
+          // ourselves and preventing Next's default is what actually makes
+          // it smooth.
+          const id = href.replace('#', '')
+          const target = document.getElementById(id)
+          if (target) {
+            e.preventDefault()
+            target.scrollIntoView({ behavior: 'smooth' })
+            history.pushState(null, '', href)
+          }
+        }}
+      >
+        <i className={icon + ' my-3 ml-3 fa-xl'} />
+        <div className="w-full font-sans">{title}</div>
+        <div className="w-10 mx-2"></div>
+      </Link>
+    </li>
+  )
+}
+
+function LinkItem({ href, title, icon }: LinkMeta) {
+  const reveal = useReveal<HTMLLIElement>()
+  return (
+    <li ref={reveal.ref} className={`${listItemClass} ${reveal.className}`}>
       <Link
         href={href}
         newTab
@@ -148,6 +185,19 @@ function LinkItem({ href, title, icon }: LinkMeta) {
   )
 }
 
+function EmailItem() {
+  const reveal = useReveal<HTMLLIElement>()
+  return (
+    <li ref={reveal.ref} className={`${listItemClass} ${reveal.className}`}>
+      <ObfuscatedMailLink title="Email" className="flex flex-row items-center">
+        <i className="fas fa-envelope my-3 ml-3 fa-xl" />
+        <div className="w-full font-sans">Email</div>
+        <div className="w-10 mx-2"></div>
+      </ObfuscatedMailLink>
+    </li>
+  )
+}
+
 function LinksList() {
   // LinkedIn, Telegram, [Email — special-cased, see ObfuscatedMailLink], Instagram
   return (
@@ -155,13 +205,7 @@ function LinksList() {
       {links.slice(0, 2).map((link) => (
         <LinkItem key={link.href} {...link} />
       ))}
-      <li className={listItemClass}>
-        <ObfuscatedMailLink title="Email" className="flex flex-row items-center">
-          <i className="fas fa-envelope my-3 ml-3 fa-xl" />
-          <div className="w-full font-sans">Email</div>
-          <div className="w-10 mx-2"></div>
-        </ObfuscatedMailLink>
-      </li>
+      <EmailItem />
       {links.slice(2).map((link) => (
         <LinkItem key={link.href} {...link} />
       ))}

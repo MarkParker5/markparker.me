@@ -98,9 +98,14 @@ html {
 }
 .markdown pre {
   position: relative;
+  /* No vertical spacing existed around a code block at all — it sat flush
+     against the paragraph text immediately above/below it. */
+  margin: 20px 0;
 }
 .markdown pre code {
   border-radius: 7px;
+  display: block;
+  padding: 16px;
 }
 .markdown pre button {
   position: absolute;

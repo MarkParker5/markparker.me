@@ -9,6 +9,7 @@ import { JSXElementConstructor, PropsWithChildren, AnchorHTMLAttributes } from '
 import { Link } from './components/link'
 import { MDXProvider, Components } from '@mdx-js/react'
 import { Separator } from './components/separator'
+import { InteractionPlatform } from './interactions'
 import { title } from 'process'
 
 export type ArticleMirror = {
@@ -46,6 +47,17 @@ export type ArticleMeta = {
   hashnodeUrl?: string
   habrUrl?: string
 
+  // The short-text/social platforms — same set InteractionBar already
+  // offers as a fallback (see ARTICLE_INTERACTION_PLATFORMS), but these let
+  // a specific article point at a *real* post on that platform (e.g. a
+  // Bluesky thread breaking the article down) instead of always falling
+  // back to the bare profile. None of the current articles have one yet —
+  // this is schema room to grow into, not backfilled data.
+  blueskyUrl?: string
+  telegramUrl?: string
+  threadsUrl?: string
+  mastodonUrl?: string
+
   mirrors: ArticleMirror[]
 }
 
@@ -53,6 +65,10 @@ const articles: ArticleMeta[] = [
   {
     id: 'python-architecture-essentials-building-scalable-and-clean-application-for-juniors',
     relatedProjectId: 'python-app-architecture-demo',
+    // First image actually used in the article body (the UML diagram) —
+    // taken as the list-preview hero rather than commissioning a separate
+    // thumbnail.
+    imageUrl: '/articles/python-architecture-essentials-building-scalable-and-clean-application-for-juniors/uml.webp',
     date: '2024-5-18',
     date_pretty: 'May 18th, 2024',
     read_time: '20 min',
@@ -209,6 +225,10 @@ const articles: ArticleMeta[] = [
   {
     id: 'how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany',
     relatedProjectId: 'dr-house-ai',
+    // First image actually used in the article body (the hackathon venue
+    // photo) — taken as the list-preview hero rather than commissioning a
+    // separate thumbnail.
+    imageUrl: '/articles/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany/mediapark.webp',
     date: '2024-5-4',
     date_pretty: 'May 4th, 2024',
     read_time: '9 min',
@@ -437,6 +457,35 @@ export function renderArticle(
 
 export function getAllArticles() {
   return articles
+}
+
+// Resolves a direct link for one interaction platform, for
+// components/interaction-bar.tsx — reads the article's own stored URLs
+// rather than parsing the `mirrors` array (which is keyed by display title,
+// not a stable platform id).
+export function getArticleDirectUrl(platform: InteractionPlatform, article: ArticleMeta): string | undefined {
+  switch (platform) {
+    case 'twitter':
+      return article.tweetId ? `https://twitter.com/markparker5/status/${article.tweetId}` : undefined
+    case 'medium':
+      return article.mediumUrl || undefined
+    case 'devto':
+      return article.devtoUrl || undefined
+    case 'hashnode':
+      return article.hashnodeUrl || undefined
+    case 'habr':
+      return article.habrUrl || undefined
+    case 'bluesky':
+      return article.blueskyUrl || undefined
+    case 'telegram':
+      return article.telegramUrl || undefined
+    case 'threads':
+      return article.threadsUrl || undefined
+    case 'mastodon':
+      return article.mastodonUrl || undefined
+    default:
+      return undefined
+  }
 }
 
 export function getPublicArticles() {

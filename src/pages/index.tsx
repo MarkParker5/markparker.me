@@ -4,6 +4,7 @@ import { ArticlesList } from '../components/articles-list'
 import { ProjectsList } from '../components/projects-list'
 import { NotesList } from '../components/notes-list'
 import { SectionHeader } from '../components/section-header'
+import { Reveal } from '../components/reveal'
 import { PageContainer } from '../components/page-container'
 import { getPublicArticles } from '../article'
 import { getSpotlightProjects } from '../project'
@@ -79,7 +80,7 @@ export default function Index() {
                 divider
               />
               <NotesList notes={notesPreview} />
-              <p className="text-center font-sans mt-4 mb-10">
+              <Reveal className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
                   href={withParam('/notes', 'notes', notesFilter)}
@@ -87,7 +88,7 @@ export default function Index() {
                 >
                   All posts →
                 </Link>
-              </p>
+              </Reveal>
             </>
           )}
 
@@ -103,7 +104,7 @@ export default function Index() {
                 divider
               />
               <ProjectsList projects={spotlightProjects} />
-              <p className="text-center font-sans mt-4 mb-10">
+              <Reveal className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
                   href={withParam('/projects', 'projects', projectsFilter)}
@@ -111,7 +112,7 @@ export default function Index() {
                 >
                   All projects →
                 </Link>
-              </p>
+              </Reveal>
             </>
           )}
 
@@ -126,7 +127,7 @@ export default function Index() {
             divider
           />
           <ArticlesList articles={latestArticles} />
-          <p className="text-center font-sans mt-4">
+          <Reveal className="text-center font-sans mt-4 block">
             <Link
               style={2}
               href={withParam('/blog', 'articles', articlesFilter)}
@@ -134,7 +135,7 @@ export default function Index() {
             >
               All posts →
             </Link>
-          </p>
+          </Reveal>
         </div>
       </div>
     </PageContainer>

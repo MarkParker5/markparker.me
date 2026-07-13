@@ -3,6 +3,7 @@ import { Link } from './link'
 import { Separator } from './separator'
 import { SectionSocials, SocialIcon } from './section-socials'
 import { useDesignToggles } from '../design-toggles'
+import { Reveal } from './reveal'
 
 type Props = {
   id?: string
@@ -43,28 +44,29 @@ export const SectionHeader = ({
 }: Props) => {
   const { hidePageTitle } = useDesignToggles()
   const showTitle = !(hideTitleOption && hidePageTitle)
+  // Keyed on the title text, not `id` — the homepage preview and the full
+  // page both render a SectionHeader for the same content type with the
+  // same title, and it's exactly that pair (only ever one on-screen at a
+  // time, since one page unmounts before the other mounts) that the
+  // browser needs a shared name for to morph one into the other on
+  // navigation. Shared by the title, subtitle, and icons row below — only
+  // the title used to carry one, so the subtitle line and the mirror-icon
+  // row underneath it just cross-faded instead of morphing along with it.
+  const slug = title.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div id={id} className="text-center w-full scroll-mt-10 mb-6">
+      <Reveal>
       {showTitle && (
         // A real heading, not a styled <p> — visually identical, but before
         // this a screen-reader's heading-navigation had nothing to land on
         // for "Posts"/"Projects"/"Blog", exactly the sections the homepage's
         // own jump-links (Profile's sectionNav) point at.
-        //
-        // `viewTransitionName` is keyed on the title, not on `id` — the
-        // homepage preview and the full page both render a SectionHeader
-        // for the same content type with the same title text, and it's
-        // exactly that pair (only ever one on-screen at a time, since one
-        // page unmounts before the other mounts) that the browser needs a
-        // shared name for to morph one into the other on navigation.
         <h2
           className="text-4xl font-sans mb-2 inline-flex items-center gap-3"
           // Not yet in the CSSProperties type bundled with this React
           // version — cast rather than wait for @types/react to catch up.
-          style={
-            { viewTransitionName: `section-heading-${title.toLowerCase().replace(/\s+/g, '-')}` } as CSSProperties
-          }
+          style={{ viewTransitionName: `section-heading-${slug}` } as CSSProperties}
         >
           {href ? (
             <Link style={2} href={href} className="text-4xl">
@@ -79,13 +81,22 @@ export const SectionHeader = ({
       {/* `muted`, a solid color (not opacity) — opacity here would also dim
           any link nested inside `subtitle` (e.g. the GitHub link), since
           child opacity can't undo a parent's compositing. */}
-      <p className="font-sans text-base text-muted-light dark:text-muted-dark mb-3">{subtitle}</p>
+      <p
+        className="font-sans text-base text-muted-light dark:text-muted-dark mb-3"
+        style={{ viewTransitionName: `section-subtitle-${slug}` } as CSSProperties}
+      >
+        {subtitle}
+      </p>
       {((icons && icons.length > 0) || extraLink) && (
-        <div className="flex justify-center items-center gap-4">
+        <div
+          className="flex justify-center items-center gap-4"
+          style={{ viewTransitionName: `section-icons-${slug}` } as CSSProperties}
+        >
           {icons && icons.length > 0 && <SectionSocials icons={icons} context={context} />}
           {extraLink}
         </div>
       )}
+      </Reveal>
       {divider && <Separator />}
     </div>
   )

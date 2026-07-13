@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import '../../styles/globals.css'
 import { Footer } from '../components/footer'
 import { DesignToggleProvider } from '../design-toggles'
+import { viewTransitionState } from '../view-transition-state'
 
 declare global {
   // it's important to have an interface here to append to the global type
@@ -44,10 +45,33 @@ if (process.env.NODE_ENV === 'development') {
 function useViewTransitions() {
   const router = useRouter()
   const resolveRef = useRef<(() => void) | null>(null)
+  // Set in handleStart, read in handleDone — an in-page hash jump (e.g. the
+  // Profile section-nav / "Jump to Projects" links) fires the exact same
+  // routeChangeStart/Complete events Next uses for a real page navigation,
+  // even though the page itself never changes. Wrapping that in a View
+  // Transition and forcing scrollTo(0, 0) below fought directly with the
+  // smooth scrollIntoView those links do themselves — the scroll snapped
+  // back to the top a moment after starting. Skipping both entirely for a
+  // same-page hash change leaves the browser's native (CSS
+  // `scroll-behavior: smooth`) anchor scroll alone to do its job.
+  const skippedRef = useRef(false)
 
   useEffect(() => {
-    function handleStart() {
+    function isHashOnlyChange(url: string) {
+      return url.split('#')[0] === router.asPath.split('#')[0]
+    }
+    function handleStart(url: string) {
+      if (isHashOnlyChange(url)) {
+        skippedRef.current = true
+        return
+      }
+      skippedRef.current = false
       if (!document.startViewTransition) return
+      // Read by useReveal (components/reveal.tsx): anything it reveals
+      // while this is true skips its own fade-in — the page's own arrival
+      // (the cross-fade/morph) is already the "this just appeared"
+      // animation, so a second one on top of it would fight for attention.
+      viewTransitionState.active = true
       document.startViewTransition(
         () =>
           new Promise<void>((resolve) => {
@@ -61,6 +85,18 @@ function useViewTransitions() {
             // the page snap in rather than freeze indefinitely. Fast
             // navigations (the common case once a page is compiled/cached)
             // still get the real transition; only a slow one loses it.
+            //
+            // 350ms measured too tight even in a production build: a
+            // first-ever click into a not-yet-fetched dynamic route (e.g.
+            // /blog/[slug], which still needs its own JSON data chunk) took
+            // ~426ms measured directly, comfortably past 350ms — the
+            // transition would resolve on the timeout with the OLD page
+            // still on screen, so it "froze" for that stretch and then the
+            // new page just popped in with no visible cross-fade once Next
+            // actually finished, exactly the reported symptom. A cached
+            // revisit measured ~194ms, well inside either cutoff. 600ms
+            // covers the slow first-visit case with room to spare while
+            // still being far short of "feels broken."
             let settled = false
             const settle = () => {
               if (settled) return
@@ -68,13 +104,12 @@ function useViewTransitions() {
               resolve()
             }
             resolveRef.current = settle
-            setTimeout(settle, 350)
+            setTimeout(settle, 600)
           }),
       )
     }
     function handleDone() {
-      resolveRef.current?.()
-      resolveRef.current = null
+      if (skippedRef.current) return
       // Next's own built-in scroll-to-top-on-navigate stopped taking
       // effect once the View Transition wrapper above was added — the
       // real `window.scrollY` (not just the visual position) was verified
@@ -82,8 +117,29 @@ function useViewTransitions() {
       // resetting on a full page reload. Whatever the exact interaction
       // (a suspended-callback timing conflict with Next's own scroll
       // restoration is the leading suspect), the fix is to stop relying on
-      // it and just force it ourselves.
+      // it and just force it ourselves. Done BEFORE resolving the View
+      // Transition promise (not after) — resolving is what tells the
+      // browser "capture the new page now," and the new page's own
+      // useReveal instances mount and run their first IntersectionObserver
+      // check around this same moment. If the leftover pre-navigation
+      // scroll position (still the old page's, e.g. scrolled deep into the
+      // homepage) is still live when that check runs, far more cards read
+      // as "already on screen" than actually end up above the fold once
+      // the scroll resets — those get marked instantly-shown and then
+      // never animate when the visitor later scrolls down to them for
+      // real. Scrolling first means the observer's first real check sees
+      // the corrected position.
       window.scrollTo(0, 0)
+      resolveRef.current?.()
+      resolveRef.current = null
+      // Cleared a couple frames later, not synchronously — the new page's
+      // useReveal instances mount and run their IntersectionObserver as an
+      // effect right around this same moment, and need the flag to still
+      // read true when their *first* check fires (whatever's already on
+      // screen) so they skip their own animation. Below-the-fold content
+      // hasn't intersected yet either way, so it's unaffected and still
+      // reveals normally on a real later scroll.
+      requestAnimationFrame(() => requestAnimationFrame(() => (viewTransitionState.active = false)))
     }
     router.events.on('routeChangeStart', handleStart)
     router.events.on('routeChangeComplete', handleDone)

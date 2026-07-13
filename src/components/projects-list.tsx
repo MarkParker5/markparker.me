@@ -1,8 +1,19 @@
+import { CSSProperties } from 'react'
 import { Link } from './link'
 import { ProjectMeta, ProjectOwner, ProjectStatus } from '../project'
 import { getAllArticles } from '../article'
 import { useDesignToggles } from '../design-toggles'
-import { Reveal } from './reveal'
+import { useReveal } from './reveal'
+import { Spotlight, mergeRefs, useSpotlight } from './spotlight'
+
+// Per-project, not a single shared "hero" name — every project rendered on
+// both the homepage preview and the full /projects page carries its own
+// id-derived name, so the browser morphs every card that appears on both
+// sides, not just whichever one happened to be first/top-sorted. A no-op
+// (unmatched name) for a project that only exists on one side.
+function projectCardTransitionStyle(projectId: string): CSSProperties {
+  return { viewTransitionName: `project-card-${projectId}` } as CSSProperties
+}
 
 type Props = {
   projects: ProjectMeta[]
@@ -289,14 +300,23 @@ function MetaLine({ project }: { project: ProjectMeta }) {
 // dense" (= "+10% spacing"), the dev-panel slider goes to +150% for comparison.
 const BASE_ROW_GAP_REM = 0.625
 
-// A faint tint, not the old full bg-secondary swap — that read as "the
-// whole card is one clickable thing," which it isn't (only the title, tags,
-// and links inside are). This is just enough to confirm "you're over this
-// row," the same restrained affordance GitHub uses on its own list rows.
-const HOVER_TINT = 'hover:bg-black/[0.025] dark:hover:bg-white/[0.04]'
-
-function ProjectCard({ project, spotlight }: { project: ProjectMeta; spotlight?: boolean }) {
+function ProjectCard({
+  project,
+  spotlight,
+}: {
+  project: ProjectMeta
+  spotlight?: boolean
+}) {
   const { cardStyle, spacing } = useDesignToggles()
+  // Applied directly to the <li> itself (border/hover/id and all) — not
+  // just to a wrapper around its inner content. Wrapping only the content
+  // meant the border/hover box appeared instantly and only the text/image
+  // inside it faded in, which looked like the reveal wasn't really
+  // happening — the box is most of what's visible here. (An <li> can't be
+  // swapped for a <div>, since a <ul> only accepts <li> children — this is
+  // exactly why useReveal exists as a hook, not just a wrapper component.)
+  const reveal = useReveal<HTMLLIElement>()
+  const cursorGlow = useSpotlight<HTMLLIElement>()
   // No `last:border-b-0` here — spotlight and others render as two separate
   // <ul>s, so "last in this list" fired on the last spotlight card (STARK)
   // even though DogCat Fund immediately follows it in the others list right
@@ -310,31 +330,37 @@ function ProjectCard({ project, spotlight }: { project: ProjectMeta; spotlight?:
   // edge-to-edge divider, which is what actually looked broken.
   const wrapperClass =
     cardStyle === 'border'
-      ? `rounded-xl border px-4 py-3.5 ${HOVER_TINT} hover:shadow-sm hover:-translate-y-px`
-      : `border-b px-1 py-4 first:pt-0 ${HOVER_TINT}`
+      ? 'rounded-xl border px-4 py-3.5 hover:shadow-sm hover:-translate-y-px'
+      : 'border-b px-1 py-4 first:pt-0'
   const gapRem = BASE_ROW_GAP_REM * (1 + spacing / 100)
 
   return (
-    <li id={project.id} className={`list-none duration-150 ${wrapperClass} ${spotlight ? 'text-xl' : 'text-l'}`}>
-      {/* Border/hover/id stay on the <li> (instant, and HTML-valid — a <ul>
-          can only contain <li> children, so the animated wrapper has to be
-          inside it, not around it) — only the content fades+slides in, one
-          card at a time as it scrolls into view, on every page that renders
-          projects (not just the homepage). */}
-      <Reveal>
-        <div className="flex items-center gap-3 min-w-0">
-          <ProjectTitle project={project} />
-          <StatusBadge status={project.status} />
-        </div>
-        <div className="flex flex-col" style={{ gap: `${gapRem}rem`, marginTop: `${gapRem}rem` }}>
-          <ProjectImage project={project} />
-          <MetaLine project={project} />
-          <span className="block text-[1.125rem]">{project.blurb}</span>
-          <TagChips tags={project.tags} />
-          <ProjectLinks links={project.links.slice(1)} />
-          <RelatedArticles projectId={project.id} />
-        </div>
-      </Reveal>
+    <li
+      ref={mergeRefs(reveal.ref, cursorGlow.ref)}
+      onMouseMove={cursorGlow.onMouseMove}
+      id={project.id}
+      className={`list-none duration-150 relative group ${wrapperClass} ${reveal.className} ${spotlight ? 'text-xl' : 'text-l'}`}
+      style={projectCardTransitionStyle(project.id)}
+    >
+      <Spotlight />
+      <div className="flex items-center gap-3 min-w-0">
+        <ProjectTitle project={project} />
+        <StatusBadge status={project.status} />
+      </div>
+      <div className="flex flex-col" style={{ gap: `${gapRem}rem`, marginTop: `${gapRem}rem` }}>
+        <ProjectImage project={project} />
+        <MetaLine project={project} />
+        <span className="block text-[1.125rem]">{project.blurb}</span>
+        <TagChips tags={project.tags} />
+        {/* All links, including the first — it powers the title's href,
+            but that link's own *label* (e.g. "Kids Coloring Book" vs. a
+            title that just says "Coloring Apps (Kids / Boys / Girls)")
+            never appeared anywhere when this sliced it off. A title that
+            doubles as a link is a fine shortcut; silently dropping its
+            label from the visible list below it isn't. */}
+        <ProjectLinks links={project.links} />
+        <RelatedArticles projectId={project.id} />
+      </div>
     </li>
   )
 }

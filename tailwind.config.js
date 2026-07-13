@@ -31,6 +31,16 @@ module.exports = {
       '9xl': '8rem',
     },
     colors: {
+      // `theme.colors` here replaces Tailwind's default palette rather than
+      // extending it, so keys the framework normally always provides —
+      // `black`/`white` included — don't exist unless redefined. Their
+      // absence meant `hover:bg-black/[...]`/`dark:hover:bg-white/[...]`
+      // (the project/note card hover tint) compiled to nothing at all: the
+      // class name sat in the HTML with zero matching CSS anywhere, so the
+      // hover looked like it just didn't exist. Same class of bug as the
+      // missing `xs` fontSize above.
+      black: '#000000',
+      white: '#ffffff',
       back: {
         light: '#ffffff',
         dark: '#0d1117',
