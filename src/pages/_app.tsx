@@ -4,7 +4,14 @@ import { useRouter } from 'next/router'
 import '../../styles/globals.css'
 import { Footer } from '../components/footer'
 import { DesignToggleProvider } from '../design-toggles'
-import { viewTransitionState } from '../view-transition-state'
+import {
+  viewTransitionState,
+  disableOffscreenTransitionNames,
+  captureClickAlignmentTarget,
+  alignNewPageToTarget,
+  findByTransitionName,
+  ClickAlignmentTarget,
+} from '../view-transition-state'
 
 declare global {
   // it's important to have an interface here to append to the global type
@@ -55,6 +62,25 @@ function useViewTransitions() {
   // same-page hash change leaves the browser's native (CSS
   // `scroll-behavior: smooth`) anchor scroll alone to do its job.
   const skippedRef = useRef(false)
+  // Whatever card/heading/etc. the click that's about to navigate actually
+  // landed inside, captured in the capture phase — before Next's router
+  // (which only reacts once the click bubbles back up) has done anything.
+  // Read once in handleDone to align that same element's new-page position
+  // to where it was on screen when clicked (see alignNewPageToTarget).
+  const clickTargetRef = useRef<ClickAlignmentTarget | null>(null)
+  // The object document.startViewTransition() returns — held onto so
+  // handleDone can wait for transition.finished before invisibly undoing
+  // the scroll/padding alignment trick (see alignNewPageToTarget's comment
+  // for why that has to wait until the animation is actually over).
+  const transitionRef = useRef<{ finished: Promise<void> } | null>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      clickTargetRef.current = captureClickAlignmentTarget(e)
+    }
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
+  }, [])
 
   useEffect(() => {
     function isHashOnlyChange(url: string) {
@@ -72,7 +98,16 @@ function useViewTransitions() {
       // (the cross-fade/morph) is already the "this just appeared"
       // animation, so a second one on top of it would fight for attention.
       viewTransitionState.active = true
-      document.startViewTransition(
+      // Any card scrolled out of view right now (e.g. clicking into an
+      // article from deep in a "Related articles" list) shouldn't morph
+      // across several screens of distance to reach its counterpart on the
+      // new page — see disableOffscreenTransitionNames' own comment for why
+      // that's the API designer's own recommended fix for elements this
+      // transition doesn't otherwise try to align. The one element
+      // clickTargetRef points at (if any) gets a real aligned morph
+      // instead — see handleDone.
+      disableOffscreenTransitionNames()
+      transitionRef.current = document.startViewTransition(
         () =>
           new Promise<void>((resolve) => {
             // A View Transition freezes the OLD page on screen (no spinner,
@@ -110,28 +145,60 @@ function useViewTransitions() {
     }
     function handleDone() {
       if (skippedRef.current) return
-      // Next's own built-in scroll-to-top-on-navigate stopped taking
-      // effect once the View Transition wrapper above was added — the
-      // real `window.scrollY` (not just the visual position) was verified
-      // stuck at its pre-navigation value after a client-side nav, only
-      // resetting on a full page reload. Whatever the exact interaction
-      // (a suspended-callback timing conflict with Next's own scroll
-      // restoration is the leading suspect), the fix is to stop relying on
-      // it and just force it ourselves. Done BEFORE resolving the View
-      // Transition promise (not after) — resolving is what tells the
-      // browser "capture the new page now," and the new page's own
-      // useReveal instances mount and run their first IntersectionObserver
-      // check around this same moment. If the leftover pre-navigation
-      // scroll position (still the old page's, e.g. scrolled deep into the
-      // homepage) is still live when that check runs, far more cards read
-      // as "already on screen" than actually end up above the fold once
-      // the scroll resets — those get marked instantly-shown and then
-      // never animate when the visitor later scrolls down to them for
-      // real. Scrolling first means the observer's first real check sees
-      // the corrected position.
-      window.scrollTo(0, 0)
-      resolveRef.current?.()
-      resolveRef.current = null
+      const transition = transitionRef.current
+      transitionRef.current = null
+      const clickTarget = clickTargetRef.current
+      clickTargetRef.current = null
+
+      if (transition) {
+        // Next's own built-in scroll-to-top-on-navigate stopped taking
+        // effect once the View Transition wrapper above was added — the
+        // real `window.scrollY` (not just the visual position) was
+        // verified stuck at its pre-navigation value after a client-side
+        // nav, only resetting on a full page reload. Whatever the exact
+        // interaction (a suspended-callback timing conflict with Next's
+        // own scroll restoration is the leading suspect), the fix is to
+        // stop relying on it and settle scroll ourselves — either to 0, or
+        // (when a card was actually clicked) to wherever aligns that card
+        // back to its old on-screen position. Either way this has to
+        // happen BEFORE resolving the View Transition promise, not after —
+        // resolving is what tells the browser "capture the new page now,"
+        // and the new page's own useReveal instances mount and run their
+        // first IntersectionObserver check around this same moment. If the
+        // leftover pre-navigation scroll position is still live when that
+        // check runs, far more cards read as "already on screen" than
+        // actually end up above the fold once the scroll settles — those
+        // get marked instantly-shown and never animate when the visitor
+        // later scrolls down to them for real.
+        const target = clickTarget ? findByTransitionName(clickTarget.name) : null
+        const cleanupAlignment = alignNewPageToTarget(clickTarget)
+        // Same off-screen check as before, now against the new page at its
+        // settled scroll position — a card that only exists far down the
+        // new page is just as wrong a long-distance morph target as one
+        // left behind on the old page would be. The aligned target itself
+        // (if any) is explicitly exempted — it's the one card this
+        // transition deliberately placed off the natural top-of-page
+        // position, on purpose, and it's already correctly on-screen there.
+        disableOffscreenTransitionNames(target)
+        resolveRef.current?.()
+        resolveRef.current = null
+        // Only unset the alignment scroll/padding trick once the browser's
+        // own animation has actually finished — undoing it any earlier
+        // would move the aligned element out from under the transition
+        // while it's still visibly playing. Per the WICG explainer's
+        // wording almost verbatim: offset to counteract the scroll
+        // difference during the transition, "and unset once the
+        // transition is complete."
+        if (cleanupAlignment) transition.finished.then(cleanupAlignment, cleanupAlignment)
+      } else {
+        // No View Transition ran for this navigation (unsupported browser,
+        // or the safety-valve timeout already fired) — same scroll-reset
+        // fix as above, just without anything to align. Instant, not the
+        // page's default smooth scroll — this is a correction, not a
+        // user-facing scroll gesture.
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+      }
+
       // Cleared a couple frames later, not synchronously — the new page's
       // useReveal instances mount and run their IntersectionObserver as an
       // effect right around this same moment, and need the flag to still
