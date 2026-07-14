@@ -109,6 +109,28 @@ function useViewTransitions() {
   // in handleDone to strip new-page names that have no old counterpart
   // (see disableUnmatchedTransitionNames).
   const oldNamesRef = useRef<Set<string>>(new Set())
+  // "Where are we navigating FROM" — deliberately NOT read live from
+  // window.location.pathname (or router.asPath) inside handleStart,
+  // because which one lies about the current path, and in which
+  // direction, depends on how the navigation was triggered:
+  // - A click-driven navigation (router.push under the hood): Next
+  //   controls exactly when history.pushState happens relative to firing
+  //   routeChangeStart, and (confirmed via [vt] logging) router.asPath
+  //   updates eagerly, before our handler runs — reading window.location
+  //   was the fix for that case (see isHashOnlyChange's own history).
+  // - A browser back/forward button (a `popstate` event): the OPPOSITE
+  //   problem — the browser itself updates window.location as part of
+  //   firing `popstate`, BEFORE any JS (Next's router included) gets to
+  //   react, so window.location.pathname is already the DESTINATION by
+  //   the time handleStart runs, same as the eager-asPath bug. That's
+  //   exactly why the back button did a plain instant page swap instead
+  //   of a morph: isHashOnlyChange compared url against the
+  //   already-updated pathname, saw them match, and silently skipped the
+  //   transition. Tracking it ourselves — updated only in handleDone,
+  //   once a navigation has actually completed — is immune to both
+  //   directions of staleness, since nothing but our own code writes to
+  //   it.
+  const currentPathRef = useRef(typeof window !== 'undefined' ? window.location.pathname : '/')
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -147,22 +169,17 @@ function useViewTransitions() {
   }, [])
 
   useEffect(() => {
-    // NOT router.asPath — confirmed via [vt] logging that it can already
-    // read as the DESTINATION path at the exact moment routeChangeStart
-    // fires (Next 12 apparently updates it eagerly for at least some
-    // navigations, root included), which made this always true for going
-    // home — url ('/') === the already-updated asPath ('/') — silently
-    // skipping the transition entirely with no morph and no error.
-    // window.location.pathname is the real, current browser URL; Next
-    // doesn't touch it until later in the navigation lifecycle, so it's
-    // immune to that race.
+    // NOT window.location.pathname or router.asPath — see currentPathRef's
+    // own comment above for why both lie about "where we're navigating
+    // FROM," just in opposite directions depending on how the navigation
+    // was triggered.
     function isHashOnlyChange(url: string) {
-      return url.split('#')[0] === window.location.pathname
+      return url.split('#')[0] === currentPathRef.current
     }
     function handleStart(url: string) {
       const log = process.env.NODE_ENV === 'development' ? (...args: unknown[]) => console.log('[vt]', ...args) : () => {}
       if (isHashOnlyChange(url)) {
-        log('skip: hash-only change', { url, currentPath: window.location.pathname })
+        log('skip: hash-only change', { url, currentPath: currentPathRef.current })
         skippedRef.current = true
         return
       }
@@ -171,7 +188,7 @@ function useViewTransitions() {
         log('skip: startViewTransition unsupported')
         return
       }
-      log('start', { url, currentPath: window.location.pathname, hidden: document.hidden })
+      log('start', { url, currentPath: currentPathRef.current, hidden: document.hidden })
       // A navigation starting before the PREVIOUS one's handleDone has run
       // (e.g. clicking straight through to another page while the last
       // transition is still visually playing) means a transition is still
@@ -211,10 +228,10 @@ function useViewTransitions() {
       // starting element.
       const destPath = url.split('?')[0].split('#')[0]
       if (destPath === '/') {
-        // Same reason as isHashOnlyChange above — window.location.pathname,
-        // not router.asPath, is the trustworthy read of "where we're
-        // navigating FROM" at this point in the lifecycle.
-        const slug = homeSectionSlugForPath(window.location.pathname)
+        // Same reason as isHashOnlyChange above — currentPathRef, not
+        // window.location.pathname, is the trustworthy read of "where
+        // we're navigating FROM" at this point in the lifecycle.
+        const slug = homeSectionSlugForPath(currentPathRef.current)
         const heading = slug ? findByTransitionName(`section-heading-${slug}`) : null
         log('going home', { slug, headingFound: !!heading, priorClickTarget: clickTargetRef.current?.name ?? null })
         if (heading) {
@@ -320,6 +337,11 @@ function useViewTransitions() {
     }
     function handleDone() {
       if (skippedRef.current) return
+      // The one place this updates — see currentPathRef's own comment.
+      // By routeChangeComplete, Next has definitely finished navigating,
+      // so window.location really is the new page now, safe to adopt as
+      // the new "current."
+      currentPathRef.current = window.location.pathname
       const transition = transitionRef.current
       transitionRef.current = null
       const clickTarget = clickTargetRef.current

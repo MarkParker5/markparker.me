@@ -143,6 +143,21 @@ export function captureClickAlignmentTarget(e: MouseEvent): ClickAlignmentTarget
   while (el && el !== document.body) {
     const name = el.style?.getPropertyValue('view-transition-name')
     if (name && name !== 'none') return { name, oldRect: el.getBoundingClientRect() }
+    // "All posts →" / "All projects →" etc. (index.tsx) aren't nested
+    // inside their SectionHeader — they're siblings, rendered after the
+    // list — so the walk above never finds a named ancestor for them and
+    // alignment was silently never attempted, landing back at the top of
+    // the destination page instead of staying where the list already
+    // was on screen. `data-align-heading` (set on those links'
+    // <Reveal> wrapper) names the section to align to instead — the
+    // browser then morphs that section's own heading in place, same as
+    // if the heading itself had been clicked, which keeps the rest of
+    // the list (sitting right below it) visually anchored too.
+    const alignSlug = el.dataset?.alignHeading
+    if (alignSlug) {
+      const heading = findByTransitionName(`section-heading-${alignSlug}`)
+      if (heading) return { name: `section-heading-${alignSlug}`, oldRect: heading.getBoundingClientRect() }
+    }
     el = el.parentElement
   }
   return null

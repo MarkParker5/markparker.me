@@ -147,10 +147,25 @@ export function Reveal({
   children,
   className = '',
   style,
-}: PropsWithChildren<{ className?: string; style?: CSSProperties }>) {
+  dataAlignHeading,
+}: PropsWithChildren<{
+  className?: string
+  style?: CSSProperties
+  // See captureClickAlignmentTarget (view-transition-state.ts) — names
+  // the section (by slug, e.g. "posts") a click anywhere inside this
+  // block should align to, for elements (like a trailing "All posts →"
+  // link) that aren't nested inside their own SectionHeader and would
+  // otherwise have no alignment target at all.
+  dataAlignHeading?: string
+}>) {
   const reveal = useReveal<HTMLDivElement>()
   return (
-    <div ref={reveal.ref} className={`${reveal.className} ${className}`} style={style}>
+    <div
+      ref={reveal.ref}
+      className={`${reveal.className} ${className}`}
+      style={style}
+      data-align-heading={dataAlignHeading}
+    >
       {children}
     </div>
   )

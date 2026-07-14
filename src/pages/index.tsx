@@ -63,8 +63,17 @@ export default function Index() {
         <title>Mark Parker</title>
       </Head>
 
-      <div className="mx-auto flex lg:flex-row flex-col">
-        <div className="mt-5 lg:w-[26rem] lg:flex-shrink-0">
+      {/* `xl:`, not `lg:` — the row needs the sidebar (26rem) + gap
+          (2.5rem) + the full-width content column (42rem) + this
+          container's own gutters to all fit side by side, ~75.5rem total
+          (see PAGE_MAX_WIDTH in page-container.tsx). `lg:` switches to
+          the row layout at 1024px, well before that — for roughly
+          1024–1280px of viewport width the row was active but too narrow
+          for its own content, clipping the fixed-width column. `xl:`
+          (1280px) is the first standard breakpoint that actually clears
+          the real minimum. */}
+      <div className="mx-auto flex xl:flex-row flex-col">
+        <div className="mt-5 xl:w-[26rem] xl:flex-shrink-0">
           <Profile />
         </div>
         {/* Fixed width, not `flex-1` — a flex item filling "whatever's
@@ -77,7 +86,7 @@ export default function Index() {
             PAGE_MAX_WIDTH bumped to fit both — see page-container.tsx —
             makes it the SAME 42rem content pages get, not just capped at
             it. */}
-        <div className={`mt-10 lg:ml-10 lg:flex-shrink-0 ${CONTENT_MAX_WIDTH_CLASS}`}>
+        <div className={`mt-10 xl:ml-10 xl:flex-shrink-0 ${CONTENT_MAX_WIDTH_CLASS}`}>
           {notesPreview.length > 0 && (
             <>
               <SectionHeader
@@ -90,7 +99,7 @@ export default function Index() {
                 divider
               />
               <NotesList notes={notesPreview} />
-              <Reveal className="text-center font-sans mt-4 mb-10 block">
+              <Reveal dataAlignHeading="posts" className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
                   href={withParam('/notes', 'notes', notesFilter)}
@@ -114,7 +123,7 @@ export default function Index() {
                 divider
               />
               <ProjectsList projects={spotlightProjects} />
-              <Reveal className="text-center font-sans mt-4 mb-10 block">
+              <Reveal dataAlignHeading="projects" className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
                   href={withParam('/projects', 'projects', projectsFilter)}
@@ -137,7 +146,7 @@ export default function Index() {
             divider
           />
           <ArticlesList articles={latestArticles} />
-          <Reveal className="text-center font-sans mt-4 block">
+          <Reveal dataAlignHeading="blog" className="text-center font-sans mt-4 block">
             <Link
               style={2}
               href={withParam('/blog', 'articles', articlesFilter)}

@@ -101,7 +101,16 @@ export function Profile() {
           <h1 className="mt-7 mb-1 text-4xl leading-tight">Mark Parker</h1>
         </Reveal>
         <Reveal>
-          <p className="text-l mb-1 whitespace-nowrap">
+          {/* `whitespace-nowrap` alone forced this onto one line
+              regardless of viewport width — fine down to tablet width,
+              but on a narrow phone the line is simply wider than the
+              screen, and nothing was there to shrink it, so the WHOLE
+              PAGE gained horizontal scroll. `clamp()` keeps it one line
+              at every width (still nowrap) but lets the font size itself
+              shrink fluidly on narrow viewports instead of overflowing —
+              1.25rem (text-l's own size) is the ceiling, so nothing
+              changes on tablet/desktop where it already fit. */}
+          <p className="mb-1 whitespace-nowrap text-[clamp(0.75rem,3.6vw,1.25rem)]">
             Engineer, co-founder of{' '}
             <Link style={2} href="https://parker-industries.org" newTab>
               Parker Industries
