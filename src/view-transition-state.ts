@@ -1,3 +1,7 @@
+import { getPreviewNotes } from './note'
+import { getSpotlightProjects } from './project'
+import { getPublicArticles } from './article'
+
 // Plain mutable flag, not React state — read synchronously inside
 // useReveal's IntersectionObserver callback at the moment it fires, with no
 // need for every Reveal instance to subscribe/re-render on every change.
@@ -130,6 +134,68 @@ export function disableUnmatchedTransitionNames(oldNames: Set<string>): RestoreN
 
 export type ClickAlignmentTarget = { name: string; oldRect: DOMRect }
 
+// The exact same ids the homepage preview renders for this section, in the
+// exact same order — read directly from the same data functions
+// index.tsx itself calls, not derived from the (unavailable, since we're
+// not currently ON the homepage) home DOM. Doesn't account for a filtered
+// homepage (?notes=..., etc.) — going home always lands on the plain,
+// unfiltered "/", so that's the only case this needs to match.
+function previewCardNamesForSlug(slug: string): string[] {
+  if (slug === 'posts') return getPreviewNotes(3).map((n) => `note-card-${n.id}`)
+  if (slug === 'projects') return getSpotlightProjects().map((p) => `project-card-${p.id}`)
+  if (slug === 'blog') return getPublicArticles().slice(0, 3).map((a) => `article-card-${a.id}`)
+  return []
+}
+
+// The correct anchor for a transition between a section's homepage
+// preview and its own full content page is whichever of the preview's OWN
+// cards the visitor has actually scrolled to — not the section heading,
+// which stops meaning anything the moment you've scrolled past it (using
+// it anyway is what made "scroll down 3 cards, then go back" land at
+// completely the wrong spot), and not a fixed link either (nothing about
+// a link's own position corresponds to "where the visitor was reading").
+// Direction-agnostic on purpose: called against whichever document is
+// CURRENTLY active — the homepage (clicking "All <content> →" itself,
+// which isn't nested inside its own SectionHeader — see
+// captureClickAlignmentTarget) or a content page (going home) — the scan
+// only ever looks at named elements in the live DOM, so the same logic
+// answers "where was I" correctly on either side.
+//
+// "Reached" means the card's top edge is at or above the bottom of the
+// viewport — scanning in list order and keeping the LAST one that
+// qualifies finds the furthest point the visitor has actually scrolled
+// to. Two different outcomes from there:
+// - Still genuinely on screen (top >= 0): true Plan-B alignment — align
+//   using its REAL current position, so it lands in the exact same screen
+//   spot on the other side, preserved exactly.
+// - Already scrolled entirely above the viewport (top < 0) — meaning the
+//   visitor kept reading past every card the preview has and is now
+//   looking at content with no equivalent on the other side. There's
+//   nothing further down to align to, so this deliberately does NOT try
+//   to preserve its (no longer meaningful) exact former position; it
+//   anchors that same last-matched card to the very TOP of the screen
+//   instead — the natural place to land "I've read past what the preview
+//   has, here's the closest point that still exists on both sides."
+//
+// Returns null when none of the preview cards have been reached yet
+// (still scrolled above all of them, or the page renders none at all) —
+// the caller falls back to the section heading in that case, which is
+// still the right anchor for "I'm at or near the top of this page."
+export function findScrolledToPreviewCardAnchor(slug: string): ClickAlignmentTarget | null {
+  const names = previewCardNamesForSlug(slug)
+  let lastReached: { name: string; rect: DOMRect } | null = null
+  for (const name of names) {
+    const el = findByTransitionName(name)
+    if (!el) continue
+    const rect = el.getBoundingClientRect()
+    if (rect.top < window.innerHeight) lastReached = { name, rect }
+  }
+  if (!lastReached) return null
+  const { name, rect } = lastReached
+  if (rect.top >= 0) return { name, oldRect: rect }
+  return { name, oldRect: { top: 0 } as DOMRect }
+}
+
 // Call from a capture-phase document click listener, before Next's router
 // (which only reacts in the bubble phase) has done anything — records
 // which named card/heading/etc. the click actually landed inside, and
@@ -141,23 +207,30 @@ export function captureClickAlignmentTarget(e: MouseEvent): ClickAlignmentTarget
   if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return null
   let el = e.target as HTMLElement | null
   while (el && el !== document.body) {
-    const name = el.style?.getPropertyValue('view-transition-name')
-    if (name && name !== 'none') return { name, oldRect: el.getBoundingClientRect() }
-    // "All posts →" / "All projects →" etc. (index.tsx) aren't nested
-    // inside their SectionHeader — they're siblings, rendered after the
-    // list — so the walk above never finds a named ancestor for them and
-    // alignment was silently never attempted, landing back at the top of
-    // the destination page instead of staying where the list already
-    // was on screen. `data-align-heading` (set on those links'
-    // <Reveal> wrapper) names the section to align to instead — the
-    // browser then morphs that section's own heading in place, same as
-    // if the heading itself had been clicked, which keeps the rest of
-    // the list (sitting right below it) visually anchored too.
+    // Checked BEFORE this element's own view-transition-name, not after —
+    // relevant once an element ever carries both. `data-align-heading`
+    // ("All posts →" 's <Reveal> wrapper, index.tsx — not nested inside
+    // its own SectionHeader, so the walk below would otherwise never find
+    // a named ancestor for it at all) means a click landing anywhere in
+    // here should align to this SECTION, not to whatever incidental name
+    // this specific element might carry.
+    //
+    // The section itself, not always the heading: if any of the
+    // homepage's own preview cards for this slug have already been
+    // scrolled to, align to that instead — same reasoning as going home,
+    // see findScrolledToPreviewCardAnchor's own comment. Landing on the
+    // heading regardless of what was actually on screen is what made
+    // "scroll home down to Projects, click All projects" land on the
+    // wrong part of the destination page.
     const alignSlug = el.dataset?.alignHeading
     if (alignSlug) {
+      const anchor = findScrolledToPreviewCardAnchor(alignSlug)
+      if (anchor) return anchor
       const heading = findByTransitionName(`section-heading-${alignSlug}`)
       if (heading) return { name: `section-heading-${alignSlug}`, oldRect: heading.getBoundingClientRect() }
     }
+    const name = el.style?.getPropertyValue('view-transition-name')
+    if (name && name !== 'none') return { name, oldRect: el.getBoundingClientRect() }
     el = el.parentElement
   }
   return null

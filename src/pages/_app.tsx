@@ -12,6 +12,7 @@ import {
   captureClickAlignmentTarget,
   alignNewPageToTarget,
   findByTransitionName,
+  findScrolledToPreviewCardAnchor,
   ClickAlignmentTarget,
 } from '../view-transition-state'
 
@@ -169,6 +170,35 @@ function useViewTransitions() {
   }, [])
 
   useEffect(() => {
+    // We fully own the scroll position on every client-side navigation
+    // now — handleDone always settles it, either to an aligned position
+    // (alignNewPageToTarget) or to 0. The browser's NATIVE history scroll
+    // restoration ('auto', the default — nothing in this app ever touched
+    // it) does its own restore on every back/forward: it re-applies
+    // whatever scroll the destination page had when the visitor LEFT it,
+    // asynchronously, after our synchronous scroll has already run — so
+    // on back-navigation the visitor landed wherever the page happened to
+    // be scrolled at departure time, with our alignment silently
+    // overwritten a moment later. That's exactly the "back from content's
+    // top lands me deep at 'All projects'; back from content's bottom
+    // lands me at 0" report: neither landing had anything to do with the
+    // alignment math — both were echoes of home's scroll at the moment it
+    // was left. (Live measurements in a background tab looked correct for
+    // the same reason they were misleading: a tab that never paints never
+    // runs the deferred native restore.)
+    //
+    // Gated on View Transition support, deliberately: in a browser
+    // without it (Safari) none of the alignment machinery runs, and
+    // native restoration is doing real, correct work there — leave it on.
+    if (!document.startViewTransition) return
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+    return () => {
+      window.history.scrollRestoration = previous
+    }
+  }, [])
+
+  useEffect(() => {
     // NOT window.location.pathname or router.asPath — see currentPathRef's
     // own comment above for why both lie about "where we're navigating
     // FROM," just in opposite directions depending on how the navigation
@@ -232,17 +262,32 @@ function useViewTransitions() {
         // window.location.pathname, is the trustworthy read of "where
         // we're navigating FROM" at this point in the lifecycle.
         const slug = homeSectionSlugForPath(currentPathRef.current)
-        const heading = slug ? findByTransitionName(`section-heading-${slug}`) : null
-        log('going home', { slug, headingFound: !!heading, priorClickTarget: clickTargetRef.current?.name ?? null })
-        if (heading) {
+        // The real anchor: whichever of the homepage preview's OWN cards
+        // the visitor has actually scrolled to on this content page —
+        // see findScrolledToPreviewCardAnchor's own comment for the full reasoning
+        // (why the section heading alone isn't a reliable "where was I"
+        // signal, and why "scrolled past everything the preview has"
+        // gets a different treatment than "still within it"). Only
+        // falls back to the heading when no preview card has been
+        // reached at all — i.e. genuinely still at/near the top.
+        const anchor = slug ? findScrolledToPreviewCardAnchor(slug) : null
+        const heading = !anchor && slug ? findByTransitionName(`section-heading-${slug}`) : null
+        log('going home', {
+          slug,
+          anchor: anchor?.name ?? null,
+          headingFound: !!heading,
+          priorClickTarget: clickTargetRef.current?.name ?? null,
+        })
+        if (anchor) {
+          clickTargetRef.current = anchor
+        } else if (slug && heading) {
           clickTargetRef.current = { name: `section-heading-${slug}`, oldRect: heading.getBoundingClientRect() }
         } else {
-          // No heading with this name on the current page at all — nothing
-          // to align to, but a transition should still run (root
-          // cross-fade at minimum). If the destination *should* have a
-          // named target and this logs `headingFound: false`, that's the
-          // bug: something upstream (design toggle hiding the title,
-          // wrong slug mapping) removed the name before this ran.
+          // Nothing to align to at all — a transition should still run
+          // (root cross-fade at minimum). If the destination *should*
+          // have a named target and this logs `headingFound: false`,
+          // that's the bug: something upstream (design toggle hiding the
+          // title, wrong slug mapping) removed the name before this ran.
           clickTargetRef.current = null
         }
       }
