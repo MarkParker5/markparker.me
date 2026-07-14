@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, PropsWithChildren } from 'react'
+import { debugFlags } from './view-transition-state'
 
 // Dev-only A/B toggles for design decisions still under review — lets us
 // compare two real options live instead of guessing from a screenshot.
@@ -56,6 +57,29 @@ type DesignToggles = {
   // the homepage's section headings always show, they're doing real
   // wayfinding work there (first-time visitors scanning what's on the page).
   hidePageTitle: boolean
+  // Seconds — overrides the View Transition's CSS animation-duration (see
+  // --vt-duration in globals.css) for every page-to-page navigation. Real
+  // production value is 0.18–0.32s; slowed way down here to actually watch
+  // a transition frame-by-frame while debugging it, not a design decision
+  // of its own.
+  transitionDuration: number
+  // Debug escape hatch for disableOffscreenTransitionNames (see
+  // view-transition-state.ts) — when true, an element that's scrolled
+  // entirely out of view still gets to morph across the transition rather
+  // than falling back to a cross-fade. Real behavior wants this off (a
+  // long-distance morph is jarring, see that function's own comment); on
+  // is for comparing the two side by side while chasing morph bugs that
+  // might be caused by the offscreen check itself misfiring.
+  enableOffscreenAnimation: boolean
+  // Whether/how a morphing element's CONTENT resizes along with its box
+  // (`vt-size-morph-cover`/`vt-size-morph-contain` class on <html> — see
+  // the ::view-transition-old/new rules in globals.css) instead of the
+  // browser-default cross-fade between the two natural-size snapshots.
+  // 'off' by default — 'cover' zoom-crops hard whenever the old/new
+  // aspect ratios differ (they nearly always do for text cards across
+  // this site's two layouts); 'contain' avoids that at the cost of
+  // letterboxing instead. See the CSS comment for the full tradeoff.
+  sizeMorph: 'off' | 'cover' | 'contain'
   // UI-only preference for the panel itself, not a design decision — kept
   // in the same persisted object for simplicity.
   panelCollapsed: boolean
@@ -74,6 +98,9 @@ const DEFAULTS: DesignToggles = {
   hideUnavailableMirrors: true,
   headerDivider: true,
   hidePageTitle: false,
+  transitionDuration: 0.32,
+  enableOffscreenAnimation: false,
+  sizeMorph: 'off',
   panelCollapsed: false,
 }
 const STORAGE_KEY = 'design-toggles'
@@ -125,6 +152,30 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
       toggles.fontFamily === 'inter' ? 'Inter, sans-serif' : "'Open Sans', sans-serif",
     )
   }, [toggles.fontFamily])
+
+  // Same idea, for the View Transition's own animation-duration (see
+  // --vt-duration in globals.css).
+  useEffect(() => {
+    if (!isDev) return
+    document.documentElement.style.setProperty('--vt-duration', `${toggles.transitionDuration}s`)
+  }, [toggles.transitionDuration])
+
+  // Mirrors into the plain-JS side-channel debugFlags (see
+  // view-transition-state.ts) rather than a CSS variable — the reader here
+  // is _app.tsx's router-events code, not CSS.
+  useEffect(() => {
+    if (!isDev) return
+    debugFlags.enableOffscreenAnimation = toggles.enableOffscreenAnimation
+  }, [toggles.enableOffscreenAnimation])
+
+  // Classes on <html> rather than a CSS variable — the reader is a set of
+  // whole CSS rules (globals.css's vt-size-morph-* blocks) that need to be
+  // on or off entirely, not a single interpolated value.
+  useEffect(() => {
+    if (!isDev) return
+    document.documentElement.classList.toggle('vt-size-morph-cover', toggles.sizeMorph === 'cover')
+    document.documentElement.classList.toggle('vt-size-morph-contain', toggles.sizeMorph === 'contain')
+  }, [toggles.sizeMorph])
 
   // Anchored in dvh/dvw (dynamic viewport units), not vh/vw or a plain
   // fixed+bottom-4 — on mobile, the browser's own address/tab bar shows and
@@ -258,6 +309,45 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
                          dark:hover:bg-back-secondary-dark"
             >
               {toggles.hidePageTitle ? 'hidden' : 'shown'}
+            </button>
+          </label>
+          <label className="flex flex-col gap-1.5 text-base">
+            <span className="flex items-center justify-between">
+              <span>Transition duration</span>
+              <span className="text-sm text-faint-light dark:text-faint-dark">{toggles.transitionDuration}s</span>
+            </span>
+            <input
+              type="range"
+              min={0.3}
+              max={10}
+              step={0.1}
+              value={toggles.transitionDuration}
+              onChange={(e) => update({ transitionDuration: Number(e.target.value) })}
+              className="w-full accent-link2-light dark:accent-link2-dark"
+            />
+          </label>
+          <label className="flex items-center justify-between gap-2 text-base">
+            <span>Enable offscreen animation</span>
+            <button
+              onClick={() => update({ enableOffscreenAnimation: !toggles.enableOffscreenAnimation })}
+              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
+                         dark:hover:bg-back-secondary-dark"
+            >
+              {toggles.enableOffscreenAnimation ? 'on' : 'off'}
+            </button>
+          </label>
+          <label className="flex items-center justify-between gap-2 text-base">
+            <span>Size morph</span>
+            <button
+              onClick={() => {
+                const order: DesignToggles['sizeMorph'][] = ['off', 'cover', 'contain']
+                const next = order[(order.indexOf(toggles.sizeMorph) + 1) % order.length]
+                update({ sizeMorph: next })
+              }}
+              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
+                         dark:hover:bg-back-secondary-dark"
+            >
+              {toggles.sizeMorph}
             </button>
           </label>
           <label className="flex items-center justify-between gap-2 text-base">

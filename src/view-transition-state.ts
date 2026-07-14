@@ -1,8 +1,85 @@
 // Plain mutable flag, not React state — read synchronously inside
 // useReveal's IntersectionObserver callback at the moment it fires, with no
 // need for every Reveal instance to subscribe/re-render on every change.
-// Set around each route change in _app.tsx.
-export const viewTransitionState = { active: false }
+// Set around each route change in _app.tsx. `alignedName` is the
+// view-transition-name (if any) of whatever element THIS transition is
+// actively aligning (see alignNewPageToTarget) — set in _app.tsx's
+// handleStart, before the new page even mounts. useReveal reads it once at
+// mount to decide whether IT is the one actively-morphing element (must be
+// visible from its very first render, see the 'pending' state below) or
+// everything else (which should instead wait for the transition to
+// genuinely finish before deciding whether to reveal — see
+// onTransitionSettled).
+export const viewTransitionState = {
+  active: false,
+  alignedName: null as string | null,
+  // Whether this navigation's "names are final, snapshot is about to be
+  // captured" moment (notifyBeforeCapture below) has already happened —
+  // lets a Reveal whose effect runs late (React effect timing vs Next's
+  // routeChangeComplete ordering isn't guaranteed) still make its
+  // visibility decision immediately instead of subscribing to an event
+  // that already fired. Same idea for `settled` and
+  // notifyTransitionSettled.
+  captureDone: false,
+  settled: true,
+}
+
+// A tiny pub/sub, not a single Promise — a new transition can start (and
+// need a fresh signal) before every subscriber from the previous one has
+// necessarily unsubscribed, and plain callbacks are simpler to reuse across
+// transitions than juggling a fresh Promise each time. Fired once from
+// _app.tsx's handleDone, exactly when transition.finished resolves — i.e.
+// once the browser's own visual animation has ACTUALLY finished playing,
+// which is a very different moment from viewTransitionState.active
+// flipping false (that happens a couple of frames after the transition
+// merely STARTS, see handleDone's own comment).
+type Listener = () => void
+let settledListeners: Listener[] = []
+export function onTransitionSettled(cb: Listener): () => void {
+  settledListeners.push(cb)
+  return () => {
+    settledListeners = settledListeners.filter((l) => l !== cb)
+  }
+}
+export function notifyTransitionSettled() {
+  viewTransitionState.settled = true
+  const listeners = settledListeners
+  settledListeners = []
+  listeners.forEach((cb) => cb())
+}
+
+// Fired from _app.tsx's handleDone at the exact point where every
+// view-transition-name on the new page is FINAL (off-screen and unpaired
+// ones stripped, alignment scroll applied) but the browser hasn't captured
+// the new page's snapshot yet (resolveRef hasn't run). This is the one
+// moment a Reveal can reliably answer "am I part of this morph or not" —
+// answering at effect-mount time was a race: React's effect timing vs
+// Next's routeChangeComplete ordering isn't guaranteed, so an effect
+// could read names before handleDone had stripped the non-participating
+// ones, wrongly concluding half the page was "morphing."
+let beforeCaptureListeners: Listener[] = []
+export function onBeforeCapture(cb: Listener): () => void {
+  beforeCaptureListeners.push(cb)
+  return () => {
+    beforeCaptureListeners = beforeCaptureListeners.filter((l) => l !== cb)
+  }
+}
+export function notifyBeforeCapture() {
+  viewTransitionState.captureDone = true
+  const listeners = beforeCaptureListeners
+  beforeCaptureListeners = []
+  listeners.forEach((cb) => cb())
+}
+
+// Same idea, for the dev-only "Enable offscreen animation" toggle
+// (design-toggles.tsx) — _app.tsx's useViewTransitions hook runs outside
+// DesignToggleProvider's own subtree (it's called directly in the App
+// component, a sibling of the Provider it renders, not a descendant), so it
+// can't read the toggle via useDesignToggles()/context. DesignToggleProvider
+// mirrors the toggle into this plain flag instead, the same side-channel
+// --vt-duration/--font-sans already use for the same reason, just as a JS
+// value instead of a CSS variable since the reader here is plain JS, not CSS.
+export const debugFlags = { enableOffscreenAnimation: false }
 
 // Disables the morph for any named element that's scrolled entirely out of
 // the viewport. Used as a fallback for every element EXCEPT the one
@@ -26,13 +103,94 @@ export const viewTransitionState = { active: false }
 // the following navigation) sets each element's real name fresh from
 // scratch via its own `*TransitionStyle(id)` helper, so there's nothing to
 // explicitly restore.
-export function disableOffscreenTransitionNames(skip?: HTMLElement | null) {
+// Persistent site chrome (the "Mark Parker" logo/header and the rule under
+// it) is exempt, always — not just the specific element this transition
+// happens to be aligning. Scrolling to align some OTHER target (e.g. a
+// SectionHeader sitting below where the compact header ends) routinely
+// scrolls the header itself out of view as a side effect, which isn't the
+// same thing as "this is unrelated content that happens to be far away" —
+// it's the one element every page shares, and its own morph shouldn't be
+// held hostage to whether something else on the page needed a big scroll.
+// Exported so useReveal (reveal.tsx) can apply the same "this is persistent
+// chrome, not a regular morph participant" exemption to its own "must be
+// visible from the very first render" decision — see viewTransitionState's
+// alignedName comment above.
+export const ALWAYS_EXEMPT_NAMES = new Set(['site-title', 'site-title-divider'])
+
+// Both name-disabling functions below mutate `el.style` directly rather
+// than through React, and BOTH now return a restore function instead of
+// leaving that mutation in place indefinitely. The assumption that "the
+// next real render sets each element's name fresh from scratch" only
+// holds when the component actually unmounts/remounts — true for a page
+// you navigate AWAY from and back to, but false for a page you're still
+// sitting on: clicking a second link (e.g. "All posts →" right after
+// arriving home) reads the SAME already-mutated DOM nodes from the
+// PREVIOUS navigation, since nothing ever put them back. That's exactly
+// what made "click Projects, go home, then Posts is stuck invisible" a
+// real bug — home's OWN Posts names had been stripped to 'none' by the
+// Projects→home pairing check and simply never recovered.
+type RestoreNames = () => void
+
+export function disableOffscreenTransitionNames(skip?: HTMLElement | null): RestoreNames {
+  if (debugFlags.enableOffscreenAnimation) return () => {}
+  const restores: Array<() => void> = []
   document.querySelectorAll<HTMLElement>('[style*="view-transition-name"]').forEach((el) => {
     if (el === skip) return
+    const original = el.style.getPropertyValue('view-transition-name')
+    if (ALWAYS_EXEMPT_NAMES.has(original)) return
     const rect = el.getBoundingClientRect()
     const offscreen = rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth
-    if (offscreen) el.style.setProperty('view-transition-name', 'none')
+    if (offscreen) {
+      el.style.setProperty('view-transition-name', 'none')
+      restores.push(() => el.style.setProperty('view-transition-name', original))
+    }
   })
+  return () => restores.forEach((r) => r())
+}
+
+// Every name currently in effect (i.e. not reset to 'none') in the DOM.
+// Called in _app.tsx's handleStart against the OLD page, BEFORE
+// disableOffscreenTransitionNames prunes it — this needs to answer "does a
+// counterpart for this name exist anywhere on the old page," not "is it
+// currently in the viewport." Collecting it after pruning was a real bug:
+// navigating home→Projects via the nav link (not the Projects heading)
+// leaves the Projects section scrolled out of view on the home page,
+// already offscreen-pruned by the time this ran — the later pairing check
+// then couldn't tell "off-screen but real" apart from "genuinely doesn't
+// exist" and wiped the destination page's entire content.
+export function collectActiveTransitionNames(): Set<string> {
+  const names = new Set<string>()
+  document.querySelectorAll<HTMLElement>('[style*="view-transition-name"]').forEach((el) => {
+    const name = el.style.getPropertyValue('view-transition-name')
+    if (name && name !== 'none') names.add(name)
+  })
+  return names
+}
+
+// The complement of disableOffscreenTransitionNames, for the NEW page: an
+// element that carries a name with no counterpart in the old page's
+// capture set isn't going to morph — the browser treats it as "entering"
+// content and plays its own per-element fade-in for it, IN PARALLEL with
+// the root cross-fade and before the transition finishes. That's exactly
+// the "articles show up mid-morph via cross-fade instead of the reveal"
+// bug on /blog: the homepage only ever shows the 3 latest articles, so
+// every other above-the-fold row on /blog had a name with no old-side
+// pair. Stripping those names makes them plain page content, which the
+// reveal system then correctly holds hidden until the transition settles.
+// Names in ALWAYS_EXEMPT_NAMES are left alone for the same reason they're
+// exempt everywhere else (persistent chrome).
+export function disableUnmatchedTransitionNames(oldNames: Set<string>): RestoreNames {
+  const restores: Array<() => void> = []
+  document.querySelectorAll<HTMLElement>('[style*="view-transition-name"]').forEach((el) => {
+    const name = el.style.getPropertyValue('view-transition-name')
+    if (!name || name === 'none') return
+    if (ALWAYS_EXEMPT_NAMES.has(name)) return
+    if (!oldNames.has(name)) {
+      el.style.setProperty('view-transition-name', 'none')
+      restores.push(() => el.style.setProperty('view-transition-name', name))
+    }
+  })
+  return () => restores.forEach((r) => r())
 }
 
 export type ClickAlignmentTarget = { name: string; oldRect: DOMRect }
@@ -75,19 +233,34 @@ export function findByTransitionName(name: string): HTMLElement | null {
 // sliding/fading in around it — the effect you get clicking a thumbnail on
 // iOS regardless of how far down a list you'd scrolled.
 //
-// Just calling scrollTo() with the computed offset isn't enough on its
-// own: the required offset can be negative (the target sits higher up the
-// new page, in document coordinates, than where it needs to visually land
-// — no such thing as scrolling to a negative position) or beyond the new
-// page's natural scrollable range (the target is very close to the new
-// page's own top or bottom edge). Both are fixed the same way: temporarily
-// padding `<body>` — top to manufacture the "room above" a negative offset
-// would need, bottom to manufacture "room below" when the natural page
-// isn't tall enough to scroll that far. Per the WICG explainer's own
-// (unelaborated) suggestion: "one of the pieces of content will need to be
-// offset to counteract the scroll difference between the two, and unset
-// once the transition is complete" — the unsetting half is the caller's
-// job, via the cleanup function this returns, once transition.finished.
+// The required offset can land beyond the new page's natural scrollable
+// range in two different ways, and only ONE of them is safe to compensate
+// for with padding:
+//
+// - Target's natural position is BELOW the reachable scroll range (very
+//   close to the new page's own bottom edge, or the page is short). Padding
+//   the BOTTOM of <body> manufactures the missing scroll room — safe to add
+//   and later remove, because that space sits below whatever's currently
+//   in the viewport; removing it again never moves anything the visitor
+//   can see.
+// - Target's natural position is ABOVE where it needs to land (negative
+//   offset — the homepage's own version of a section can easily sit higher
+//   up than the content page's compact header pushed it to). Padding the
+//   TOP would work the same way mathematically, but is NOT safe: removing
+//   top padding after the transition shifts every already-on-screen
+//   element upward, instantly, with no animation — visible as exactly the
+//   "moves up then drops with no animation" glitch this was built to
+//   avoid, not fix. There's no way to hide that "unset" the way there is
+//   for bottom padding, since top padding sits above the fold by
+//   definition. So this case is simply clamped to 0 instead: the closest
+//   reachable position, not a mathematically perfect match, but stable —
+//   nothing added, nothing to visibly correct once the transition ends.
+//
+// Per the WICG explainer's own (unelaborated) suggestion: "one of the
+// pieces of content will need to be offset to counteract the scroll
+// difference between the two, and unset once the transition is complete"
+// — the unsetting half is the caller's job, via the cleanup function this
+// returns, once transition.finished.
 //
 // Returns null when there's nothing to align (no target was clicked, or
 // this specific card doesn't exist on the new page — e.g. it's a "Related"
@@ -107,7 +280,6 @@ export function alignNewPageToTarget(target: ClickAlignmentTarget | null): (() =
   // read back a negative document-top for an element, which is only
   // possible if the scroll hadn't really reset yet).
   scrollToInstant(0)
-  document.body.style.paddingTop = ''
   document.body.style.paddingBottom = ''
   if (!target) return null
 
@@ -117,23 +289,45 @@ export function alignNewPageToTarget(target: ClickAlignmentTarget | null): (() =
   // Scroll is 0 right now, so the element's current viewport-relative top
   // IS its natural distance from the top of the document.
   const naturalDocumentTop = el.getBoundingClientRect().top
-  const desiredScrollY = naturalDocumentTop - target.oldRect.top
+  let desiredScrollY = naturalDocumentTop - target.oldRect.top
+
+  // Alignment exists to spare the target a LONG, jarring on-screen journey
+  // — when the journey would be short anyway, skip the alignment and land
+  // at the natural top of the page instead. Two real cases pinned this
+  // rule down:
+  // - "Posts" clicked from home: its homepage position sits close to its
+  //   natural /notes position, so the required scroll was small (~150px)
+  //   but still enough to clip the logo/nav off the top — a broken-looking
+  //   landing bought for almost nothing (the un-aligned morph only travels
+  //   those same ~150px, which reads fine).
+  // - Going home from /projects: the Projects section lives most of a
+  //   screen down the homepage. Landing at 0 would send the heading
+  //   morphing across the entire viewport (and the visitor loses "I'm at
+  //   the projects part of home" — they land at the profile instead). This
+  //   is the case alignment is FOR; scrolling the header out of view is
+  //   the right trade here.
+  // A blanket "never hide the header" cap (the previous attempt) forced
+  // BOTH cases to 0 and silently disabled the whole mechanism.
+  if (desiredScrollY < window.innerHeight / 3) desiredScrollY = 0
 
   const viewportHeight = window.innerHeight
   const documentHeight = document.documentElement.scrollHeight
-  const paddingTop = Math.max(0, -desiredScrollY)
-  const scrollWithPadding = desiredScrollY + paddingTop
-  const maxScrollWithPadding = documentHeight + paddingTop - viewportHeight
-  const paddingBottom = Math.max(0, scrollWithPadding - maxScrollWithPadding)
+  const maxScroll = documentHeight - viewportHeight
+  const paddingBottom = Math.max(0, desiredScrollY - maxScroll)
 
-  if (paddingTop > 0) document.body.style.paddingTop = `${paddingTop}px`
   if (paddingBottom > 0) document.body.style.paddingBottom = `${paddingBottom}px`
-  scrollToInstant(Math.max(0, scrollWithPadding))
+  scrollToInstant(Math.max(0, desiredScrollY))
 
+  // Only the padding needs undoing — it's an artificial spacer with no
+  // content of its own. The scroll position doesn't: since top-padding is
+  // never used (see above), wherever this landed is always a real,
+  // legitimate position already on the page, not something manufactured
+  // that needs reverting. Resetting to 0 here was a real bug — it undid a
+  // correct "land scrolled to where the content you came from now lives"
+  // outcome (e.g. arriving home from /projects and landing on the Projects
+  // section) back to the top for no reason, every time, with no animation.
   return () => {
-    document.body.style.paddingTop = ''
     document.body.style.paddingBottom = ''
-    scrollToInstant(0)
   }
 }
 

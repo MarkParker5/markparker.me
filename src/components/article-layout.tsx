@@ -29,6 +29,15 @@ export const ArticleLayout = (props: PropsWithChildren<unknown>) => {
   return (
     <PageContainer>
       <div className="mx-auto max-w-2xl">
+        {/* Wrapped in <Reveal> again — useReveal itself now distinguishes
+            "mounted while a View Transition is in flight" (skips straight to
+            fully visible, no invisible frame for the transition's snapshot
+            to freeze — see its 'pending' state) from a genuine fresh
+            load/reload (plays the normal fade-up entrance, same as any
+            other above-the-fold content). Un-wrapping this entirely to
+            dodge the transition-snapshot bug also lost the entrance
+            animation on a direct visit — the underlying bug is fixed at the
+            source now, so there's no reason to special-case this element. */}
         <Reveal>
           <header>
             <Link href="/">

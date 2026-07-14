@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryParam } from '../filter'
 import { ArticleMeta } from '../article'
+import { useReveal } from './reveal'
 
 export function useArticleSearch(articles: ArticleMeta[]): [ArticleMeta[], string, (v: string) => void] {
   const [query, setQuery] = useQueryParam('q')
@@ -30,13 +31,17 @@ export const ArticleSearch = ({ value, onChange }: Props) => {
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const showInput = open || Boolean(value)
+  // Same entrance treatment FilterBar already gets on /notes and /projects
+  // — without it this was the one piece of page chrome that just popped in
+  // (or rode along inside a transition's cross-fade) instead of revealing.
+  const reveal = useReveal<HTMLDivElement>()
 
   useEffect(() => {
     if (showInput) inputRef.current?.focus()
   }, [showInput])
 
   return (
-    <div className="flex justify-start gap-2 mb-4">
+    <div ref={reveal.ref} className={`flex justify-start gap-2 mb-4 ${reveal.className}`}>
       {showInput ? (
         <input
           ref={inputRef}

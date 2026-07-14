@@ -1,5 +1,6 @@
 import { AppPropsType } from 'next/dist/shared/lib/utils'
 import { useEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { useRouter } from 'next/router'
 import '../../styles/globals.css'
 import { Footer } from '../components/footer'
@@ -7,9 +8,13 @@ import { DesignToggleProvider } from '../design-toggles'
 import {
   viewTransitionState,
   disableOffscreenTransitionNames,
+  disableUnmatchedTransitionNames,
+  collectActiveTransitionNames,
   captureClickAlignmentTarget,
   alignNewPageToTarget,
   findByTransitionName,
+  notifyTransitionSettled,
+  notifyBeforeCapture,
   ClickAlignmentTarget,
 } from '../view-transition-state'
 
@@ -23,7 +28,11 @@ declare global {
     // Not yet in the TS DOM lib bundled with this project — feature-detected
     // at every call site anyway (`document.startViewTransition?.(...)`), so
     // this is just enough typing to call it, not a claim it's always there.
-    startViewTransition?: (callback: () => void | Promise<void>) => { finished: Promise<void> }
+    startViewTransition?: (callback: () => void | Promise<void>) => {
+      finished: Promise<void>
+      ready: Promise<void>
+      skipTransition: () => void
+    }
   }
 }
 
@@ -33,6 +42,25 @@ if (process.env.NODE_ENV === 'development') {
     .catch((e) => {
       console.error('could not load impulse', e)
     })
+}
+
+// Maps a content page's own route to the homepage section it's the "full
+// page" version of — same slug SectionHeader derives from its title (see
+// section-header.tsx), so `section-heading-${slug}` names the identical
+// element on both sides. Every /blog/[slug] article page counts as "Blog"
+// too — leaving an individual article for home should land on the Blog
+// section, not fail to match anything just because the path isn't exactly
+// /blog.
+const HOME_SECTION_SLUG_BY_PATH: Record<string, string> = {
+  '/notes': 'posts',
+  '/projects': 'projects',
+  '/blog': 'blog',
+}
+function homeSectionSlugForPath(path: string): string | null {
+  const clean = path.split('?')[0].split('#')[0]
+  if (HOME_SECTION_SLUG_BY_PATH[clean]) return HOME_SECTION_SLUG_BY_PATH[clean]
+  if (clean.startsWith('/blog/')) return 'blog'
+  return null
 }
 
 // Wraps every route change in a View Transition — deliberately wired at the
@@ -71,33 +99,146 @@ function useViewTransitions() {
   // The object document.startViewTransition() returns — held onto so
   // handleDone can wait for transition.finished before invisibly undoing
   // the scroll/padding alignment trick (see alignNewPageToTarget's comment
-  // for why that has to wait until the animation is actually over).
-  const transitionRef = useRef<{ finished: Promise<void> } | null>(null)
+  // for why that has to wait until the animation is actually over), and so
+  // handleStart can skipTransition() it if a NEW navigation starts before
+  // this one's own handleDone has run (see handleStart's own comment).
+  const transitionRef = useRef<{
+    finished: Promise<void>
+    ready: Promise<void>
+    skipTransition: () => void
+  } | null>(null)
+  // Every view-transition-name still in effect on the OLD page at the
+  // moment its snapshots are captured — recorded in handleStart, consumed
+  // in handleDone to strip new-page names that have no old counterpart
+  // (see disableUnmatchedTransitionNames).
+  const oldNamesRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       clickTargetRef.current = captureClickAlignmentTarget(e)
+      if (process.env.NODE_ENV === 'development') {
+        const anchor = (e.target as HTMLElement)?.closest?.('a')
+        console.log('[vt] click captured', {
+          href: anchor?.getAttribute('href') ?? null,
+          text: anchor?.textContent?.trim().slice(0, 30) ?? null,
+          alignmentTarget: clickTargetRef.current?.name ?? null,
+        })
+      }
     }
     document.addEventListener('click', handleClick, true)
     return () => document.removeEventListener('click', handleClick, true)
   }, [])
 
   useEffect(() => {
+    // Diagnostic only (see conversation with the site owner about "no
+    // morph going home"): [vt] logging showed zero output for that specific
+    // click, meaning handleStart below never even ran — the leading
+    // suspect is a REAL browser navigation (full reload) happening instead
+    // of Next's client-side router, which would never fire
+    // routeChangeStart at all. `pagehide` fires on a genuine navigation
+    // away from the page; it does NOT fire for a Next.js client-side route
+    // change (the page never actually unloads for those). Whichever one
+    // logs right after a "Home" click answers the question directly.
+    if (process.env.NODE_ENV !== 'development') return
+    function handlePageHide(e: PageTransitionEvent) {
+      console.log('[vt] pagehide — a REAL browser navigation is happening, not a client-side route change', {
+        persisted: e.persisted,
+      })
+    }
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [])
+
+  useEffect(() => {
+    // NOT router.asPath — confirmed via [vt] logging that it can already
+    // read as the DESTINATION path at the exact moment routeChangeStart
+    // fires (Next 12 apparently updates it eagerly for at least some
+    // navigations, root included), which made this always true for going
+    // home — url ('/') === the already-updated asPath ('/') — silently
+    // skipping the transition entirely with no morph and no error.
+    // window.location.pathname is the real, current browser URL; Next
+    // doesn't touch it until later in the navigation lifecycle, so it's
+    // immune to that race.
     function isHashOnlyChange(url: string) {
-      return url.split('#')[0] === router.asPath.split('#')[0]
+      return url.split('#')[0] === window.location.pathname
     }
     function handleStart(url: string) {
+      const log = process.env.NODE_ENV === 'development' ? (...args: unknown[]) => console.log('[vt]', ...args) : () => {}
       if (isHashOnlyChange(url)) {
+        log('skip: hash-only change', { url, currentPath: window.location.pathname })
         skippedRef.current = true
         return
       }
       skippedRef.current = false
-      if (!document.startViewTransition) return
+      if (!document.startViewTransition) {
+        log('skip: startViewTransition unsupported')
+        return
+      }
+      log('start', { url, currentPath: window.location.pathname, hidden: document.hidden })
+      // A navigation starting before the PREVIOUS one's handleDone has run
+      // (e.g. clicking straight through to another page while the last
+      // transition is still visually playing) means a transition is still
+      // active on the document — the View Transition spec only allows one
+      // at a time, and starting a second while the first hasn't been
+      // explicitly ended rejects with "InvalidStateError: Transition was
+      // aborted because of invalid state" (confirmed directly by
+      // monkey-patching document.startViewTransition and reading the
+      // rejection off the second call's own .ready promise). skipTransition()
+      // cleanly ends the old one first — it jumps straight to the new
+      // page with no animation for that one navigation, which is a far
+      // better outcome than silently getting no morph at all for THIS one.
+      transitionRef.current?.skipTransition()
+      transitionRef.current = null
       // Read by useReveal (components/reveal.tsx): anything it reveals
       // while this is true skips its own fade-in — the page's own arrival
       // (the cross-fade/morph) is already the "this just appeared"
       // animation, so a second one on top of it would fight for attention.
       viewTransitionState.active = true
+      // The reverse direction of the click-alignment trick: leaving a
+      // content page (near the top, having just been reading it) for the
+      // homepage should land on that same section of the homepage, not get
+      // dumped at the very top profile header — otherwise going "back"
+      // reads as a bigger jump than the click that got you here in the
+      // first place, even though both stops are technically scrolled to 0.
+      // Deliberately overrides whatever the click-capture listener above
+      // already found (typically the site logo, which carries its own
+      // `site-title` name and links to "/" from every page) — the logo is
+      // pinned to the very top of both pages either way, so aligning to
+      // *that* would just reproduce "always land at the top," exactly the
+      // jump this is meant to avoid. Aligning to the CURRENT page's own
+      // SectionHeader instead: notes.tsx/projects.tsx/blog.tsx each render
+      // one with `hideTitleOption` but no `href`, carrying the exact same
+      // `section-heading-${slug}` name the homepage's version of that
+      // section does (see section-header.tsx) — same trick, no new
+      // mechanism, just a different (synthesized rather than clicked)
+      // starting element.
+      const destPath = url.split('?')[0].split('#')[0]
+      if (destPath === '/') {
+        // Same reason as isHashOnlyChange above — window.location.pathname,
+        // not router.asPath, is the trustworthy read of "where we're
+        // navigating FROM" at this point in the lifecycle.
+        const slug = homeSectionSlugForPath(window.location.pathname)
+        const heading = slug ? findByTransitionName(`section-heading-${slug}`) : null
+        log('going home', { slug, headingFound: !!heading, priorClickTarget: clickTargetRef.current?.name ?? null })
+        if (heading) {
+          clickTargetRef.current = { name: `section-heading-${slug}`, oldRect: heading.getBoundingClientRect() }
+        } else {
+          // No heading with this name on the current page at all — nothing
+          // to align to, but a transition should still run (root
+          // cross-fade at minimum). If the destination *should* have a
+          // named target and this logs `headingFound: false`, that's the
+          // bug: something upstream (design toggle hiding the title,
+          // wrong slug mapping) removed the name before this ran.
+          clickTargetRef.current = null
+        }
+      }
+      // Read by useReveal at the mount of every component on the NEW page —
+      // the one element whose name matches this must be visible from its
+      // very first render (it's the thing actively morphing), while
+      // everything else defers its own reveal until the transition has
+      // genuinely finished (see reveal.tsx's 'pending' vs 'deferred'
+      // states, and onTransitionSettled below in handleDone).
+      viewTransitionState.alignedName = clickTargetRef.current?.name ?? null
       // Any card scrolled out of view right now (e.g. clicking into an
       // article from deep in a "Related articles" list) shouldn't morph
       // across several screens of distance to reach its counterpart on the
@@ -105,8 +246,35 @@ function useViewTransitions() {
       // that's the API designer's own recommended fix for elements this
       // transition doesn't otherwise try to align. The one element
       // clickTargetRef points at (if any) gets a real aligned morph
-      // instead — see handleDone.
-      disableOffscreenTransitionNames()
+      // instead — see handleDone. Must be exempted here too (`skip`), not
+      // just there: this call runs against the OLD page, and the "going
+      // home" synthesized target above (the current content page's own
+      // section heading) is routinely off-screen right here — you scroll
+      // down to read, then click Home. Without the exemption this stripped
+      // that exact element's view-transition-name a moment before the
+      // transition started, silently killing the morph it was set up to
+      // align.
+      // Collected BEFORE the offscreen prune below, deliberately — this is
+      // "does a counterpart for this name exist anywhere on the old page,"
+      // not "is it currently in the viewport." Collecting it after
+      // pruning was the bug: navigating home → Projects (via the nav
+      // link, not the Projects heading itself) leaves the Projects
+      // section scrolled out of view on the home page you're leaving, so
+      // disableOffscreenTransitionNames had already stripped its names —
+      // the later pairing check then couldn't tell "off-screen but real"
+      // apart from "genuinely doesn't exist" (the actual /blog-articles
+      // case this was built for) and wiped the ENTIRE destination page's
+      // content, treating all of it as unpaired.
+      oldNamesRef.current = collectActiveTransitionNames()
+      log('old-page active names', Array.from(oldNamesRef.current))
+      const alignTargetEl = clickTargetRef.current ? findByTransitionName(clickTargetRef.current.name) : null
+      // Not restored — this page is being navigated AWAY from, so its DOM
+      // is about to be torn down regardless (even if this specific
+      // transition gets skipTransition()'d by an overlapping navigation,
+      // SOME navigation away from it is still in flight).
+      disableOffscreenTransitionNames(alignTargetEl)
+      viewTransitionState.captureDone = false
+      viewTransitionState.settled = false
       transitionRef.current = document.startViewTransition(
         () =>
           new Promise<void>((resolve) => {
@@ -142,6 +310,25 @@ function useViewTransitions() {
             setTimeout(settle, 600)
           }),
       )
+      if (process.env.NODE_ENV === 'development') {
+        const startedAt = Date.now()
+        log('startViewTransition called', { alignedName: viewTransitionState.alignedName })
+        // A transition can silently die AFTER startViewTransition returns
+        // successfully — duplicate view-transition-names on either page, a
+        // hidden document, a viewport resize mid-capture all abort it with
+        // the animation never playing (it cuts straight to the new page,
+        // which reads as "no morph at all" with no error anywhere). The
+        // abort reason only surfaces as this promise's rejection, so log
+        // it where it can actually be seen.
+        transitionRef.current.ready.then(
+          () => log('ready: animation about to play', { ms: Date.now() - startedAt }),
+          (err) => console.warn('[vt] aborted before animating:', err, { ms: Date.now() - startedAt }),
+        )
+        transitionRef.current.finished.then(
+          () => log('finished: animation complete', { ms: Date.now() - startedAt }),
+          (err) => console.warn('[vt] finished rejected:', err, { ms: Date.now() - startedAt }),
+        )
+      }
     }
     function handleDone() {
       if (skippedRef.current) return
@@ -149,6 +336,12 @@ function useViewTransitions() {
       transitionRef.current = null
       const clickTarget = clickTargetRef.current
       clickTargetRef.current = null
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[vt] routeChangeComplete', {
+          hadTransition: !!transition,
+          alignTargetName: clickTarget?.name ?? null,
+        })
+      }
 
       if (transition) {
         // Next's own built-in scroll-to-top-on-navigate stopped taking
@@ -179,7 +372,26 @@ function useViewTransitions() {
         // (if any) is explicitly exempted — it's the one card this
         // transition deliberately placed off the natural top-of-page
         // position, on purpose, and it's already correctly on-screen there.
-        disableOffscreenTransitionNames(target)
+        const restoreOffscreenNames = disableOffscreenTransitionNames(target)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[vt] new-page names before pairing check', Array.from(collectActiveTransitionNames()))
+        }
+        // And the pairing check: any name on the new page with no old-side
+        // counterpart isn't morphing either — it'd get the browser's own
+        // "entering content" fade, playing mid-transition (see
+        // disableUnmatchedTransitionNames).
+        const restoreUnmatchedNames = disableUnmatchedTransitionNames(oldNamesRef.current)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[vt] new-page names after pairing check', Array.from(collectActiveTransitionNames()))
+        }
+        // Names are now final: let every Reveal on the new page decide
+        // whether it's part of the morph (stays visible) or not (hides
+        // until the transition settles). flushSync forces React to commit
+        // those setState('hidden') calls to the real DOM synchronously,
+        // BEFORE resolveRef tells the browser "capture the new page now" —
+        // React 18 otherwise batches them past the capture, and the
+        // snapshot would catch everything still visible.
+        flushSync(() => notifyBeforeCapture())
         resolveRef.current?.()
         resolveRef.current = null
         // Only unset the alignment scroll/padding trick once the browser's
@@ -190,13 +402,30 @@ function useViewTransitions() {
         // difference during the transition, "and unset once the
         // transition is complete."
         if (cleanupAlignment) transition.finished.then(cleanupAlignment, cleanupAlignment)
+        // Same reasoning, same timing: these two also mutated the NEW
+        // page's DOM directly (bypassing React), and the new page might
+        // not unmount before the next navigation away from it — restoring
+        // the real names now is what keeps a second outgoing click (e.g.
+        // "All posts →" right after arriving home) reading correct,
+        // uncorrupted state instead of whatever this transition stripped.
+        transition.finished.then(restoreOffscreenNames, restoreOffscreenNames)
+        transition.finished.then(restoreUnmatchedNames, restoreUnmatchedNames)
+        // Same "wait for the real, visual end" timing for the deferred
+        // reveal cascade (reveal.tsx) — everything that held off revealing
+        // itself during the transition finds out right as it ends, not a
+        // couple of frames after it merely started.
+        transition.finished.then(notifyTransitionSettled, notifyTransitionSettled)
       } else {
         // No View Transition ran for this navigation (unsupported browser,
         // or the safety-valve timeout already fired) — same scroll-reset
         // fix as above, just without anything to align. Instant, not the
         // page's default smooth scroll — this is a correction, not a
-        // user-facing scroll gesture.
+        // user-facing scroll gesture. The two notifications still fire so
+        // nothing that subscribed (or is about to subscribe) waits forever
+        // on a transition that isn't coming.
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+        notifyBeforeCapture()
+        notifyTransitionSettled()
       }
 
       // Cleared a couple frames later, not synchronously — the new page's
@@ -216,7 +445,27 @@ function useViewTransitions() {
       router.events.off('routeChangeComplete', handleDone)
       router.events.off('routeChangeError', handleDone)
     }
-  }, [router])
+    // Deliberately NOT `[router]` — `router` from useRouter() gets a fresh
+    // object identity on every route change (it's the same underlying
+    // singleton, but the hook returns a new wrapper each time), so a
+    // `[router]` dependency re-ran this effect on every single navigation:
+    // unsubscribe the old listeners, then immediately resubscribe fresh
+    // ones. `router.events` is the same stable emitter for the lifetime of
+    // the app regardless of which render captured it, so subscribing once
+    // and never re-subscribing is correct, not just a workaround.
+    //
+    // (An earlier version of this comment blamed the resubscription itself
+    // for calling document.startViewTransition twice per click — checked
+    // directly with a local counter inside a monkey-patched
+    // startViewTransition, immune to any console-logging quirks, and it
+    // reported exactly one real call. The actual InvalidStateError cause
+    // was a genuinely overlapping SECOND navigation starting before the
+    // first one's handleDone had run — see the skipTransition() call in
+    // handleStart above. This `[]` dependency is still the right call —
+    // avoiding needless resubscribe/reconnect churn on every navigation —
+    // it just isn't what fixed that particular bug.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 }
 
 export default function App({ Component, pageProps }: AppPropsType) {

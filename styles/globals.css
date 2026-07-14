@@ -155,10 +155,16 @@ html {
    pseudo-elements simply never get created there, so this block never
    applies and never needs a fallback. A quick, subtle cross-fade — this is
    a personal site, not a slideshow, so the default should barely be
-   noticed as a specific "effect," just feel less abrupt than a hard cut. */
+   noticed as a specific "effect," just feel less abrupt than a hard cut.
+   Both read through --vt-duration (set on <html>, see design-toggles.tsx's
+   dev-only "Transition duration" slider) rather than a literal value, so
+   the whole transition can be slowed down for debugging without editing
+   CSS — defaults keep the original 0.18s/0.32s split when the toggle
+   hasn't touched the variable (e.g. in production, where the slider is
+   never rendered at all). */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.18s;
+  animation-duration: var(--vt-duration, 0.18s);
 }
 
 /* The one named transition: a content-type heading (see
@@ -167,5 +173,49 @@ html {
    follow an "All <content> →" link — slightly longer so the movement reads
    clearly instead of a flash. */
 ::view-transition-group(*) {
-  animation-duration: 0.32s;
+  animation-duration: var(--vt-duration, 0.32s);
+}
+
+/* "Size morph" A/B experiment (design-toggles.tsx stamps one of these
+   classes, or neither, on <html>), DEFAULT OFF. Position and size of each
+   ::view-transition-group(*) box already morph by default — what this
+   changes is how the snapshot bitmaps behave INSIDE that resizing box.
+   The UA default (`off`: each snapshot keeps its own natural width-based
+   size, the pair cross-fades) is the safe behavior.
+
+   `cover` stretches both snapshots to fill the box (clipped by the
+   image-pair) so the content visually resizes with the box instead of
+   cross-fading — jakearchibald.com's "handling aspect ratio changes"
+   technique. It scales a snapshot UP until it covers BOTH axes of the
+   box, so the moment the old and new boxes have different aspect ratios
+   — almost always true for text content here, since a card is a
+   different width on the homepage's layout than in a content page's
+   column — one axis overshoots hard and the snapshot renders zoomed far
+   past its natural size for most of the animation. That was the "items
+   grow way bigger than they could ever need to" bug.
+
+   `contain` fits each snapshot entirely inside the box instead (letting
+   the OTHER axis go blank rather than overshoot) — no zoom-past-natural-
+   size artifact, at the cost of visible letterboxing whenever the aspect
+   ratios differ, which is most of the time here. Included as a genuine
+   3rd option rather than assumed worse — `object-fit: contain` is
+   actually closer to the browser's OWN default sizing behavior than
+   `cover` is, just interpolated instead of held at natural size.
+
+   Both are worthwhile mainly for photo-like content with similar aspect
+   ratios on both sides; kept as a live toggle to compare rather than
+   argue from theory. */
+html.vt-size-morph-cover::view-transition-image-pair(*),
+html.vt-size-morph-contain::view-transition-image-pair(*) {
+  overflow: hidden;
+}
+html.vt-size-morph-cover::view-transition-old(*),
+html.vt-size-morph-cover::view-transition-new(*) {
+  height: 100%;
+  object-fit: cover;
+}
+html.vt-size-morph-contain::view-transition-old(*),
+html.vt-size-morph-contain::view-transition-new(*) {
+  height: 100%;
+  object-fit: contain;
 }

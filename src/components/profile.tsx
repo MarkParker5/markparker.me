@@ -1,7 +1,14 @@
+import { CSSProperties } from 'react'
 import { Link } from './link'
 import { trackOutboundClick } from '../analytics'
 import { ObfuscatedMailLink } from './obfuscated-email'
 import { Reveal, useReveal } from './reveal'
+
+// Same name ArticleLayout's compact header gives its own "Mark Parker" —
+// the browser morphs this hero title into (or out of) that header on any
+// navigation between the homepage and a content page, instead of two
+// unrelated instances of the same text just cross-fading past each other.
+const SITE_TITLE_TRANSITION = { viewTransitionName: 'site-title' } as CSSProperties
 
 type LinkMeta = {
   href: string
@@ -90,7 +97,7 @@ export function Profile() {
         <Reveal>
           <img className="mx-auto h-36 w-36 rounded-full" src="/mark-parker.jpg" />
         </Reveal>
-        <Reveal>
+        <Reveal style={SITE_TITLE_TRANSITION}>
           <h1 className="mt-7 mb-1 text-4xl leading-tight">Mark Parker</h1>
         </Reveal>
         <Reveal>

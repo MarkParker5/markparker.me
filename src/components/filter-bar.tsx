@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryParam } from '../filter'
 import { trackFilterChange } from '../analytics'
+import { Reveal } from './reveal'
 
 type SortOption<T extends string> = { value: T; label: string }
 
@@ -49,7 +50,7 @@ export const FilterBar = <T extends string>({ paramName, contentType, availableT
   if (availableTags.length === 0) return null
 
   return (
-    <div className="mb-8 font-sans flex flex-col items-center gap-3">
+    <Reveal className="mb-8 font-sans flex flex-col items-center gap-3">
       <div className="w-full flex justify-start gap-2">
         {showSearch ? (
           <input
@@ -153,6 +154,6 @@ export const FilterBar = <T extends string>({ paramName, contentType, availableT
           )}
         </div>
       )}
-    </div>
+    </Reveal>
   )
 }
