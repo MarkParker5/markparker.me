@@ -3,7 +3,7 @@ import { Link } from './link'
 import { Separator } from './separator'
 import { PropsWithChildren } from 'react'
 import { useRouter } from 'next/router'
-import { PageContainer } from './page-container'
+import { PageContainer, CONTENT_MAX_WIDTH_CLASS } from './page-container'
 import { useDesignToggles } from '../design-toggles'
 import { Reveal } from './reveal'
 
@@ -28,7 +28,7 @@ export const ArticleLayout = (props: PropsWithChildren<unknown>) => {
 
   return (
     <PageContainer>
-      <div className="mx-auto max-w-2xl">
+      <div className={`mx-auto ${CONTENT_MAX_WIDTH_CLASS}`}>
         {/* Wrapped in <Reveal> again — useReveal itself now distinguishes
             "mounted while a View Transition is in flight" (skips straight to
             fully visible, no invisible frame for the transition's snapshot

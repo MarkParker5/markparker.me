@@ -5,7 +5,7 @@ import { ProjectsList } from '../components/projects-list'
 import { NotesList } from '../components/notes-list'
 import { SectionHeader } from '../components/section-header'
 import { Reveal } from '../components/reveal'
-import { PageContainer } from '../components/page-container'
+import { PageContainer, CONTENT_MAX_WIDTH_CLASS } from '../components/page-container'
 import { getPublicArticles } from '../article'
 import { getSpotlightProjects } from '../project'
 import { getPreviewNotes } from '../note'
@@ -67,7 +67,17 @@ export default function Index() {
         <div className="mt-5 lg:w-[26rem] lg:flex-shrink-0">
           <Profile />
         </div>
-        <div className="mt-10 lg:flex-1 lg:mx-10">
+        {/* Fixed width, not `flex-1` — a flex item filling "whatever's
+            left" next to the sidebar comes out narrower than
+            CONTENT_MAX_WIDTH_CLASS at any width this site actually
+            renders at (the sidebar + gap already eat into the shared
+            75rem page budget), so the cap never actually engaged; the
+            column was still landing at ~39rem instead of 42rem. Fixed
+            width (with flex-shrink-0, so the row can't compress it) plus
+            PAGE_MAX_WIDTH bumped to fit both — see page-container.tsx —
+            makes it the SAME 42rem content pages get, not just capped at
+            it. */}
+        <div className={`mt-10 lg:ml-10 lg:flex-shrink-0 ${CONTENT_MAX_WIDTH_CLASS}`}>
           {notesPreview.length > 0 && (
             <>
               <SectionHeader

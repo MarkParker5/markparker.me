@@ -1,74 +1,13 @@
 // Plain mutable flag, not React state — read synchronously inside
 // useReveal's IntersectionObserver callback at the moment it fires, with no
 // need for every Reveal instance to subscribe/re-render on every change.
-// Set around each route change in _app.tsx. `alignedName` is the
-// view-transition-name (if any) of whatever element THIS transition is
-// actively aligning (see alignNewPageToTarget) — set in _app.tsx's
-// handleStart, before the new page even mounts. useReveal reads it once at
-// mount to decide whether IT is the one actively-morphing element (must be
-// visible from its very first render, see the 'pending' state below) or
-// everything else (which should instead wait for the transition to
-// genuinely finish before deciding whether to reveal — see
-// onTransitionSettled).
+// Set around each route change in _app.tsx. Read by useReveal at mount to
+// decide whether a page arrived via a View Transition (skip the
+// scroll-triggered entrance animation for whatever's already on screen —
+// the transition's own cross-fade/morph IS its arrival animation) or a
+// plain navigation/fresh load (normal scroll-reveal behavior).
 export const viewTransitionState = {
   active: false,
-  alignedName: null as string | null,
-  // Whether this navigation's "names are final, snapshot is about to be
-  // captured" moment (notifyBeforeCapture below) has already happened —
-  // lets a Reveal whose effect runs late (React effect timing vs Next's
-  // routeChangeComplete ordering isn't guaranteed) still make its
-  // visibility decision immediately instead of subscribing to an event
-  // that already fired. Same idea for `settled` and
-  // notifyTransitionSettled.
-  captureDone: false,
-  settled: true,
-}
-
-// A tiny pub/sub, not a single Promise — a new transition can start (and
-// need a fresh signal) before every subscriber from the previous one has
-// necessarily unsubscribed, and plain callbacks are simpler to reuse across
-// transitions than juggling a fresh Promise each time. Fired once from
-// _app.tsx's handleDone, exactly when transition.finished resolves — i.e.
-// once the browser's own visual animation has ACTUALLY finished playing,
-// which is a very different moment from viewTransitionState.active
-// flipping false (that happens a couple of frames after the transition
-// merely STARTS, see handleDone's own comment).
-type Listener = () => void
-let settledListeners: Listener[] = []
-export function onTransitionSettled(cb: Listener): () => void {
-  settledListeners.push(cb)
-  return () => {
-    settledListeners = settledListeners.filter((l) => l !== cb)
-  }
-}
-export function notifyTransitionSettled() {
-  viewTransitionState.settled = true
-  const listeners = settledListeners
-  settledListeners = []
-  listeners.forEach((cb) => cb())
-}
-
-// Fired from _app.tsx's handleDone at the exact point where every
-// view-transition-name on the new page is FINAL (off-screen and unpaired
-// ones stripped, alignment scroll applied) but the browser hasn't captured
-// the new page's snapshot yet (resolveRef hasn't run). This is the one
-// moment a Reveal can reliably answer "am I part of this morph or not" —
-// answering at effect-mount time was a race: React's effect timing vs
-// Next's routeChangeComplete ordering isn't guaranteed, so an effect
-// could read names before handleDone had stripped the non-participating
-// ones, wrongly concluding half the page was "morphing."
-let beforeCaptureListeners: Listener[] = []
-export function onBeforeCapture(cb: Listener): () => void {
-  beforeCaptureListeners.push(cb)
-  return () => {
-    beforeCaptureListeners = beforeCaptureListeners.filter((l) => l !== cb)
-  }
-}
-export function notifyBeforeCapture() {
-  viewTransitionState.captureDone = true
-  const listeners = beforeCaptureListeners
-  beforeCaptureListeners = []
-  listeners.forEach((cb) => cb())
 }
 
 // Same idea, for the dev-only "Enable offscreen animation" toggle
@@ -111,10 +50,6 @@ export const debugFlags = { enableOffscreenAnimation: false }
 // same thing as "this is unrelated content that happens to be far away" —
 // it's the one element every page shares, and its own morph shouldn't be
 // held hostage to whether something else on the page needed a big scroll.
-// Exported so useReveal (reveal.tsx) can apply the same "this is persistent
-// chrome, not a regular morph participant" exemption to its own "must be
-// visible from the very first render" decision — see viewTransitionState's
-// alignedName comment above.
 export const ALWAYS_EXEMPT_NAMES = new Set(['site-title', 'site-title-divider'])
 
 // Both name-disabling functions below mutate `el.style` directly rather

@@ -1,6 +1,5 @@
 import { AppPropsType } from 'next/dist/shared/lib/utils'
 import { useEffect, useRef } from 'react'
-import { flushSync } from 'react-dom'
 import { useRouter } from 'next/router'
 import '../../styles/globals.css'
 import { Footer } from '../components/footer'
@@ -13,8 +12,6 @@ import {
   captureClickAlignmentTarget,
   alignNewPageToTarget,
   findByTransitionName,
-  notifyTransitionSettled,
-  notifyBeforeCapture,
   ClickAlignmentTarget,
 } from '../view-transition-state'
 
@@ -232,13 +229,6 @@ function useViewTransitions() {
           clickTargetRef.current = null
         }
       }
-      // Read by useReveal at the mount of every component on the NEW page —
-      // the one element whose name matches this must be visible from its
-      // very first render (it's the thing actively morphing), while
-      // everything else defers its own reveal until the transition has
-      // genuinely finished (see reveal.tsx's 'pending' vs 'deferred'
-      // states, and onTransitionSettled below in handleDone).
-      viewTransitionState.alignedName = clickTargetRef.current?.name ?? null
       // Any card scrolled out of view right now (e.g. clicking into an
       // article from deep in a "Related articles" list) shouldn't morph
       // across several screens of distance to reach its counterpart on the
@@ -273,8 +263,6 @@ function useViewTransitions() {
       // transition gets skipTransition()'d by an overlapping navigation,
       // SOME navigation away from it is still in flight).
       disableOffscreenTransitionNames(alignTargetEl)
-      viewTransitionState.captureDone = false
-      viewTransitionState.settled = false
       transitionRef.current = document.startViewTransition(
         () =>
           new Promise<void>((resolve) => {
@@ -312,7 +300,7 @@ function useViewTransitions() {
       )
       if (process.env.NODE_ENV === 'development') {
         const startedAt = Date.now()
-        log('startViewTransition called', { alignedName: viewTransitionState.alignedName })
+        log('startViewTransition called')
         // A transition can silently die AFTER startViewTransition returns
         // successfully — duplicate view-transition-names on either page, a
         // hidden document, a viewport resize mid-capture all abort it with
@@ -384,14 +372,6 @@ function useViewTransitions() {
         if (process.env.NODE_ENV === 'development') {
           console.log('[vt] new-page names after pairing check', Array.from(collectActiveTransitionNames()))
         }
-        // Names are now final: let every Reveal on the new page decide
-        // whether it's part of the morph (stays visible) or not (hides
-        // until the transition settles). flushSync forces React to commit
-        // those setState('hidden') calls to the real DOM synchronously,
-        // BEFORE resolveRef tells the browser "capture the new page now" —
-        // React 18 otherwise batches them past the capture, and the
-        // snapshot would catch everything still visible.
-        flushSync(() => notifyBeforeCapture())
         resolveRef.current?.()
         resolveRef.current = null
         // Only unset the alignment scroll/padding trick once the browser's
@@ -410,22 +390,13 @@ function useViewTransitions() {
         // uncorrupted state instead of whatever this transition stripped.
         transition.finished.then(restoreOffscreenNames, restoreOffscreenNames)
         transition.finished.then(restoreUnmatchedNames, restoreUnmatchedNames)
-        // Same "wait for the real, visual end" timing for the deferred
-        // reveal cascade (reveal.tsx) — everything that held off revealing
-        // itself during the transition finds out right as it ends, not a
-        // couple of frames after it merely started.
-        transition.finished.then(notifyTransitionSettled, notifyTransitionSettled)
       } else {
         // No View Transition ran for this navigation (unsupported browser,
         // or the safety-valve timeout already fired) — same scroll-reset
         // fix as above, just without anything to align. Instant, not the
         // page's default smooth scroll — this is a correction, not a
-        // user-facing scroll gesture. The two notifications still fire so
-        // nothing that subscribed (or is about to subscribe) waits forever
-        // on a transition that isn't coming.
+        // user-facing scroll gesture.
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
-        notifyBeforeCapture()
-        notifyTransitionSettled()
       }
 
       // Cleared a couple frames later, not synchronously — the new page's
