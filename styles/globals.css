@@ -14,6 +14,22 @@
      swap the whole site's typeface at runtime without touching every
      component that uses `font-sans`. */
   --font-sans: 'Open Sans', sans-serif;
+
+  /* The neutral targets a tag pill's per-tag hue is blended toward as the
+     "Tag colors" slider moves from colored → muted (see the color-mix in
+     projects-list.tsx). Kept here (not inline) so they can carry a
+     dark-mode value — mixing must happen against the RIGHT neutral for the
+     current theme. Values match the tailwind `muted`/`back-secondary`
+     colors the old binary "muted" tag style used. */
+  --tag-muted-text: #595959;
+  --tag-muted-bg: #f5f5f5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tag-muted-text: #9aa4ad;
+    --tag-muted-bg: #161b22;
+  }
 }
 
 html {

@@ -1,6 +1,6 @@
 import { Feed } from 'feed'
 import { GetStaticProps } from 'next'
-import { getPublicProjects } from '../project'
+import { getPublicProjects, sortProjects } from '../project'
 import fs from 'fs'
 
 // Separate feed again, same reasoning as notes-feed.gen.tsx: project
@@ -32,12 +32,15 @@ export const getStaticProps: GetStaticProps = async () => {
     author,
   })
 
-  // ProjectMeta only carries a `year` (no exact date — most entries predate
-  // this feed and were never meant to have one), so Jan 1 of that year is
-  // used as a stand-in pubDate purely to give feed readers something to
-  // sort by. It's a real limitation worth knowing about, not a precise
-  // "shipped on this day" claim.
-  const projects = [...getPublicProjects()].sort((a, b) => b.year - a.year)
+  // Ordered most-recent-activity first (the same "recent" sort the
+  // /projects page offers — an ongoing project outranks a finished one),
+  // so a feed reader sees current work at the top. ProjectMeta only
+  // carries year granularity (no exact date — most entries predate this
+  // feed and were never meant to have one), so Jan 1 of the START year is
+  // used as a stand-in pubDate purely to give readers something stable to
+  // sort by. A real limitation worth knowing about, not a precise "shipped
+  // on this day" claim.
+  const projects = sortProjects(getPublicProjects(), 'updated')
 
   for (const project of projects) {
     const link = project.links[0]?.href ?? `https://markparker.me/projects#${project.id}`

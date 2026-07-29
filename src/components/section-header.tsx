@@ -42,8 +42,12 @@ export const SectionHeader = ({
   divider,
   hideTitleOption,
 }: Props) => {
-  const { hidePageTitle } = useDesignToggles()
-  const showTitle = !(hideTitleOption && hidePageTitle)
+  const { pageTitle } = useDesignToggles()
+  // Homepage section headings (which never pass hideTitleOption) always
+  // show — they do real wayfinding work. Only the opted-in content-page
+  // titles obey the dev toggle: 'shown' always, 'hidden' never, 'desktop'
+  // only on wider screens.
+  const titleMode = hideTitleOption ? pageTitle : 'shown'
   // Keyed on the title text, not `id` — the homepage preview and the full
   // page both render a SectionHeader for the same content type with the
   // same title, and it's exactly that pair (only ever one on-screen at a
@@ -57,13 +61,15 @@ export const SectionHeader = ({
   return (
     <div id={id} className="text-center w-full scroll-mt-10 mb-6">
       <Reveal>
-      {showTitle && (
+      {titleMode !== 'hidden' && (
         // A real heading, not a styled <p> — visually identical, but before
         // this a screen-reader's heading-navigation had nothing to land on
         // for "Posts"/"Projects"/"Blog", exactly the sections the homepage's
         // own jump-links (Profile's sectionNav) point at.
         <h2
-          className="text-4xl font-sans mb-2 inline-flex items-center gap-3"
+          className={`text-4xl font-sans mb-2 items-center gap-3 ${
+            titleMode === 'desktop' ? 'hidden md:inline-flex' : 'inline-flex'
+          }`}
           // Not yet in the CSSProperties type bundled with this React
           // version — cast rather than wait for @types/react to catch up.
           style={{ viewTransitionName: `section-heading-${slug}` } as CSSProperties}

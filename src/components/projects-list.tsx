@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react'
 import { Link } from './link'
-import { ProjectMeta, ProjectOwner, ProjectStatus } from '../project'
+import { ProjectMeta, ProjectOwner, ProjectStatus, formatProjectDate } from '../project'
 import { getAllArticles } from '../article'
 import { useDesignToggles } from '../design-toggles'
 import { useReveal } from './reveal'
@@ -139,42 +139,38 @@ function ProjectLinks({ links }: { links: ProjectMeta['links'] }) {
   )
 }
 
-// Background-filled pill — GitHub's topic tags. Two representations under
-// live A/B review: `colorful` (default) — a fixed hue per tag, so tags read
-// as distinct categories at a glance; `muted` — one flat neutral fill for
-// every tag, calmer/closer to GitHub's own default but tags no longer
-// visually differentiate from each other. Still real filter links either
-// way: clicking one jumps straight to /projects?...
+// Background-filled pill — GitHub's topic tags, a real filter link
+// (clicking one jumps to /projects?projects=<tag>). Each tag has a fixed
+// hue (tagColor), blended toward the theme's neutral by the dev "Tag
+// colors" slider (tagColorMuting, 0–100): at 0 every tag keeps its own
+// distinct color (reads as categories at a glance); at 100 they all
+// collapse to one flat neutral fill (calmer/closer to GitHub-default, but
+// no longer differentiable). color-mix does the blend against
+// theme-aware neutrals (--tag-muted-* in globals.css) so it lands on the
+// right gray in light vs dark. At muting 0 the mix is a no-op — identical
+// to the original always-colored rendering (the production default, since
+// the slider only exists in dev).
 function TagChips({ tags }: { tags: string[] }) {
-  const { tagColorStyle } = useDesignToggles()
+  const { tagColorMuting } = useDesignToggles()
   if (tags.length === 0) return null
   return (
     <span className="flex flex-wrap gap-1.5">
       {tags.map((tag) => {
-        if (tagColorStyle === 'muted') {
-          return (
-            <Link
-              key={tag}
-              href={`/projects?projects=${encodeURIComponent(tag)}`}
-              className="inline-block text-base rounded-full font-medium duration-150"
-            >
-              <span
-                className="block py-1.5 px-3.5 rounded-full bg-back-secondary-light dark:bg-back-secondary-dark
-                           text-muted-light dark:text-muted-dark hover:text-primary-light dark:hover:text-primary-dark"
-              >
-                {tag}
-              </span>
-            </Link>
-          )
-        }
         const color = tagColor(tag)
+        const m = `${tagColorMuting}%`
         return (
           <Link
             key={tag}
             href={`/projects?projects=${encodeURIComponent(tag)}`}
             className="inline-block text-base rounded-full font-medium duration-150 hover:brightness-110"
           >
-            <span className="block py-1.5 px-3.5 rounded-full" style={{ backgroundColor: `${color}22`, color }}>
+            <span
+              className="block py-1.5 px-3.5 rounded-full"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${color}22, var(--tag-muted-bg) ${m})`,
+                color: `color-mix(in srgb, ${color}, var(--tag-muted-text) ${m})`,
+              }}
+            >
               {tag}
             </span>
           </Link>
@@ -269,7 +265,7 @@ function MetaLine({ project }: { project: ProjectMeta }) {
   ) : (
     <OwnerLabel owner={project.owner} />
   )
-  const date = <span>{project.yearLabel ?? project.year}</span>
+  const date = <span>{formatProjectDate(project)}</span>
   // Bigger and lighter than the surrounding text — reads as a log/timeline
   // separator ("in 2022 • while at SkyHigh"), not another category tag.
   const bullet = (
@@ -300,13 +296,7 @@ function MetaLine({ project }: { project: ProjectMeta }) {
 // dense" (= "+10% spacing"), the dev-panel slider goes to +150% for comparison.
 const BASE_ROW_GAP_REM = 0.625
 
-function ProjectCard({
-  project,
-  spotlight,
-}: {
-  project: ProjectMeta
-  spotlight?: boolean
-}) {
+function ProjectCard({ project }: { project: ProjectMeta }) {
   const { cardStyle, spacing } = useDesignToggles()
   // Applied directly to the <li> itself (border/hover/id and all) — not
   // just to a wrapper around its inner content. Wrapping only the content
@@ -317,13 +307,6 @@ function ProjectCard({
   // exactly why useReveal exists as a hook, not just a wrapper component.)
   const reveal = useReveal<HTMLLIElement>()
   const cursorGlow = useSpotlight<HTMLLIElement>()
-  // No `last:border-b-0` here — spotlight and others render as two separate
-  // <ul>s, so "last in this list" fired on the last spotlight card (STARK)
-  // even though DogCat Fund immediately follows it in the others list right
-  // below, leaving that one boundary with no divider at all. Every divider
-  // row (including the very last project overall) keeps its border-b now;
-  // a trailing rule under the last card reads as a clean close-off, not a
-  // bug the way a missing one mid-list did.
   // No `rounded-lg` on the divider variant — a border-radius on a box that
   // only has a bottom border doesn't just round the hover tint, it also
   // curves the border-b line itself inward at both ends instead of a flat
@@ -339,7 +322,7 @@ function ProjectCard({
       ref={mergeRefs(reveal.ref, cursorGlow.ref)}
       onMouseMove={cursorGlow.onMouseMove}
       id={project.id}
-      className={`list-none duration-150 relative group ${wrapperClass} ${reveal.className} ${spotlight ? 'text-xl' : 'text-l'}`}
+      className={`list-none duration-150 relative group text-l ${wrapperClass} ${reveal.className}`}
       style={projectCardTransitionStyle(project.id)}
     >
       <Spotlight />
@@ -365,27 +348,17 @@ function ProjectCard({
   )
 }
 
-export const ProjectsList = ({ projects }: Props) => {
-  const spotlight = projects.filter((p) => p.spotlight)
-  const others = projects.filter((p) => !p.spotlight)
-
-  return (
-    <div className="mx-auto font-sans">
-      {spotlight.length > 0 && (
-        <ul className="flex flex-col gap-5 mb-11">
-          {spotlight.map((project) => (
-            <ProjectCard key={project.id} project={project} spotlight />
-          ))}
-        </ul>
-      )}
-
-      {others.length > 0 && (
-        <ul className="flex flex-col gap-4">
-          {others.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
+// One flat list, in whatever order the caller already sorted them (the
+// homepage passes its top-3 by interest, /projects passes the full
+// filtered+sorted set). The old two-tier "spotlight then others" split
+// went away with the `spotlight` flag — ordering is the sort's job now,
+// not a separate featured tier.
+export const ProjectsList = ({ projects }: Props) => (
+  <div className="mx-auto font-sans">
+    <ul className="flex flex-col gap-4">
+      {projects.map((project) => (
+        <ProjectCard key={project.id} project={project} />
+      ))}
+    </ul>
+  </div>
+)

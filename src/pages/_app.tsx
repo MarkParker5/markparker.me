@@ -132,10 +132,22 @@ function useViewTransitions() {
   //   directions of staleness, since nothing but our own code writes to
   //   it.
   const currentPathRef = useRef(typeof window !== 'undefined' ? window.location.pathname : '/')
+  // Set on click when the clicked link opted in via
+  // `data-scroll-top-after-transition`, consumed once in handleDone. A
+  // deliberate special case for the homepage's "see the latest →" link:
+  // it still gets the normal aligned morph (it lives inside the projects
+  // section, so it morphs the projects heading/cards into place like any
+  // other projects link), but its WHOLE point is to show the newest items
+  // — which sit at the TOP of the sorted destination — so once the morph
+  // has finished playing, glide the page up to the top to reveal them.
+  // Every other navigation keeps its aligned landing position.
+  const scrollTopAfterRef = useRef(false)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       clickTargetRef.current = captureClickAlignmentTarget(e)
+      const el = e.target as HTMLElement | null
+      scrollTopAfterRef.current = !!el?.closest?.('[data-scroll-top-after-transition]')
       if (process.env.NODE_ENV === 'development') {
         const anchor = (e.target as HTMLElement)?.closest?.('a')
         console.log('[vt] click captured', {
@@ -391,6 +403,11 @@ function useViewTransitions() {
       transitionRef.current = null
       const clickTarget = clickTargetRef.current
       clickTargetRef.current = null
+      // Consume-and-reset so it only fires for the click that set it — a
+      // later back/forward navigation (which never runs handleClick)
+      // won't inherit a stale "scroll to top" from an earlier click.
+      const scrollTopAfter = scrollTopAfterRef.current
+      scrollTopAfterRef.current = false
       if (process.env.NODE_ENV === 'development') {
         console.log('[vt] routeChangeComplete', {
           hadTransition: !!transition,
@@ -457,12 +474,25 @@ function useViewTransitions() {
         // uncorrupted state instead of whatever this transition stripped.
         transition.finished.then(restoreOffscreenNames, restoreOffscreenNames)
         transition.finished.then(restoreUnmatchedNames, restoreUnmatchedNames)
+        // The "see the latest →" special case: let the aligned morph play
+        // out fully, THEN glide to the top (smooth, so it reads as a
+        // deliberate reveal of the newest items rather than a jump). Runs
+        // after the cleanup .thens above so it's the last scroll to touch
+        // the page. Fires on both resolve and reject of finished — even a
+        // skipped/aborted transition should still land at the top for this
+        // link, since that's the whole intent.
+        if (scrollTopAfter) {
+          const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+          transition.finished.then(toTop, toTop)
+        }
       } else {
         // No View Transition ran for this navigation (unsupported browser,
         // or the safety-valve timeout already fired) — same scroll-reset
         // fix as above, just without anything to align. Instant, not the
         // page's default smooth scroll — this is a correction, not a
-        // user-facing scroll gesture.
+        // user-facing scroll gesture. (The "scroll to top after" opt-in
+        // needs no special handling here: with no transition we already
+        // land at the top.)
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
       }
 

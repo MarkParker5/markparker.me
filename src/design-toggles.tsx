@@ -6,6 +6,16 @@ import { debugFlags } from './view-transition-state'
 // Never rendered in production (gated the same way preview notes are).
 export type StatusStyle = 'circle' | 'border'
 export type CardStyle = 'border' | 'divider'
+// Three-way visibility for a piece of page chrome (the header divider, a
+// page title): shown everywhere, hidden everywhere, or 'desktop' — shown
+// on wider screens (the `md` breakpoint and up) and hidden on mobile, for
+// chrome that reads well on a desktop but is just clutter on a phone.
+export type ChromeVisibility = 'shown' | 'hidden' | 'desktop'
+// Click order for the 3-state chrome-visibility cyclers in the panel.
+const CHROME_ORDER: ChromeVisibility[] = ['shown', 'hidden', 'desktop']
+function nextChrome(v: ChromeVisibility): ChromeVisibility {
+  return CHROME_ORDER[(CHROME_ORDER.indexOf(v) + 1) % CHROME_ORDER.length]
+}
 // 'upload' is the old fa-arrow-up-from-bracket glyph — easy to misread as
 // "upload this post" rather than "share it". 'branch' (fa-share, solid) is
 // the winning shape; FA's Free set has no true outline weight for that
@@ -20,19 +30,21 @@ export type ShareIconStyle = 'upload' | 'branch' | 'branch-outline' | 'nodes'
 // (context-first).
 export type MetaOrder = 'date-first' | 'owner-first'
 export type FontFamily = 'open-sans' | 'inter'
-// 'colorful' is the current per-tag hardcoded-hue system (TAG_COLORS in
-// projects-list.tsx). 'muted' is the alternative worth comparing it
-// against: every tag pill in one flat neutral color — reads calmer/more
-// GitHub-default, at the cost of tags no longer being visually
-// distinguishable from each other at a glance.
-export type TagColorStyle = 'colorful' | 'muted'
 
 type DesignToggles = {
   statusStyle: StatusStyle
   cardStyle: CardStyle
   shareIcon: ShareIconStyle
   fontFamily: FontFamily
-  tagColorStyle: TagColorStyle
+  // 0–100, how far each tag pill's per-tag hue is blended toward the
+  // theme's neutral "muted" color (see TAG_COLORS + color-mix in
+  // projects-list.tsx). 0 = fully colored (every tag its own distinct
+  // hue, reads as categories at a glance); 100 = fully muted (one flat
+  // neutral fill, calmer/closer to GitHub-default, but tags no longer
+  // differentiate at a glance). The slider replaced a binary
+  // colorful/muted toggle so the calmer-but-still-a-little-colored middle
+  // is reachable.
+  tagColorMuting: number
   // 0–150, percent of extra breathing room added between a project card's
   // rows on top of the base spacing — named for what it DOES (adds space),
   // not the inverse effect that has on density, which read backwards ("50%
@@ -50,13 +62,16 @@ type DesignToggles = {
   // Whether ArticleLayout draws its <hr> between the "Mark Parker" header/
   // nav and the page's own title ("Posts"/"Projects"/"Blog"/an article) —
   // shared across every content page since they all use ArticleLayout.
-  headerDivider: boolean
-  // When true, /notes, /projects, /blog hide their own big title ("Posts"/
-  // "Projects"/"Blog") — the description line and mirror icons stay. Scoped
-  // to those three pages only (see SectionHeader's `hideTitleOption` prop) —
-  // the homepage's section headings always show, they're doing real
-  // wayfinding work there (first-time visitors scanning what's on the page).
-  hidePageTitle: boolean
+  // 'desktop' keeps the rule on wider screens but drops to a plain gap on
+  // mobile.
+  headerDivider: ChromeVisibility
+  // Visibility of /notes, /projects, /blog's own big title ("Posts"/
+  // "Projects"/"Blog") — the description line and mirror icons always
+  // stay. Scoped to those three pages only (see SectionHeader's
+  // `hideTitleOption` prop) — the homepage's section headings always show,
+  // they're doing real wayfinding work there. 'desktop' shows the title on
+  // wider screens and hides it on mobile.
+  pageTitle: ChromeVisibility
   // Seconds — overrides the View Transition's CSS animation-duration (see
   // --vt-duration in globals.css) for every page-to-page navigation. Real
   // production value is 0.18–0.32s; slowed way down here to actually watch
@@ -85,22 +100,27 @@ type DesignToggles = {
   panelCollapsed: boolean
 }
 
-// Current best guess, not locked in — still exposed live via the panel
-// below so it can be revisited.
+// The current committed design choices (also what production renders,
+// since the panel below is dev-only and prod falls back to these). Design
+// knobs reflect the settings dialed in via the A/B panel; the two DEBUG
+// knobs deliberately stay at prod-safe values regardless of panel state —
+// transitionDuration at the real 0.18–0.32s feel (NOT a slowed-down
+// debugging value) and enableOffscreenAnimation off (it's a morph-bug
+// comparison aid, not a shipping behavior).
 const DEFAULTS: DesignToggles = {
   statusStyle: 'circle',
   cardStyle: 'divider',
   shareIcon: 'branch-outline',
   fontFamily: 'open-sans',
-  tagColorStyle: 'colorful',
+  tagColorMuting: 80,
   spacing: 20,
   metaOrder: 'date-first',
   hideUnavailableMirrors: true,
-  headerDivider: true,
-  hidePageTitle: false,
+  headerDivider: 'desktop',
+  pageTitle: 'desktop',
   transitionDuration: 0.32,
   enableOffscreenAnimation: false,
-  sizeMorph: 'off',
+  sizeMorph: 'cover',
   panelCollapsed: false,
 }
 const STORAGE_KEY = 'design-toggles'
@@ -170,9 +190,14 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
 
   // Classes on <html> rather than a CSS variable — the reader is a set of
   // whole CSS rules (globals.css's vt-size-morph-* blocks) that need to be
-  // on or off entirely, not a single interpolated value.
+  // on or off entirely, not a single interpolated value. Deliberately NOT
+  // `if (!isDev) return` like the debug effects above: sizeMorph is a real
+  // shipped design choice (its default is 'cover'), so this must apply in
+  // production too — where `toggles` is just DEFAULTS, making this a
+  // one-shot class-add on mount. Safe post-hydration: the class only
+  // affects view-transition pseudo-elements, which never exist before the
+  // first navigation.
   useEffect(() => {
-    if (!isDev) return
     document.documentElement.classList.toggle('vt-size-morph-cover', toggles.sizeMorph === 'cover')
     document.documentElement.classList.toggle('vt-size-morph-contain', toggles.sizeMorph === 'contain')
   }, [toggles.sizeMorph])
@@ -294,21 +319,21 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
           <label className="flex items-center justify-between gap-2 text-base">
             <span>Header divider</span>
             <button
-              onClick={() => update({ headerDivider: !toggles.headerDivider })}
+              onClick={() => update({ headerDivider: nextChrome(toggles.headerDivider) })}
               className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
                          dark:hover:bg-back-secondary-dark"
             >
-              {toggles.headerDivider ? 'on' : 'off'}
+              {toggles.headerDivider}
             </button>
           </label>
           <label className="flex items-center justify-between gap-2 text-base">
             <span>Page title (Posts/…)</span>
             <button
-              onClick={() => update({ hidePageTitle: !toggles.hidePageTitle })}
+              onClick={() => update({ pageTitle: nextChrome(toggles.pageTitle) })}
               className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
                          dark:hover:bg-back-secondary-dark"
             >
-              {toggles.hidePageTitle ? 'hidden' : 'shown'}
+              {toggles.pageTitle}
             </button>
           </label>
           <label className="flex flex-col gap-1.5 text-base">
@@ -360,15 +385,26 @@ export function DesignToggleProvider({ children }: PropsWithChildren<{}>) {
               {toggles.fontFamily === 'open-sans' ? 'Open Sans' : 'Inter'}
             </button>
           </label>
-          <label className="flex items-center justify-between gap-2 text-base">
-            <span>Tag colors</span>
-            <button
-              onClick={() => update({ tagColorStyle: toggles.tagColorStyle === 'colorful' ? 'muted' : 'colorful' })}
-              className="border rounded-full px-3 py-1 text-sm capitalize hover:bg-back-secondary-light
-                         dark:hover:bg-back-secondary-dark"
-            >
-              {toggles.tagColorStyle}
-            </button>
+          <label className="flex flex-col gap-1.5 text-base">
+            <span className="flex items-center justify-between">
+              <span>Tag colors</span>
+              <span className="text-sm text-faint-light dark:text-faint-dark">
+                {toggles.tagColorMuting === 0
+                  ? 'colored'
+                  : toggles.tagColorMuting === 100
+                    ? 'muted'
+                    : `${toggles.tagColorMuting}% muted`}
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={toggles.tagColorMuting}
+              onChange={(e) => update({ tagColorMuting: Number(e.target.value) })}
+              className="w-full accent-link2-light dark:accent-link2-dark"
+            />
           </label>
         </div>
       )}

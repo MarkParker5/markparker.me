@@ -74,7 +74,7 @@ export const PROJECTS_TITLE_ICON = (
 
 export const PROJECTS_SUBTITLE = (
   <>
-    Everything I’ve shipped, tinkered with, or killed — personal projects are mostly open source on{' '}
+    Everything I’ve shipped, tinkered with, or killed. Personal projects are mostly open source on{' '}
     <Link
       style={2}
       href="https://github.com/MarkParker5"

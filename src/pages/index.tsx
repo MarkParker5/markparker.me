@@ -7,7 +7,7 @@ import { SectionHeader } from '../components/section-header'
 import { Reveal } from '../components/reveal'
 import { PageContainer, CONTENT_MAX_WIDTH_CLASS } from '../components/page-container'
 import { getPublicArticles } from '../article'
-import { getSpotlightProjects } from '../project'
+import { getPublicProjects, sortProjects } from '../project'
 import { getPreviewNotes } from '../note'
 import { Link } from '../components/link'
 import { useQueryParam, matchesTagExpression } from '../filter'
@@ -40,9 +40,16 @@ export default function Index() {
 
   const notesPreview = getPreviewNotes(3).filter((n) => matchesTagExpression(n.tags ?? [], notesFilter))
 
-  const spotlightProjects = getSpotlightProjects().filter((p) =>
-    matchesTagExpression(p.tags, projectsFilter),
-  )
+  // Homepage features the 3 most interesting projects (the `spotlight`
+  // flag that used to pick these is gone — same "interesting first"
+  // signal as the /projects default, so one source of truth). Tag-filter
+  // first, THEN take the top 3, so a filtered homepage link surfaces the
+  // best 3 *within* that filter rather than filtering the global top 3
+  // down to however many happen to match.
+  const projectsPreview = sortProjects(
+    getPublicProjects().filter((p) => matchesTagExpression(p.tags, projectsFilter)),
+    'interesting',
+  ).slice(0, 3)
 
   const latestArticles = getPublicArticles()
     .filter((a) => matchesTagExpression(a.tags ?? [], articlesFilter))
@@ -111,7 +118,7 @@ export default function Index() {
             </>
           )}
 
-          {spotlightProjects.length > 0 && (
+          {projectsPreview.length > 0 && (
             <>
               <SectionHeader
                 id="projects-section"
@@ -122,7 +129,7 @@ export default function Index() {
                 context="home.projects"
                 divider
               />
-              <ProjectsList projects={spotlightProjects} />
+              <ProjectsList projects={projectsPreview} />
               <Reveal dataAlignHeading="projects" className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
@@ -131,6 +138,24 @@ export default function Index() {
                 >
                   All projects →
                 </Link>
+                {/* These three are the most interesting, not the newest —
+                    the newest work usually surfaces via the Blog section
+                    above, but give recency its own escape hatch so the
+                    project list doesn't feel frozen to a returning visitor. */}
+                {/* data-scroll-top-after-transition: this link morphs like
+                    any projects link, but then scrolls to the top of the
+                    destination once the morph ends — its point is to reveal
+                    the NEWEST projects, which sit at the top of the
+                    created-sorted list (see _app.tsx). */}
+                <span
+                  className="block mt-1.5 text-sm text-muted-light dark:text-muted-dark"
+                  data-scroll-top-after-transition
+                >
+                  Featured picks —{' '}
+                  <Link style={1} href="/projects?sort=created">
+                    see the latest →
+                  </Link>
+                </span>
               </Reveal>
             </>
           )}

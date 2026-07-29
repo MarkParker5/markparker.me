@@ -69,14 +69,21 @@ export const ArticleLayout = (props: PropsWithChildren<unknown>) => {
           </header>
         </Reveal>
 
-        {/* Without the rule, still keep the same vertical gap it used to
-            provide (my-10) — otherwise removing it also collapses the
-            breathing room between the nav and the page title, which isn't
-            what this toggle is testing. */}
-        {headerDivider ? (
-          <Separator style={SITE_DIVIDER_TRANSITION} />
-        ) : (
-          <div className="mt-10" style={SITE_DIVIDER_TRANSITION} />
+        {/* Whether the <hr> shows: everywhere, nowhere, or desktop-only.
+            When it's absent, keep the same vertical gap it provided
+            (my-10 / mt-10) so removing it doesn't also collapse the
+            breathing room between the nav and the page title. For
+            'desktop', both render but each is display-toggled at `md` so
+            only one is ever laid out per viewport — safe to share the
+            `site-title-divider` transition name, since a display:none
+            element has no box to duplicate it. */}
+        {headerDivider === 'shown' && <Separator style={SITE_DIVIDER_TRANSITION} />}
+        {headerDivider === 'hidden' && <div className="mt-10" style={SITE_DIVIDER_TRANSITION} />}
+        {headerDivider === 'desktop' && (
+          <>
+            <Separator className="hidden md:block" style={SITE_DIVIDER_TRANSITION} />
+            <div className="mt-10 md:hidden" style={SITE_DIVIDER_TRANSITION} />
+          </>
         )}
 
         <main>{props.children}</main>

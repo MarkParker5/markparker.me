@@ -23,10 +23,18 @@ export type ProjectLink = {
 export type ProjectMeta = {
   id: string
   title: string
+  // The year work STARTED — the "since" date. Required; drives the
+  // "Oldest first" sort and the left side of the displayed date. On its
+  // own (no `until`) it renders as a single year for finished one-off
+  // work, or as "since <year>" for anything still ongoing (see
+  // ONGOING_STATUSES / formatProjectDate).
   year: number
-  // Overrides the displayed year with a label (e.g. 'WIP') for projects
-  // without a settled ship date yet — `year` still drives sort order.
-  yearLabel?: string
+  // Optional END year, making the date an explicit range "<year>–<until>"
+  // (or a single "<year>" when it equals the start). Set it for work whose
+  // span has actually ENDED; leave it off for ongoing projects (their
+  // status supplies "since") and single-year one-offs. For a FORK this is
+  // MY last commit year on the fork, not the upstream project's age.
+  until?: number
   status: ProjectStatus
   // Only set when it says something owner doesn't already — e.g. "Hackathon
   // team" (personal), or "Software Engineer" (rendered "@ SkyHigh"). Skip it
@@ -54,7 +62,6 @@ export type ProjectMeta = {
   // formula that ranks the wrong project first.
   interest?: number
 
-  spotlight?: boolean
   hidden?: boolean
 }
 
@@ -88,7 +95,7 @@ export const TAG_ORDER = [
 const projects: ProjectMeta[] = [
   {
     id: 'dogcat-fund',
-    interest: 90,
+    interest: 82,
     title: 'DogCat Fund',
     year: 2025,
     status: 'shipped',
@@ -112,7 +119,7 @@ const projects: ProjectMeta[] = [
   },
   {
     id: 'startbounty',
-    interest: 82,
+    interest: 90,
     title: 'StartBounty',
     year: 2024,
     status: 'wip',
@@ -183,7 +190,7 @@ const projects: ProjectMeta[] = [
     id: 'fastapi-ws-docs-demo',
     interest: 25,
     title: 'fastapi-ws-docs-demo',
-    year: 2023,
+    year: 2025,
     status: 'hobby',
     blurb: "A tool that automatically adds WebSocket endpoints and Pydantic message schemas to FastAPI's native Swagger UI.",
     tags: ['library', 'oss', 'web'],
@@ -194,7 +201,7 @@ const projects: ProjectMeta[] = [
     id: 'ios-localizer',
     interest: 60,
     title: 'iOS Auto-Localizer',
-    year: 2023,
+    year: 2021,
     status: 'shipped',
     blurb:
       'A console tool that finds every .strings file in an Xcode project and translates it into 20 languages in about 5 minutes.',
@@ -221,7 +228,7 @@ const projects: ProjectMeta[] = [
     id: 'aiohomekit-fork',
     interest: 40,
     title: 'aiohomekit (fork)',
-    year: 2023,
+    year: 2025,
     status: 'maintained',
     blurb:
       'An asyncio-focused fork of the unofficial Python HomeKit SDK, kept alive for MajorDom-adjacent HomeKit integration work. Now maintained under Parker Industries.',
@@ -260,7 +267,6 @@ const projects: ProjectMeta[] = [
     ],
     imageUrl: '/projects/majordom.webp',
     owner: 'parker-industries-in-house',
-    spotlight: true,
   },
   {
     id: 'captionme',
@@ -280,7 +286,7 @@ const projects: ProjectMeta[] = [
     id: 'anyobservableobject',
     interest: 20,
     title: 'AnyObservableObject',
-    year: 2022,
+    year: 2023,
     status: 'shipped',
     blurb: "Protocol-friendly equivalents to SwiftUI's property wrappers, but without compile-time type restrictions — use protocols in views without generics.",
     tags: ['library', 'oss', 'ios'],
@@ -291,7 +297,7 @@ const projects: ProjectMeta[] = [
     id: 'swiftytranslate',
     interest: 20,
     title: 'SwiftyTranslate',
-    year: 2022,
+    year: 2023,
     status: 'shipped',
     blurb: 'A Swift wrapper for public Google Translate — free, no API keys needed.',
     tags: ['library', 'oss', 'ios'],
@@ -302,7 +308,7 @@ const projects: ProjectMeta[] = [
     id: 'rpi-networking',
     interest: 15,
     title: 'rpi-networking',
-    year: 2022,
+    year: 2023,
     status: 'hobby',
     blurb: 'Controls wifi, hotspot, and hostname of a Raspberry Pi — built while wiring up the first MajorDom hub firmware.',
     tags: ['cli', 'oss', 'raspberry-pi'],
@@ -313,7 +319,7 @@ const projects: ProjectMeta[] = [
     id: 'raspi-gpio',
     interest: 15,
     title: 'raspi-gpio',
-    year: 2022,
+    year: 2023,
     status: 'hobby',
     blurb: 'RPi.GPIO and spidev wrapper with mocks, for developing Raspberry Pi GPIO code on any platform.',
     tags: ['library', 'oss', 'raspberry-pi'],
@@ -324,7 +330,7 @@ const projects: ProjectMeta[] = [
     id: 'rpi-reactive-gpio',
     interest: 12,
     title: 'rpi-reactive-gpio',
-    year: 2022,
+    year: 2023,
     status: 'hobby',
     blurb: 'Syntax sugar for controlling RPi.GPIO with a reactive design.',
     tags: ['library', 'oss', 'raspberry-pi'],
@@ -335,7 +341,7 @@ const projects: ProjectMeta[] = [
     id: 'system-sounds',
     interest: 10,
     title: 'system-sounds',
-    year: 2022,
+    year: 2023,
     status: 'hobby',
     blurb: 'Lists and plays available system sound files, cross-platform.',
     tags: ['library', 'oss'],
@@ -357,7 +363,7 @@ const projects: ProjectMeta[] = [
     id: 'manims',
     interest: 10,
     title: 'manims',
-    year: 2021,
+    year: 2023,
     status: 'hobby',
     blurb: 'Coded animations for a YouTube video about the proto-STARK voice assistant.',
     tags: ['library', 'oss', 'video'],
@@ -411,7 +417,6 @@ const projects: ProjectMeta[] = [
     ],
     imageUrl: '/projects/stark.webp',
     owner: 'personal',
-    spotlight: true,
   },
   {
     id: 'fastrecorder',
@@ -441,7 +446,7 @@ const projects: ProjectMeta[] = [
     id: 'of-terrain-generator',
     interest: 15,
     title: 'oF-Terrain-Generator',
-    year: 2018,
+    year: 2023,
     status: 'hobby',
     blurb: 'An openFrameworks (C++) app for procedural terrain generation using Perlin noise.',
     tags: ['app'],
@@ -467,32 +472,71 @@ export function getProjectById(id: string): ProjectMeta | undefined {
   return projects.find((p) => p.id === id)
 }
 
-export function getSpotlightProjects() {
-  return getPublicProjects().filter((p) => p.spotlight)
+// Statuses that mean "still being actively worked on right now" — with no
+// explicit `until` set, these render as "since <year>" and sort as the
+// most recent thing possible under "Recent first" (they ARE current
+// activity). NOT `maintained`: that means "kept alive/patched but not
+// actively developed" (see ProjectStatus), which is a past-tense fact, so
+// it renders as a bare start year like the other point-in-time statuses
+// (shipped/archived/hobby) unless given an explicit `until` range.
+const ONGOING_STATUSES = new Set<ProjectStatus>(['wip', 'active'])
+
+// The date/range shown on a project's meta line and in feeds. `until`
+// (explicit end) always wins — collapsing to a single year when it equals
+// the start (began and finished the same year); otherwise ongoing work
+// reads "since <year>" and everything else is a single year.
+export function formatProjectDate(p: ProjectMeta): string {
+  if (p.until) return p.until === p.year ? `${p.year}` : `${p.year}–${p.until}`
+  if (ONGOING_STATUSES.has(p.status)) return `since ${p.year}`
+  return `${p.year}`
 }
 
-export function getOtherProjects() {
-  return getPublicProjects().filter((p) => !p.spotlight)
+// "How recent is this project's most recent activity" — the key "Recent
+// first" sorts by. An explicit `until` is that end year; an ongoing
+// project counts as more recent than any finished one (the sentinel keeps
+// them above every real year regardless of when they started); a finished
+// project with no `until` falls back to its start year.
+const ONGOING_RECENCY = 9999
+function recencyYear(p: ProjectMeta): number {
+  if (p.until) return p.until
+  if (ONGOING_STATUSES.has(p.status)) return ONGOING_RECENCY
+  return p.year
 }
 
-export type ProjectSort = 'interesting' | 'recent' | 'old'
+// The top-N (default 3) projects the homepage features — the `spotlight`
+// boolean flag this replaced was a second, hand-maintained axis that
+// silently fought the sort; "the most interesting ones" is the same
+// signal the /projects default view already uses, so there's now one
+// source of truth for "what's worth showing first."
+export function getHomepageProjects(limit = 3): ProjectMeta[] {
+  return sortProjects(getPublicProjects(), 'interesting').slice(0, limit)
+}
+
+// Two distinct time axes, deliberately split into two options rather than
+// one ambiguous "Recent" — "when was this last touched" (updated) and
+// "when did this begin" (created) rank the list very differently: a
+// long-running flagship is near the TOP by updated (still active) but in
+// the MIDDLE by created (started years ago), while a brand-new one-off is
+// top by created but, once finished, mid-pack by updated.
+export type ProjectSort = 'interesting' | 'updated' | 'created' | 'old'
 
 export const PROJECT_SORT_OPTIONS: { value: ProjectSort; label: string }[] = [
   { value: 'interesting', label: 'Interesting first' },
-  { value: 'recent', label: 'Recent first' },
+  { value: 'updated', label: 'Recently updated' },
+  { value: 'created', label: 'Recently created' },
   { value: 'old', label: 'Oldest first' },
 ]
 
-// Default view: manually-curated `interest` score, highest first, ties
-// broken by year (newest wins the tie) — a flagship product from 2020 still
-// beats an untagged utility script from 2024. Missing `interest` counts as
-// 0, at the bottom with the rest of the unscored small stuff.
+// - interesting (default): curated `interest` desc, ties broken by recency.
+// - updated: most-recent ACTIVITY first (until ?? ongoing ?? start) — an
+//   actively-developed project outranks any finished one; ties by start.
+// - created: newest START first, regardless of later activity; ties broken
+//   by most-recent activity.
+// - old: earliest START first — the "created" axis, other direction.
 export function sortProjects(projects: ProjectMeta[], sort: ProjectSort): ProjectMeta[] {
   const sorted = [...projects]
-  if (sort === 'recent') return sorted.sort((a, b) => b.year - a.year)
+  if (sort === 'updated') return sorted.sort((a, b) => recencyYear(b) - recencyYear(a) || b.year - a.year)
+  if (sort === 'created') return sorted.sort((a, b) => b.year - a.year || recencyYear(b) - recencyYear(a))
   if (sort === 'old') return sorted.sort((a, b) => a.year - b.year)
-  return sorted.sort((a, b) => {
-    const diff = (b.interest ?? 0) - (a.interest ?? 0)
-    return diff !== 0 ? diff : b.year - a.year
-  })
+  return sorted.sort((a, b) => (b.interest ?? 0) - (a.interest ?? 0) || recencyYear(b) - recencyYear(a))
 }

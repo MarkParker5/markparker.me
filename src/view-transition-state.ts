@@ -1,5 +1,5 @@
 import { getPreviewNotes } from './note'
-import { getSpotlightProjects } from './project'
+import { getHomepageProjects } from './project'
 import { getPublicArticles } from './article'
 
 // Plain mutable flag, not React state — read synchronously inside
@@ -142,7 +142,7 @@ export type ClickAlignmentTarget = { name: string; oldRect: DOMRect }
 // unfiltered "/", so that's the only case this needs to match.
 function previewCardNamesForSlug(slug: string): string[] {
   if (slug === 'posts') return getPreviewNotes(3).map((n) => `note-card-${n.id}`)
-  if (slug === 'projects') return getSpotlightProjects().map((p) => `project-card-${p.id}`)
+  if (slug === 'projects') return getHomepageProjects().map((p) => `project-card-${p.id}`)
   if (slug === 'blog') return getPublicArticles().slice(0, 3).map((a) => `article-card-${a.id}`)
   return []
 }

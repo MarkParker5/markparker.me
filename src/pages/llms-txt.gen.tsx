@@ -1,7 +1,7 @@
 import { GetStaticProps } from 'next'
 import fs from 'fs'
 import { getPublicArticles } from '../article'
-import { getPublicProjects } from '../project'
+import { getPublicProjects, getHomepageProjects, formatProjectDate } from '../project'
 
 // Build-time-generated static file, following the same pattern as
 // sitemap.gen.tsx/feed.gen.tsx (this repo is Pages Router + `next export`,
@@ -14,13 +14,15 @@ const LlmsTxt = () => {
 
 export const getStaticProps: GetStaticProps = async () => {
   const projects = getPublicProjects()
-  const spotlight = projects.filter((p) => p.spotlight)
+  // The "Flagship" section is the same top-by-interest set the homepage
+  // shows, now that the hand-maintained `spotlight` flag is gone.
+  const flagship = getHomepageProjects()
   const articles = getPublicArticles().filter((a) => !a.hidden && !a.origin)
 
   const projectLines = projects
     .map((p) => {
       const link = p.links[0] ? ` (${p.links[0].href})` : ''
-      return `- **${p.title}**${link}: ${p.blurb} [${p.year}, ${p.status}]`
+      return `- **${p.title}**${link}: ${p.blurb} [${formatProjectDate(p)}, ${p.status}]`
     })
     .join('\n')
 
@@ -38,7 +40,7 @@ Mark Parker is a full-stack software and hardware engineer based in Germany, wor
 
 ## Flagship projects
 
-${spotlight.map((p) => `- **${p.title}** (${p.links[0]?.href ?? ''}): ${p.blurb}`).join('\n')}
+${flagship.map((p) => `- **${p.title}** (${p.links[0]?.href ?? ''}): ${p.blurb}`).join('\n')}
 
 ## All projects (shipped, hobby, and dead — a full honest track record)
 
