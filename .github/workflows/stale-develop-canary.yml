@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   canary:
-    uses: ParkerIndustries/workflows/.github/workflows/stale-develop-canary.yml@master
+    uses: ParkerIndustries/workflows/.github/workflows/stale-develop-canary.yml@v1
     with:
       stable-branch: master
       dev-branch: develop

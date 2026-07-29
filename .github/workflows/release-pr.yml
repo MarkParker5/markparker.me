@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   release-pr:
-    uses: ParkerIndustries/workflows/.github/workflows/release-pr.yml@master
+    uses: ParkerIndustries/workflows/.github/workflows/release-pr.yml@v1
     with:
       stable-branch: master
       dev-branch: develop
