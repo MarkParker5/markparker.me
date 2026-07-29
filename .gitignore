@@ -15,3 +15,6 @@ ignore/
 
 # TypeScript incremental build cache (generated)
 tsconfig.tsbuildinfo
+
+# Build-time generated README project cards (regenerated each build)
+public/cards/
