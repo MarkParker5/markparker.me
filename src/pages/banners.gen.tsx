@@ -58,13 +58,14 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
   for (const c of cells) { acc += c.w; bounds.push(acc) }
   const n = cells.length
   const defs: string[] = []
-  const back: string[] = []
   const shapes: string[] = []
   cells.forEach((c, i) => {
     const x0 = bounds[i]
     const x1 = bounds[i + 1]
     // Every edge slants the same "/" — including the two outer ends. The
-    // overhang past x=0 / x=W is clipped by the rounded frame.
+    // slanted outer edges leave a triangle of the solid banner background
+    // exposed at each end, so the strip reads as a clean angled cut (into the
+    // full-opacity card, not a ghosted image).
     const lTop = x0 + skew / 2
     const lBot = x0 - skew / 2
     const rTop = x1 + skew / 2
@@ -72,17 +73,6 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
     const poly = `${lTop},${Y0} ${rTop},${Y0} ${rBot},${Y0 + h} ${lBot},${Y0 + h}`
     const cx = (x0 + x1) / 2
     const cy = Y0 + h / 2
-
-    // First/last cells: a faded full-rect backdrop so the triangle the outer
-    // slant would otherwise leave empty stays filled — the slant reads at the
-    // ends "into opacity" while the banner keeps its rectangular shape.
-    if (i === 0 || i === n - 1) {
-      if (c.img) {
-        back.push(`<image href="${c.img}" x="${x0 - skew}" y="${Y0}" width="${x1 - x0 + 2 * skew}" height="${h}" preserveAspectRatio="xMidYMid slice" opacity="0.38"/>`)
-      } else {
-        back.push(`<rect x="${x0 - skew}" y="${Y0}" width="${x1 - x0 + 2 * skew}" height="${h}" fill="${p.accent}" opacity="0.5"/>`)
-      }
-    }
 
     if (c.img) {
       const bx = Math.min(lTop, lBot)
@@ -100,12 +90,10 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
         shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r + 2}" fill="none" stroke="${p.onAccent}" stroke-width="3"/>${arrow(cx, cy, r * 1.4, p.onAccent, 4)}`)
       }
     }
-    // Divider stroke on the "/" — solid interior, faded on the two ends.
-    const op = i === 0 ? 0.45 : 1
-    shapes.push(`<line x1="${x0 - skew / 2}" y1="${Y0 + h}" x2="${x0 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5" opacity="${op}"/>`)
-    if (i === n - 1) shapes.push(`<line x1="${x1 - skew / 2}" y1="${Y0 + h}" x2="${x1 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5" opacity="0.45"/>`)
+    // Full-height "/" divider between adjacent cells (bg-coloured seam).
+    if (i > 0) shapes.push(`<line x1="${x0 - skew / 2}" y1="${Y0 + h}" x2="${x0 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5"/>`)
   })
-  return `<defs>${defs.join('')}</defs>${back.join('\n')}${shapes.join('\n')}`
+  return `<defs>${defs.join('')}</defs>${shapes.join('\n')}`
 }
 
 // Project cells are 16:9 (uncropped); the CTA tile takes whatever width is left.
@@ -172,7 +160,7 @@ function coffee(theme: 'light' | 'dark'): string {
   <text x="48" y="80" fill="${p.title}" font-size="32" font-weight="800">Did this solve your problem?</text>
   <text x="48" y="120" fill="${p.body}" font-size="21">It's free — but it wasn't free to make. If it saved you time,</text>
   <text x="48" y="150" fill="${p.body}" font-size="21">that's worth a coffee, right?</text>
-  ${cta(W - 44, H / 2, 'Get me a coffee', p.accent, p)}`
+  ${cta(W - 44, H / 2, 'Buy me a coffee', p.accent, p)}`
   return svg(H, inner, p)
 }
 
