@@ -132,8 +132,8 @@ function majordom(theme: 'light' | 'dark'): string {
   const H = 230
   const inner = `
   <text x="48" y="86" fill="${p.accent}" font-size="24" font-weight="800" letter-spacing="3">PART OF MAJORDOM</text>
-  <text x="48" y="132" fill="${p.title}" font-size="34" font-weight="800">The private, offline-first smart home</text>
-  <text x="48" y="172" fill="${p.body}" font-size="22">that's actually smart — one hub, no cloud, your data stays home.</text>
+  <text x="48" y="132" fill="${p.title}" font-size="36" font-weight="800">The next-gen smart home</text>
+  <text x="48" y="172" fill="${p.body}" font-size="22">open source • local-first • user-friendly • truly smart</text>
   ${cta(W - 44, H / 2, 'Explore MajorDom', p.accent, p)}`
   return svg(H, inner, p)
 }
@@ -146,7 +146,7 @@ function company(theme: 'light' | 'dark', a: Assets): string {
   const rest = W - projW * 2
   const H = 60 + h + 20
   const inner = `
-  <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries — currently building</text>
+  <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries · currently building:</text>
   ${cellRow([P169(a.majordom, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'ABOUT US' }], 60, h, 44, p)}`
   return svg(H, inner, p)
 }
@@ -159,7 +159,7 @@ function flagship(theme: 'light' | 'dark', a: Assets): string {
   const rest = W - projW * 3
   const H = 58 + h + 20
   const inner = `
-  <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project — a few more I'm proud of</text>
+  <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project · a few more I'm proud of</text>
   ${cellRow([P169(a.majordom, h), P169(a.stark, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'VISIT' }], 58, h, 44, p)}`
   return svg(H, inner, p)
 }
@@ -172,7 +172,7 @@ function coffee(theme: 'light' | 'dark'): string {
   <text x="48" y="80" fill="${p.title}" font-size="32" font-weight="800">Did this solve your problem?</text>
   <text x="48" y="120" fill="${p.body}" font-size="21">It's free — but it wasn't free to make. If it saved you time,</text>
   <text x="48" y="150" fill="${p.body}" font-size="21">that's worth a coffee, right?</text>
-  ${cta(W - 44, H / 2, 'Buy me a coffee', p.accent, p)}`
+  ${cta(W - 44, H / 2, 'Get me a coffee', p.accent, p)}`
   return svg(H, inner, p)
 }
 
