@@ -1,0 +1,22 @@
+name: Stale develop canary
+
+# Monthly escalation: the release PR nudges on every develop movement; this fires only when
+# a release has genuinely been forgotten (oldest unreleased commit > 30 days).
+on:
+  schedule:
+    - cron: "0 9 1 * *"   # 09:00 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    uses: ParkerIndustries/workflows/.github/workflows/stale-develop-canary.yml@master
+    with:
+      stable-branch: master
+      dev-branch: develop
+      mention: "@MarkParker5"
+      stale-days: 30
+      deploy-hint: "Ship by merging the open **Release: develop -> master** PR."
