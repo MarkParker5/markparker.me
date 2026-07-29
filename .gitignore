@@ -12,3 +12,6 @@ src/data/notes.json
 .vscode
 ignore/
 .claude
+
+# TypeScript incremental build cache (generated)
+tsconfig.tsbuildinfo

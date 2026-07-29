@@ -1,30 +1,16 @@
-const withBundleAnalyzer = require('@zeit/next-bundle-analyzer')
-const withImages = require('next-images')
-const withMdx = require('@next/mdx')({
-  options: {
-    providerImportSource: '@mdx-js/react',
-  },
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.BUNDLE_ANALYZE === 'browser' || process.env.BUNDLE_ANALYZE === 'both',
 })
 
-module.exports = withMdx(
-  withImages(
-    withBundleAnalyzer({
-      webpack(config) {
-        // config.optimization.usedExports = true
-        return config
-      },
-      analyzeServer: ['server', 'both'].includes(process.env.BUNDLE_ANALYZE),
-      analyzeBrowser: ['browser', 'both'].includes(process.env.BUNDLE_ANALYZE),
-      bundleAnalyzerConfig: {
-        server: {
-          analyzerMode: 'static',
-          reportFilename: '../bundles/server.html',
-        },
-        browser: {
-          analyzerMode: 'static',
-          reportFilename: '../bundles/client.html',
-        },
-      },
-    }),
-  ),
-)
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Static HTML export for GitHub Pages. Replaces the old `next export` command
+  // (removed in Next 14): `next build` now emits the site to `out/` directly,
+  // producing `foo.html` per route just like the previous export step did.
+  output: 'export',
+  // Static export can't use the Image Optimization server. Every image here is a
+  // plain <img> on a public/ path, so this is just a safety net for that constraint.
+  images: { unoptimized: true },
+}
+
+module.exports = withBundleAnalyzer(nextConfig)
