@@ -264,6 +264,7 @@ const projects: ProjectMeta[] = [
     links: [
       { label: 'majordom.io', href: 'https://www.majordom.io' },
       { label: 'dev docs', href: 'https://docs.majordom.io' },
+      { label: 'GitHub', href: 'https://github.com/MajorDom-Systems' },
     ],
     imageUrl: '/projects/majordom.webp',
     owner: 'parker-industries-in-house',

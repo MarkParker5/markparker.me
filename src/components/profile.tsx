@@ -90,7 +90,14 @@ function Divider() {
   return <hr ref={reveal.ref} className={`my-6 border-t opacity-30 ${reveal.className}`} />
 }
 
-export function Profile() {
+// Which section anchors actually exist on the page. A section the homepage
+// renders conditionally (empty Posts/Projects previews) has no target to
+// scroll to, so its nav button is hidden rather than left dangling. Keyed by
+// the anchor id (without '#'); a missing key defaults to visible (e.g. Blog).
+export function Profile({ sections }: { sections?: Record<string, boolean> }) {
+  const visibleNav = sectionNav.filter(
+    (item) => sections?.[item.href.replace('#', '')] ?? true,
+  )
   return (
     <div className="text-center">
       <div className="font-sans">
@@ -139,7 +146,7 @@ export function Profile() {
       <Divider />
 
       <ul className="list-none leading-none">
-        {sectionNav.map((item) => (
+        {visibleNav.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
       </ul>

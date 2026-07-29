@@ -81,7 +81,12 @@ export default function Index() {
           the real minimum. */}
       <div className="mx-auto flex xl:flex-row flex-col">
         <div className="mt-5 xl:w-[26rem] xl:flex-shrink-0">
-          <Profile />
+          <Profile
+            sections={{
+              'notes-section': notesPreview.length > 0,
+              'projects-section': projectsPreview.length > 0,
+            }}
+          />
         </div>
         {/* Fixed width, not `flex-1` — a flex item filling "whatever's
             left" next to the sidebar comes out narrower than
