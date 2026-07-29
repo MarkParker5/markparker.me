@@ -61,26 +61,33 @@ function imageCells(cells: { label: string; img?: string }[], X0: number, Y0: nu
     const poly = `${lTop},${Y0} ${rTop},${Y0} ${rBot},${Y0 + h} ${lBot},${Y0 + h}`
     const cx = X0 + i * cw + cw / 2
     if (c.img) {
+      // Image only — no dark overlay, no text label (the hero art already
+      // carries the project's own name/branding).
       const bx = Math.min(lTop, lBot)
       const bw = Math.max(rTop, rBot) - bx
       const id = `clip${i}`
       defs.push(`<clipPath id="${id}"><polygon points="${poly}"/></clipPath>`)
-      shapes.push(`<g clip-path="url(#${id})"><image href="${c.img}" x="${bx}" y="${Y0}" width="${bw}" height="${h}" preserveAspectRatio="xMidYMid slice"/><rect x="${bx}" y="${Y0}" width="${bw}" height="${h}" fill="#000" opacity="0.58"/></g>`)
+      shapes.push(`<g clip-path="url(#${id})"><image href="${c.img}" x="${bx}" y="${Y0}" width="${bw}" height="${h}" preserveAspectRatio="xMidYMid slice"/></g>`)
     } else {
+      // No image → solid accent tile with its label.
       shapes.push(`<polygon points="${poly}" fill="${p.accent}"/>`)
+      shapes.push(`<text x="${cx}" y="${Y0 + h / 2 + 11}" fill="${p.onAccent}" font-size="30" font-weight="800" letter-spacing="1.5" text-anchor="middle">${esc(c.label)}</text>`)
     }
-    const labelColor = c.img ? '#ffffff' : p.onAccent
-    shapes.push(`<text x="${cx}" y="${Y0 + h / 2 + 11}" fill="${labelColor}" font-size="30" font-weight="800" letter-spacing="1.5" text-anchor="middle">${esc(c.label)}</text>`)
     if (i > 0) shapes.push(`<line x1="${X0 + i * cw - skew / 2}" y1="${Y0 + h}" x2="${X0 + i * cw + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5"/>`)
   })
   return `<defs>${defs.join('')}</defs>${shapes.join('\n')}`
 }
 
 function svg(H: number, inner: string, p: Palette): string {
+  // Round the whole banner (so full-bleed image cells don't poke square
+  // corners past the radius) and draw the border stroke ON TOP of the content.
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <rect width="${W}" height="${H}" rx="12" fill="${p.bg}"/>
+  <defs><clipPath id="frameclip"><rect width="${W}" height="${H}" rx="12"/></clipPath></defs>
+  <g clip-path="url(#frameclip)">
+    <rect width="${W}" height="${H}" fill="${p.bg}"/>
+    ${inner}
+  </g>
   <rect x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" rx="11" fill="none" stroke="${p.divider}" stroke-width="2"/>
-  ${inner}
 </svg>`
 }
 
@@ -104,7 +111,7 @@ function company(theme: 'light' | 'dark', a: Assets): string {
   const H = 200
   const inner = `
   <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries — currently building</text>
-  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARTBOUNTY', img: a.startbounty }, { label: 'ABOUT US' }], 40, 60, W - 80, 118, 44, p)}`
+  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARTBOUNTY', img: a.startbounty }, { label: 'ABOUT US' }], 0, 60, W, 118, 44, p)}`
   return svg(H, inner, p)
 }
 
@@ -114,7 +121,7 @@ function flagship(theme: 'light' | 'dark', a: Assets): string {
   const H = 236
   const inner = `
   <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project — a few more I'm proud of</text>
-  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARK', img: a.stark }, { label: 'STARTBOUNTY', img: a.startbounty }], 40, 58, W - 80, 118, 44, p)}
+  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARK', img: a.stark }, { label: 'STARTBOUNTY', img: a.startbounty }], 0, 58, W, 118, 44, p)}
   ${mpLink(214, p)}`
   return svg(H, inner, p)
 }
