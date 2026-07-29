@@ -7,6 +7,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: write   # let GITHUB_TOKEN push the built site to the gh-pages branch
+
 jobs:
   deployment:
     runs-on: ubuntu-latest
@@ -27,9 +30,10 @@ jobs:
           rm out/*.gen.html
 
       - name: Deploy
-        # Pinned to v3: v4 fails the deploy_key push with "Permission denied
-        # (publickey)". Revisit the v4 bump separately with a working key setup.
-        uses: peaceiris/actions-gh-pages@v3
+        # Publish via the auto-provided GITHUB_TOKEN instead of the SSH deploy key
+        # (ACTIONS_DEPLOY_KEY was rejected with "Permission denied (publickey)").
+        # Pushes to the gh-pages branch, which Pages serves from.
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
