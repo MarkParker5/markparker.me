@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://markparker.me/projects</id>
+    <title>Mark Parker — Projects</title>
+    <updated>2026-07-29T03:43:33.122Z</updated>
+    <generator>---</generator>
+    <author>
+        <name>Mark Parker</name>
+        <uri>https://markparker.me</uri>
+    </author>
+    <link rel="alternate" href="https://markparker.me/projects"/>
+    <link rel="self" href="https://markparker.me/projects-feed.xml"/>
+    <subtitle>Every project Mark Parker has built — shipped, hobby, and dead.</subtitle>
+    <logo>https://markparker.me/mark-parker.jpg</logo>
+    <icon>https://markparker.me/favicon.png</icon>
+    <rights>All rights reserved 2026, Mark Parker</rights>
+    <entry>
+        <title type="html"><![CDATA[Archie]]></title>
+        <id>https://markparker.me/projects#archie</id>
+        <link href="https://www.majordom.io/?details=archie"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Offline-first voice assistant for smart homes, built on STARK, bundled into the MajorDom ecosystem.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[StartBounty]]></title>
+        <id>https://markparker.me/projects#startbounty</id>
+        <link href="https://startbounty.io"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[The easiest way to fund GitHub issues via user-placed bounties — get features faster, earn by contributing.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MajorDom]]></title>
+        <id>https://markparker.me/projects#majordom</id>
+        <link href="https://www.majordom.io"/>
+        <updated>2022-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Private, offline-first smart home system. Started out of frustration with cloud-locked voice assistants; now my flagship product at Parker Industries.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[STARK]]></title>
+        <id>https://markparker.me/projects#stark</id>
+        <link href="https://stark.markparker.me"/>
+        <updated>2020-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Offline voice interface framework. "Like FastAPI, but with speech instead of HTTP." Started as MajorDom's voice layer, grew into its own platform.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DogCat Fund]]></title>
+        <id>https://markparker.me/projects#dogcat-fund</id>
+        <link href="https://dogcat.org.ua"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Charity platform helping animal shelters raise funds transparently.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[fastapi-ws-docs-demo]]></title>
+        <id>https://markparker.me/projects#fastapi-ws-docs-demo</id>
+        <link href="https://github.com/MarkParker5/fastapi-ws-docs-demo"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A tool that automatically adds WebSocket endpoints and Pydantic message schemas to FastAPI's native Swagger UI.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[aiohomekit (fork)]]></title>
+        <id>https://markparker.me/projects#aiohomekit-fork</id>
+        <link href="https://github.com/ParkerIndustries/parker-aiohomekit"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[An asyncio-focused fork of the unofficial Python HomeKit SDK, kept alive for MajorDom-adjacent HomeKit integration work. Now maintained under Parker Industries.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Dr. House — AI Diagnostician]]></title>
+        <id>https://markparker.me/projects#dr-house-ai</id>
+        <link href="/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Built an AI diagnostician mobile app from scratch in a weekend hackathon in Cologne. Released it to the public domain and handed it off afterward rather than let it rot.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[python-app-architecture-demo]]></title>
+        <id>https://markparker.me/projects#python-app-architecture-demo</id>
+        <link href="https://github.com/MarkParker5/python-app-architecture-demo"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Clean-architecture example app written to accompany a Python architecture write-up: SOLID, DI, and layered structure for juniors.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[STARK-PLACE]]></title>
+        <id>https://markparker.me/projects#stark-place</id>
+        <link href="https://github.com/MarkParker5/STARK-PLACE"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Platform library and community-extensions repo for STARK — a home for third-party skills and integrations.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[TwiTreads]]></title>
+        <id>https://markparker.me/projects#twitreads</id>
+        <link href="https://github.com/MarkParker5/TwiTreads"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[An abandoned idea to combine several socials into one platform: one-tap cross-posting to Telegram, Twitter, and Threads with built-in translation. Built as a clean-architecture example (MVVMP + SOLID + DI).]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PeFi]]></title>
+        <id>https://markparker.me/projects#pefi</id>
+        <link href="https://skyhighapps.com/portfolio/pefi/"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Personal financial accounting app. Built financial calculations for daily/weekly/monthly limits and balance predictions, real-time iCloud sync, and custom chart/data-visualisation logic with gradient animations and hero transitions.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AnyObservableObject]]></title>
+        <id>https://markparker.me/projects#anyobservableobject</id>
+        <link href="https://github.com/MarkParker5/AnyObservableObject"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Protocol-friendly equivalents to SwiftUI's property wrappers, but without compile-time type restrictions — use protocols in views without generics.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftyTranslate]]></title>
+        <id>https://markparker.me/projects#swiftytranslate</id>
+        <link href="https://github.com/MarkParker5/SwiftyTranslate"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A Swift wrapper for public Google Translate — free, no API keys needed.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[rpi-networking]]></title>
+        <id>https://markparker.me/projects#rpi-networking</id>
+        <link href="https://github.com/MarkParker5/rpi-networking"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Controls wifi, hotspot, and hostname of a Raspberry Pi — built while wiring up the first MajorDom hub firmware.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[raspi-gpio]]></title>
+        <id>https://markparker.me/projects#raspi-gpio</id>
+        <link href="https://github.com/MarkParker5/raspi-gpio"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[RPi.GPIO and spidev wrapper with mocks, for developing Raspberry Pi GPIO code on any platform.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[rpi-reactive-gpio]]></title>
+        <id>https://markparker.me/projects#rpi-reactive-gpio</id>
+        <link href="https://github.com/MarkParker5/rpi-reactive-gpio"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Syntax sugar for controlling RPi.GPIO with a reactive design.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[system-sounds]]></title>
+        <id>https://markparker.me/projects#system-sounds</id>
+        <link href="https://github.com/MarkParker5/system-sounds"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Lists and plays available system sound files, cross-platform.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[manims]]></title>
+        <id>https://markparker.me/projects#manims</id>
+        <link href="https://github.com/MarkParker5/manims"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Coded animations for a YouTube video about the proto-STARK voice assistant.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[oF-Terrain-Generator]]></title>
+        <id>https://markparker.me/projects#of-terrain-generator</id>
+        <link href="https://github.com/MarkParker5/oF-Terrain-Generator"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[An openFrameworks (C++) app for procedural terrain generation using Perlin noise.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CaptionMe]]></title>
+        <id>https://markparker.me/projects#captionme</id>
+        <link href="https://skyhighapps.com/portfolio/captionme/"/>
+        <updated>2022-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Automatic subtitle generation for videos. Built the full video player, caption grouping, trimming, rendering pipeline, and a custom AirPlay layout.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[iOS Auto-Localizer]]></title>
+        <id>https://markparker.me/projects#ios-localizer</id>
+        <link href="https://github.com/MarkParker5/XCodeLocalize"/>
+        <updated>2021-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A console tool that finds every .strings file in an Xcode project and translates it into 20 languages in about 5 minutes.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[smarthome-mvp]]></title>
+        <id>https://markparker.me/projects#smarthome-mvp</id>
+        <link href="https://github.com/MarkParker5/smarthome-mvp"/>
+        <updated>2021-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[An early smart-home minimum-viable-product experiment — the direct predecessor to MajorDom's first architecture.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Coloring Apps (Kids / Boys / Girls)]]></title>
+        <id>https://markparker.me/projects#coloring-apps</id>
+        <link href="https://apps.apple.com/us/app/kids-coloring-book-draw-on-go/id1555256711"/>
+        <updated>2021-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A border-aware drawing app/game, shipped as three App Store targets from one Xcode project. Built the canvas and tool palette, border-detection drawing logic, multi-target project schemes, and automated content generation with image-enhancement tech.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[VideoEasy]]></title>
+        <id>https://markparker.me/projects#videoeasy</id>
+        <link href="https://skyhighapps.com/portfolio/vlog-easy-screenshot/"/>
+        <updated>2021-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[User-friendly automated video editor. Implemented the auto jump-cut algorithm, caption-generation and multi-language translation pipelines, and Firebase integration. Shipped to thousands of active users.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[FastRecorder]]></title>
+        <id>https://markparker.me/projects#fastrecorder</id>
+        <link href="https://skyhighapps.com/portfolio/fast-recorder/"/>
+        <updated>2020-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[The first Apple Watch audio recorder. Implemented text-to-speech for automated note creation.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[chrome-dino-bot-extension]]></title>
+        <id>https://markparker.me/projects#chrome-dino-bot-extension</id>
+        <link href="https://github.com/MarkParker5/chrome-dino-bot-extension"/>
+        <updated>2019-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A Chrome extension that automates the offline dino game.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+</feed>

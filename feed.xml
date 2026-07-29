@@ -6,7 +6,6 @@
     <generator>---</generator>
     <author>
         <name>Mark Parker</name>
-        <email>mark@parker-programs.com</email>
         <uri>https://markparker.me</uri>
     </author>
     <link rel="alternate" href="https://markparker.me/blog"/>
@@ -23,7 +22,6 @@
         <summary type="html"><![CDATA[Dive into the fundamentals of scalable and clean application architecture in Python. Here, we explore essential concepts of OOP, SOLID principles, and Dependency Injection with practical examples of a real application structure.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -35,7 +33,6 @@
         <summary type="html"><![CDATA[This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -47,7 +44,6 @@
         <summary type="html"><![CDATA[This article picks up where the previous one left off, [How We Built an AI Startup in a Weekend Hackathon in Germany], focusing more on the final product rather than the hackathon process itself.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -59,7 +55,6 @@
         <summary type="html"><![CDATA[Here's a rundown of my weekend at a Cologne hackathon, where we aimed to start an AI startup in just two days. We went from pitching ideas on Friday night to demoing a working app by Sunday. It involved coding late into the night, figuring out last-minute tech snags, and even putting together a presentation minutes before our demo. As a bonus, I have highlighted a to-do list of the main points for creating a startup.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -71,7 +66,6 @@
         <summary type="html"><![CDATA[I published a framework that allows you to build your own amazing voice assistant.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -83,7 +77,6 @@
         <summary type="html"><![CDATA[Exploring the Architecture of MajorDom v1.0: Dive into the inner workings of MajorDom v1.0. Learn about its core components, fault tolerance and offline capabilities.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -95,7 +88,6 @@
         <summary type="html"><![CDATA[The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>
@@ -107,7 +99,6 @@
         <summary type="html"><![CDATA[I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.]]></summary>
         <author>
             <name>Mark Parker</name>
-            <email>mark@parker-programs.com</email>
             <uri>https://markparker.me</uri>
         </author>
     </entry>

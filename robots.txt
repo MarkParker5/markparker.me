@@ -1,2 +1,4 @@
 User-Agent: *
+Allow: /
+
 Sitemap: https://markparker.me/sitemap.xml

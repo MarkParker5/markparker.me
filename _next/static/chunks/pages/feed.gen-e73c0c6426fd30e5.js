@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[372],{8668:(_,e,n)=>{(window.__NEXT_P=window.__NEXT_P||[]).push(["/feed.gen",function(){return n(9797)}])},9797:(_,e,n)=>{"use strict";n.r(e),n.d(e,{__N_SSG:()=>u,default:()=>s});var u=!0;let s=()=>null}},_=>{_.O(0,[636,593,792],()=>_(_.s=8668)),_N_E=_.O()}]);

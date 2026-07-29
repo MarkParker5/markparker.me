@@ -1,0 +1,67 @@
+# Mark Parker
+
+> Engineer, co-founder of Parker Industries. Building MajorDom (private smart home) and STARK (offline voice platform). This page is the personal, historical record — for the company and its services, see parker-industries.org.
+
+## About
+
+Mark Parker is a full-stack software and hardware engineer based in Germany, working across embedded systems, backend, mobile, and voice interfaces. Co-founder of Parker Industries (parker-industries.org), a product-and-services company. Personal site: markparker.me.
+
+## Flagship projects
+
+- **MajorDom** (https://www.majordom.io): Private, offline-first smart home system. Started out of frustration with cloud-locked voice assistants; now my flagship product at Parker Industries.
+- **STARK** (https://stark.markparker.me): Offline voice interface framework. "Like FastAPI, but with speech instead of HTTP." Started as MajorDom's voice layer, grew into its own platform.
+- **StartBounty** (https://startbounty.io): The easiest way to fund GitHub issues via user-placed bounties — get features faster, earn by contributing.
+
+## All projects (shipped, hobby, and dead — a full honest track record)
+
+- **DogCat Fund** (https://dogcat.org.ua): Charity platform helping animal shelters raise funds transparently. [2025, shipped]
+- **Archie** (https://www.majordom.io/?details=archie): Offline-first voice assistant for smart homes, built on STARK, bundled into the MajorDom ecosystem. [since 2024, wip]
+- **StartBounty** (https://startbounty.io): The easiest way to fund GitHub issues via user-placed bounties — get features faster, earn by contributing. [since 2024, wip]
+- **Dr. House — AI Diagnostician** (/blog/how-we-built-an-ai-startup-in-a-weekend-hackathon-in-germany): Built an AI diagnostician mobile app from scratch in a weekend hackathon in Cologne. Released it to the public domain and handed it off afterward rather than let it rot. [2024, archived]
+- **python-app-architecture-demo** (https://github.com/MarkParker5/python-app-architecture-demo): Clean-architecture example app written to accompany a Python architecture write-up: SOLID, DI, and layered structure for juniors. [2024, archived]
+- **STARK-PLACE** (https://github.com/MarkParker5/STARK-PLACE): Platform library and community-extensions repo for STARK — a home for third-party skills and integrations. [2023, hobby]
+- **fastapi-ws-docs-demo** (https://github.com/MarkParker5/fastapi-ws-docs-demo): A tool that automatically adds WebSocket endpoints and Pydantic message schemas to FastAPI's native Swagger UI. [2025, hobby]
+- **iOS Auto-Localizer** (https://github.com/MarkParker5/XCodeLocalize): A console tool that finds every .strings file in an Xcode project and translates it into 20 languages in about 5 minutes. [2021, shipped]
+- **TwiTreads** (https://github.com/MarkParker5/TwiTreads): An abandoned idea to combine several socials into one platform: one-tap cross-posting to Telegram, Twitter, and Threads with built-in translation. Built as a clean-architecture example (MVVMP + SOLID + DI). [2023, archived]
+- **aiohomekit (fork)** (https://github.com/ParkerIndustries/parker-aiohomekit): An asyncio-focused fork of the unofficial Python HomeKit SDK, kept alive for MajorDom-adjacent HomeKit integration work. Now maintained under Parker Industries. [2025, maintained]
+- **PeFi** (https://skyhighapps.com/portfolio/pefi/): Personal financial accounting app. Built financial calculations for daily/weekly/monthly limits and balance predictions, real-time iCloud sync, and custom chart/data-visualisation logic with gradient animations and hero transitions. [2023, shipped]
+- **MajorDom** (https://www.majordom.io): Private, offline-first smart home system. Started out of frustration with cloud-locked voice assistants; now my flagship product at Parker Industries. [since 2022, active]
+- **CaptionMe** (https://skyhighapps.com/portfolio/captionme/): Automatic subtitle generation for videos. Built the full video player, caption grouping, trimming, rendering pipeline, and a custom AirPlay layout. [2022, shipped]
+- **AnyObservableObject** (https://github.com/MarkParker5/AnyObservableObject): Protocol-friendly equivalents to SwiftUI's property wrappers, but without compile-time type restrictions — use protocols in views without generics. [2023, shipped]
+- **SwiftyTranslate** (https://github.com/MarkParker5/SwiftyTranslate): A Swift wrapper for public Google Translate — free, no API keys needed. [2023, shipped]
+- **rpi-networking** (https://github.com/MarkParker5/rpi-networking): Controls wifi, hotspot, and hostname of a Raspberry Pi — built while wiring up the first MajorDom hub firmware. [2023, hobby]
+- **raspi-gpio** (https://github.com/MarkParker5/raspi-gpio): RPi.GPIO and spidev wrapper with mocks, for developing Raspberry Pi GPIO code on any platform. [2023, hobby]
+- **rpi-reactive-gpio** (https://github.com/MarkParker5/rpi-reactive-gpio): Syntax sugar for controlling RPi.GPIO with a reactive design. [2023, hobby]
+- **system-sounds** (https://github.com/MarkParker5/system-sounds): Lists and plays available system sound files, cross-platform. [2023, hobby]
+- **smarthome-mvp** (https://github.com/MarkParker5/smarthome-mvp): An early smart-home minimum-viable-product experiment — the direct predecessor to MajorDom's first architecture. [2021, archived]
+- **manims** (https://github.com/MarkParker5/manims): Coded animations for a YouTube video about the proto-STARK voice assistant. [2023, hobby]
+- **Coloring Apps (Kids / Boys / Girls)** (https://apps.apple.com/us/app/kids-coloring-book-draw-on-go/id1555256711): A border-aware drawing app/game, shipped as three App Store targets from one Xcode project. Built the canvas and tool palette, border-detection drawing logic, multi-target project schemes, and automated content generation with image-enhancement tech. [2021, shipped]
+- **VideoEasy** (https://skyhighapps.com/portfolio/vlog-easy-screenshot/): User-friendly automated video editor. Implemented the auto jump-cut algorithm, caption-generation and multi-language translation pipelines, and Firebase integration. Shipped to thousands of active users. [2021, shipped]
+- **STARK** (https://stark.markparker.me): Offline voice interface framework. "Like FastAPI, but with speech instead of HTTP." Started as MajorDom's voice layer, grew into its own platform. [since 2020, active]
+- **FastRecorder** (https://skyhighapps.com/portfolio/fast-recorder/): The first Apple Watch audio recorder. Implemented text-to-speech for automated note creation. [2020, shipped]
+- **chrome-dino-bot-extension** (https://github.com/MarkParker5/chrome-dino-bot-extension): A Chrome extension that automates the offline dino game. [2019, hobby]
+- **oF-Terrain-Generator** (https://github.com/MarkParker5/oF-Terrain-Generator): An openFrameworks (C++) app for procedural terrain generation using Perlin noise. [2023, hobby]
+
+## Articles (blog)
+
+- **Python Architecture Essentials: Building Scalable and Clean Applications for Juniors** (May 18th, 2024): Dive into the fundamentals of scalable and clean application architecture in Python. Here, we explore essential concepts of OOP, SOLID principles, and Dependency Injection with practical examples of a real application structure.
+- **AI-powered Mobile App with Backend in Two Days (Tutorial)** (May 5th, 2024): This article delves into the nuts and bolts of creating a Proof of Concept (PoC) of a mobile app built with SwiftUI framework and a backend using FastAPI. As an extra, I'll demonstrate effective architecture patterns for SwiftUI apps, specifically MVVMP combined with SOLID principles and Dependency Injection (DI). For android, the code can be easily translated to Kotlin using Jetpack Compose Framework almost without changes.
+- **Dr. House — AI Diagnostician in your phone. Passing the Torch and Entrusting a Startup to Capable Hands** (May 4th, 2024): This article picks up where the previous one left off, [How We Built an AI Startup in a Weekend Hackathon in Germany], focusing more on the final product rather than the hackathon process itself.
+- **How We Built an AI Startup in a Weekend Hackathon in Germany** (May 4th, 2024): Here's a rundown of my weekend at a Cologne hackathon, where we aimed to start an AI startup in just two days. We went from pitching ideas on Friday night to demoing a working app by Sunday. It involved coding late into the night, figuring out last-minute tech snags, and even putting together a presentation minutes before our demo. As a bonus, I have highlighted a to-do list of the main points for creating a startup.
+- **S.T.A.R.K - The First Voice Assistant's Framework** (September 20th, 2023): I published a framework that allows you to build your own amazing voice assistant.
+- **Inside MajorDom v1.0: Exploring the Architecture of a New Smart Home System** (June 1st, 2023): Exploring the Architecture of MajorDom v1.0: Dive into the inner workings of MajorDom v1.0. Learn about its core components, fault tolerance and offline capabilities.
+- **Building a Smart Home - from Voice Assistant to MajorDom v1.0** (May 26th, 2023): The story of the origin of MajorDom: how I started creating my voice assistant and how it grew into a smart home system.
+- **How to Localize All Your iOS Apps into 20 Languages in 5 Minutes** (March 1st, 2023): I created a console tool that automatically finds all .strings files in an xcode project and translates them into all languages.
+
+## Posts
+
+Short-form posts, cross-posted from X, Bluesky, Mastodon, and Telegram, are collected at markparker.me/notes with an RSS feed at markparker.me/notes-feed.xml. Not included in full here — check that page for current content.
+
+## Pages
+
+- / — profile, latest posts/projects/articles
+- /projects — the full project list, filterable by tag
+- /notes — short-form notes feed
+- /blog — full article list, searchable
+- /blog/[slug] — individual articles
+- parker-industries.org — the company: services, portfolio, contract work
