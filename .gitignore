@@ -18,3 +18,5 @@ tsconfig.tsbuildinfo
 
 # Build-time generated README project cards (regenerated each build)
 public/cards/
+# Build-time generated repo banners (regenerated each build)
+public/banners/
