@@ -27,7 +27,9 @@ jobs:
           rm out/*.gen.html
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
+        # Pinned to v3: v4 fails the deploy_key push with "Permission denied
+        # (publickey)". Revisit the v4 bump separately with a working key setup.
+        uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./out
