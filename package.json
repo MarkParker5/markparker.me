@@ -35,7 +35,7 @@
     "highlight.js": "^11.11.1",
     "html-loader": "3.1.0",
     "markdown-loader": "^8.0.0",
-    "next": "^12.1.6",
+    "next": "^15.5.21",
     "next-images": "1.8.5",
     "next-mdx-remote": "^4.1.0",
     "postcss-flexbugs-fixes": "^5.0.2",
