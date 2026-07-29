@@ -46,37 +46,70 @@ function mpLink(yBaseline: number, p: Palette): string {
   <text x="${tx}" y="${yBaseline}" fill="${p.accent}" font-size="21" font-weight="800" text-anchor="end">${esc(text)}</text>`
 }
 
-// A row of parallelogram cells (the "/ / /" look), each filled with a project
-// hero image (dark-overlaid for legible labels) or a solid accent panel.
-function imageCells(cells: { label: string; img?: string }[], X0: number, Y0: number, w: number, h: number, skew: number, p: Palette): string {
+// A full-bleed row of variable-width parallelogram cells (the "/ / /" look).
+// Project cells hold a 16:9 hero image (no crop, no overlay/label — the art
+// carries its own branding); a trailing CTA cell is a solid accent tile with
+// an optional label + a circle-arrow. Its LEFT edge slants like every other
+// divider, so the CTA is part of the "/ / /" rhythm, not tacked on.
+type Cell = { img?: string; w: number; cta?: boolean; label?: string }
+function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette): string {
+  const bounds: number[] = [0]
+  let acc = 0
+  for (const c of cells) { acc += c.w; bounds.push(acc) }
   const n = cells.length
-  const cw = w / n
   const defs: string[] = []
+  const back: string[] = []
   const shapes: string[] = []
   cells.forEach((c, i) => {
-    const lTop = i === 0 ? X0 : X0 + i * cw + skew / 2
-    const lBot = i === 0 ? X0 : X0 + i * cw - skew / 2
-    const rTop = i === n - 1 ? X0 + w : X0 + (i + 1) * cw + skew / 2
-    const rBot = i === n - 1 ? X0 + w : X0 + (i + 1) * cw - skew / 2
+    const x0 = bounds[i]
+    const x1 = bounds[i + 1]
+    // Every edge slants the same "/" — including the two outer ends. The
+    // overhang past x=0 / x=W is clipped by the rounded frame.
+    const lTop = x0 + skew / 2
+    const lBot = x0 - skew / 2
+    const rTop = x1 + skew / 2
+    const rBot = x1 - skew / 2
     const poly = `${lTop},${Y0} ${rTop},${Y0} ${rBot},${Y0 + h} ${lBot},${Y0 + h}`
-    const cx = X0 + i * cw + cw / 2
+    const cx = (x0 + x1) / 2
+    const cy = Y0 + h / 2
+
+    // First/last cells: a faded full-rect backdrop so the triangle the outer
+    // slant would otherwise leave empty stays filled — the slant reads at the
+    // ends "into opacity" while the banner keeps its rectangular shape.
+    if (i === 0 || i === n - 1) {
+      if (c.img) {
+        back.push(`<image href="${c.img}" x="${x0 - skew}" y="${Y0}" width="${x1 - x0 + 2 * skew}" height="${h}" preserveAspectRatio="xMidYMid slice" opacity="0.38"/>`)
+      } else {
+        back.push(`<rect x="${x0 - skew}" y="${Y0}" width="${x1 - x0 + 2 * skew}" height="${h}" fill="${p.accent}" opacity="0.5"/>`)
+      }
+    }
+
     if (c.img) {
-      // Image only — no dark overlay, no text label (the hero art already
-      // carries the project's own name/branding).
       const bx = Math.min(lTop, lBot)
       const bw = Math.max(rTop, rBot) - bx
       const id = `clip${i}`
       defs.push(`<clipPath id="${id}"><polygon points="${poly}"/></clipPath>`)
       shapes.push(`<g clip-path="url(#${id})"><image href="${c.img}" x="${bx}" y="${Y0}" width="${bw}" height="${h}" preserveAspectRatio="xMidYMid slice"/></g>`)
     } else {
-      // No image → solid accent tile with its label.
       shapes.push(`<polygon points="${poly}" fill="${p.accent}"/>`)
-      shapes.push(`<text x="${cx}" y="${Y0 + h / 2 + 11}" fill="${p.onAccent}" font-size="30" font-weight="800" letter-spacing="1.5" text-anchor="middle">${esc(c.label)}</text>`)
+      const r = 22
+      if (c.label) {
+        shapes.push(`<text x="${cx - r - 12}" y="${cy + 9}" fill="${p.onAccent}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
+        shapes.push(`<circle cx="${cx + 30}" cy="${cy}" r="${r}" fill="none" stroke="${p.onAccent}" stroke-width="3"/>${arrow(cx + 30, cy, r * 1.3, p.onAccent, 3.6)}`)
+      } else {
+        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r + 2}" fill="none" stroke="${p.onAccent}" stroke-width="3"/>${arrow(cx, cy, r * 1.4, p.onAccent, 4)}`)
+      }
     }
-    if (i > 0) shapes.push(`<line x1="${X0 + i * cw - skew / 2}" y1="${Y0 + h}" x2="${X0 + i * cw + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5"/>`)
+    // Divider stroke on the "/" — solid interior, faded on the two ends.
+    const op = i === 0 ? 0.45 : 1
+    shapes.push(`<line x1="${x0 - skew / 2}" y1="${Y0 + h}" x2="${x0 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5" opacity="${op}"/>`)
+    if (i === n - 1) shapes.push(`<line x1="${x1 - skew / 2}" y1="${Y0 + h}" x2="${x1 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5" opacity="0.45"/>`)
   })
-  return `<defs>${defs.join('')}</defs>${shapes.join('\n')}`
+  return `<defs>${defs.join('')}</defs>${back.join('\n')}${shapes.join('\n')}`
 }
+
+// Project cells are 16:9 (uncropped); the CTA tile takes whatever width is left.
+const P169 = (img: string, h: number): Cell => ({ img, w: Math.round((h * 16) / 9) })
 
 function svg(H: number, inner: string, p: Palette): string {
   // Round the whole banner (so full-bleed image cells don't poke square
@@ -105,24 +138,29 @@ function majordom(theme: 'light' | 'dark'): string {
   return svg(H, inner, p)
 }
 
-// ---- 2. Parker Industries (company) — "/ / /" with project art ----------
+// ---- 2. Parker Industries (company) — 2 projects @16:9 + ABOUT US tile ---
 function company(theme: 'light' | 'dark', a: Assets): string {
   const p = { ...base(theme), accent: '#0969da' } as Palette
-  const H = 200
+  const h = 168
+  const projW = Math.round((h * 16) / 9)
+  const rest = W - projW * 2
+  const H = 60 + h + 20
   const inner = `
   <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries — currently building</text>
-  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARTBOUNTY', img: a.startbounty }, { label: 'ABOUT US' }], 0, 60, W, 118, 44, p)}`
+  ${cellRow([P169(a.majordom, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'ABOUT US' }], 60, h, 44, p)}`
   return svg(H, inner, p)
 }
 
-// ---- 3. Personal / random repo — flagship art + bottom-right link -------
+// ---- 3. Personal / random repo — 3 projects @16:9 + VISIT tile ----------
 function flagship(theme: 'light' | 'dark', a: Assets): string {
   const p = { ...base(theme), accent: '#0969da' } as Palette
-  const H = 236
+  const h = 168
+  const projW = Math.round((h * 16) / 9)
+  const rest = W - projW * 3
+  const H = 58 + h + 20
   const inner = `
   <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project — a few more I'm proud of</text>
-  ${imageCells([{ label: 'MAJORDOM', img: a.majordom }, { label: 'STARK', img: a.stark }, { label: 'STARTBOUNTY', img: a.startbounty }], 0, 58, W, 118, 44, p)}
-  ${mpLink(214, p)}`
+  ${cellRow([P169(a.majordom, h), P169(a.stark, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'VISIT' }], 58, h, 44, p)}`
   return svg(H, inner, p)
 }
 
