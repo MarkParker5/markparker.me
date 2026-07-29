@@ -7,6 +7,12 @@ name: Release PR
 on:
   push:
     branches: [develop]
+  # Also on a schedule: a Dependabot auto-merge pushes to develop with GITHUB_TOKEN,
+  # and GitHub does NOT trigger `push` workflows for GITHUB_TOKEN commits (loop
+  # prevention) — so without this, the release PR wouldn't refresh after an auto-merge.
+  # The schedule runs from the default branch's copy of this file.
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 permissions:

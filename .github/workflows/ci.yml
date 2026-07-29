@@ -15,5 +15,8 @@ jobs:
     uses: ParkerIndustries/workflows/.github/workflows/web-ci.yml@master
     with:
       typecheck: true
+      # src/data/notes.json is generated (gitignored) — generate it before tsc runs,
+      # or the typecheck fails with "Cannot find module './data/notes.json'".
+      setup-command: "npm run generate:notes"
       # MP's `lint` script is `eslint --fix` (mutating) — not a CI check; typecheck+build is the gate.
       build-command: "npm run build"
