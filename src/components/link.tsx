@@ -57,11 +57,18 @@ export function Link(props: LinkProps) {
     )
   }
 
+  // Next 13+ Link renders its own <a>; forward the anchor props onto it
+  // directly instead of nesting an <a> child (which now throws).
   return (
-    <NextLink {...(passProps as NextLinkProps)}>
-      <a className={className} title={props.title} aria-label={props['aria-label']} {...targetProps} onClick={props.onClick}>
-        {props.children}
-      </a>
+    <NextLink
+      {...(passProps as NextLinkProps)}
+      className={className}
+      title={props.title}
+      aria-label={props['aria-label']}
+      {...targetProps}
+      onClick={props.onClick}
+    >
+      {props.children}
     </NextLink>
   )
 }

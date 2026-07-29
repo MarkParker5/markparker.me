@@ -6,13 +6,9 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          {/* Global, not per-page — previously only index.tsx set these, so
-              every other page (/notes, /projects, /blog, articles) rendered
-              with no viewport meta at all, which can make mobile browsers
-              lay out at a desktop-width default and scale the whole page
-              down instead of using the real device width. */}
+          {/* viewport meta lives in _app (next/head); Next warns against
+              putting it in _document. charSet is fine here (document-level). */}
           <meta charSet="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
           <GoogleAnalytics />
           <link rel="icon" type="image/x-icon" href="/favicon.png" />
           {/* Loaded globally — every page uses FA icons somewhere (Notes/

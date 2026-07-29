@@ -1,6 +1,7 @@
 import { AppPropsType } from 'next/dist/shared/lib/utils'
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
+import Head from 'next/head'
 import '../../styles/globals.css'
 import { Footer } from '../components/footer'
 import { DesignToggleProvider } from '../design-toggles'
@@ -541,6 +542,11 @@ export default function App({ Component, pageProps }: AppPropsType) {
 
   return (
     <DesignToggleProvider>
+      {/* Global viewport — set here (not in _document, which Next warns against)
+          so every page renders at real device width on mobile. */}
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 pt-10">
           <Component {...pageProps} />
