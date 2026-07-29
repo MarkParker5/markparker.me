@@ -1,0 +1,19 @@
+name: CI
+
+# Build/typecheck gate on develop pushes and PRs into develop/master. markparker.me had
+# no develop CI before (node.js.yml only deploys on master push) — this is the "auto build
+# tests on develop" check, via the org's reusable Web CI. The `check` job it exposes is
+# what branch protection on develop should require, so Dependabot auto-merge waits for green.
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  ci:
+    uses: ParkerIndustries/workflows/.github/workflows/web-ci.yml@master
+    with:
+      typecheck: true
+      # MP's `lint` script is `eslint --fix` (mutating) — not a CI check; typecheck+build is the gate.
+      build-command: "npm run build"

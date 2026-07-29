@@ -1,0 +1,21 @@
+name: Dependabot Auto-merge
+
+# Auto-merges Dependabot PRs into develop once CI is green — patch/minor/security only;
+# major bumps are left as open PRs for manual review (skip-major). Delegates to the org
+# reusable. Requires repo settings: "Allow auto-merge" ON, and branch protection on
+# develop requiring the CI `check` (so --auto waits for tests). See the setup notes.
+on:
+  pull_request:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    uses: ParkerIndustries/workflows/.github/workflows/dependabot-automerge.yml@master
+    with:
+      skip-major: true

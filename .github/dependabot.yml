@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # npm dependencies — PRs open against develop (not master), where they auto-merge on
+  # green CI for patch/minor/security. Major bumps still open a PR here but are held for
+  # manual review (see .github/workflows/dependabot-automerge.yml, skip-major: true).
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Batch minor+patch bumps into one PR per week to cut noise; majors stay separate.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # Keep the GitHub Actions we pin (incl. the org reusables' actions) current too.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"

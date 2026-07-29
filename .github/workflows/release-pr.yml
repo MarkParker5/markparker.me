@@ -1,0 +1,22 @@
+name: Release PR
+
+# markparker.me releases by pushing to master (node.js.yml then deploys to GitHub Pages).
+# So the one-click release is merging an auto-maintained develop -> master PR. This keeps
+# that PR open and its changelog fresh whenever develop moves (incl. after Dependabot
+# auto-merges), and @mentions the owner.
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  release-pr:
+    uses: ParkerIndustries/workflows/.github/workflows/release-pr.yml@master
+    with:
+      stable-branch: master
+      dev-branch: develop
+      mention: "@MarkParker5"
