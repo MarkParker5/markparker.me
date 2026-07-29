@@ -16,6 +16,6 @@ permissions:
 
 jobs:
   automerge:
-    uses: ParkerIndustries/workflows/.github/workflows/dependabot-automerge.yml@master
+    uses: ParkerIndustries/workflows/.github/workflows/dependabot-automerge.yml@v1
     with:
       skip-major: true

@@ -12,7 +12,7 @@ on:
 
 jobs:
   ci:
-    uses: ParkerIndustries/workflows/.github/workflows/web-ci.yml@master
+    uses: ParkerIndustries/workflows/.github/workflows/web-ci.yml@v1
     with:
       typecheck: true
       # src/data/notes.json is generated (gitignored) — generate it before tsc runs,
