@@ -89,23 +89,23 @@ const single = (s: string, fontPx: number, maxW: number) => {
 
 type Row = { title?: string; meta?: string; body: string; tags?: string }
 
-function renderColumn(x: number, heading: string, rows: Row[], rowH: number, p: Palette): string {
+function renderColumn(x: number, heading: string, rows: Row[], rowH: number, p: Palette, cw: number = COL_W): string {
   const parts: string[] = [
     `<text x="${x}" y="${HEAD_Y}" fill="${p.accent}" font-size="21" font-weight="700" letter-spacing="1.5">${esc(heading.toUpperCase())}</text>`,
-    `<line x1="${x}" y1="${HEAD_Y + 16}" x2="${x + COL_W}" y2="${HEAD_Y + 16}" stroke="${p.divider}" stroke-width="1.5"/>`,
+    `<line x1="${x}" y1="${HEAD_Y + 16}" x2="${x + cw}" y2="${HEAD_Y + 16}" stroke="${p.divider}" stroke-width="1.5"/>`,
   ]
   rows.forEach((r, i) => {
     const y = ROW_TOP + i * rowH
     let cursor = y
     if (r.title) {
       parts.push(
-        `<text x="${x}" y="${cursor + 22}" fill="${p.title}" font-size="24" font-weight="700">${esc(single(r.title, 24, COL_W - 120))}</text>`,
+        `<text x="${x}" y="${cursor + 22}" fill="${p.title}" font-size="24" font-weight="700">${esc(single(r.title, 24, cw - 120))}</text>`,
       )
       if (r.meta)
-        parts.push(`<text x="${x + COL_W}" y="${cursor + 20}" fill="${p.muted}" font-size="15" text-anchor="end">${esc(r.meta)}</text>`)
+        parts.push(`<text x="${x + cw}" y="${cursor + 20}" fill="${p.muted}" font-size="15" text-anchor="end">${esc(r.meta)}</text>`)
       cursor += 30
     }
-    const lines = wrapText(r.body, 16.5, COL_W, r.title ? 2 : 3)
+    const lines = wrapText(r.body, 16.5, cw, r.title ? 2 : 3)
     lines.forEach((ln, li) => {
       parts.push(`<text x="${x}" y="${cursor + 18 + li * 23}" fill="${r.title ? p.blurb : p.title}" font-size="16.5">${esc(ln)}</text>`)
     })
@@ -116,12 +116,15 @@ function renderColumn(x: number, heading: string, rows: Row[], rowH: number, p: 
   return parts.join('\n')
 }
 
-function frame(H: number, p: Palette, left: string, right: string): string {
+function frame(H: number, p: Palette, left: string, right = '', divider = true): string {
+  const mid = divider
+    ? `<line x1="${W / 2}" y1="${PAD}" x2="${W / 2}" y2="${H - PAD}" stroke="${p.divider}" stroke-width="1" opacity="0.6"/>`
+    : ''
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
   <rect width="${W}" height="${H}" rx="14" fill="${p.bg}"/>
   <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="13" fill="none" stroke="${p.divider}" stroke-width="1.5"/>
   ${left}
-  <line x1="${W / 2}" y1="${PAD}" x2="${W / 2}" y2="${H - PAD}" stroke="${p.divider}" stroke-width="1" opacity="0.6"/>
+  ${mid}
   ${right}
   <text x="${W - PAD}" y="${H - 16}" fill="${p.muted}" font-size="13" text-anchor="end">markparker.me</text>
 </svg>`
@@ -174,21 +177,17 @@ function buildPostsCard(theme: 'light' | 'dark'): string {
     body: a.description,
   })
   const rowH = 104
-  const rows = 4
+  const rows = 5
   const H = ROW_TOP + rows * rowH + PAD - 20
+  const fullW = W - PAD * 2
 
-  // Notes (short social "posts") are frequently empty in a production build,
-  // so fall back to a two-column articles layout rather than a blank column.
-  let left: string
-  let right: string
-  if (notes.length > 0) {
-    left = renderColumn(PAD, 'Recent posts', notes.map((n) => ({ body: n.body, meta: n.datePretty })), rowH, p)
-    right = renderColumn(PAD + COL_W + GAP, 'Latest writing', articles.slice(0, rows).map(artRow), rowH, p)
-  } else {
-    left = renderColumn(PAD, 'Latest writing', articles.slice(0, rows).map(artRow), rowH, p)
-    right = renderColumn(PAD + COL_W + GAP, 'More writing', articles.slice(rows, rows * 2).map(artRow), rowH, p)
-  }
-  return frame(H, p, left, right)
+  // Single full-width column (fewer, more legible entries). If short social
+  // "posts" exist they lead; otherwise it's just the latest articles.
+  const items: Row[] = notes.length > 0
+    ? notes.slice(0, rows).map((n) => ({ body: n.body, meta: n.datePretty }))
+    : articles.slice(0, rows).map(artRow)
+  const heading = notes.length > 0 ? 'Recent posts' : 'Latest writing'
+  return frame(H, p, renderColumn(PAD, heading, items, rowH, p, fullW), '', false)
 }
 
 export const getStaticProps: GetStaticProps = async () => {
