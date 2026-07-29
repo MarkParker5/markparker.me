@@ -38,10 +38,12 @@ jobs:
           gh repo list "$OWNER" --source --no-archived --visibility public --limit 200 \
             --json name,description,url,stargazerCount > /tmp/repos.json
           jq -r '.[].name' /tmp/repos.json | sort -u > /tmp/all
-          printf '%s\n' $IGNORE | sort -u > /tmp/ignore
+          echo "$IGNORE" | tr ' ' '\n' | sed '/^$/d' | sort -u > /tmp/ignore
 
-          # Candidates = public repos − already-on-site − ignored.
-          comm -23 /tmp/all /tmp/onsite | comm -23 - /tmp/ignore > /tmp/candidates || true
+          # Candidates = public repos − already-on-site − ignored. grep -vxF (not
+          # comm) so it doesn't depend on locale-collation of the sorted inputs.
+          cat /tmp/onsite /tmp/ignore | sort -u > /tmp/exclude
+          grep -vxF -f /tmp/exclude /tmp/all > /tmp/candidates || true
           count=$(wc -l < /tmp/candidates | tr -d ' ')
           echo "candidate repos: $count"
 
