@@ -28,7 +28,7 @@
   "dependencies": {
     "@mdx-js/loader": "^2.1.1",
     "@mdx-js/react": "^2.1.1",
-    "@next/mdx": "^12.1.6",
+    "@next/mdx": "^16.2.12",
     "@zeit/next-bundle-analyzer": "^0.0.3",
     "eslint-config-standard": "17.0.0",
     "feed": "^4.2.2",
