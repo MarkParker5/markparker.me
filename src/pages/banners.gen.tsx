@@ -45,10 +45,14 @@ function cta(xRight: number, cy: number, label: string, color: string, p: Palett
 // carries its own branding); a trailing CTA cell is a solid accent tile with
 // an optional label + a circle-arrow. Its LEFT edge slants like every other
 // divider, so the CTA is part of the "/ / /" rhythm, not tacked on.
+// Inset the whole strip from the banner's left/right edges by ~60% of the
+// slant width, so the first/last cells' slanted corners stay fully inside the
+// rounded frame instead of being clipped off.
+const EDGE_PAD = 26
 type Cell = { img?: string; w: number; cta?: boolean; label?: string }
 function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette): string {
-  const bounds: number[] = [0]
-  let acc = 0
+  const bounds: number[] = [EDGE_PAD]
+  let acc = EDGE_PAD
   for (const c of cells) { acc += c.w; bounds.push(acc) }
   const n = cells.length
   const defs: string[] = []
@@ -117,7 +121,7 @@ const isPromotable = (id: string) => getProjectById(id)?.status !== 'wip'
 function projectCells(ids: string[], a: Assets, h: number, ctaLabel: string): Cell[] {
   const shown = ids.filter(isPromotable)
   const projW = Math.round((h * 16) / 9)
-  const rest = W - projW * shown.length
+  const rest = W - 2 * EDGE_PAD - projW * shown.length
   return [...shown.map((id) => P169(a[id], h)), { w: rest, cta: true, label: ctaLabel }]
 }
 
