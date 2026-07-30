@@ -149,7 +149,7 @@ export default function Index() {
                   href="/projects?sort=created"
                   className="text-xl font-semibold"
                 >
-                  All work →
+                  just more →
                 </Link>
               </Reveal>
             </>
