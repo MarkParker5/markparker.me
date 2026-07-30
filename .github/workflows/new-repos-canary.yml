@@ -1,0 +1,82 @@
+name: New repos canary
+
+# Weekly nudge: if a public repo exists on GitHub but isn't linked from the
+# site's project list (src/project.tsx), open/refresh an issue suggesting it be
+# added — so the portfolio doesn't silently drift behind what's actually shipped.
+# Closes itself once every public repo is either on the site or intentionally
+# ignored below.
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # 09:00 UTC every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find public repos not yet on the site
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: MarkParker5
+          # Repos that are deliberately NOT portfolio projects. Add a repo here
+          # once you've reviewed it and decided it doesn't belong on the site.
+          IGNORE: "markparker.me MarkParker5 ITSTEP"
+          TITLE: "bot: new repos to add to the website"
+        run: |
+          set -euo pipefail
+
+          # Repos already linked from the project list.
+          grep -oE "github.com/${OWNER}/[A-Za-z0-9._-]+" src/project.tsx \
+            | sed 's|.*/||' | sort -u > /tmp/onsite
+
+          # All public, non-fork, non-archived repos.
+          gh repo list "$OWNER" --source --no-archived --visibility public --limit 200 \
+            --json name,description,url,stargazerCount > /tmp/repos.json
+          jq -r '.[].name' /tmp/repos.json | sort -u > /tmp/all
+          echo "$IGNORE" | tr ' ' '\n' | sed '/^$/d' | sort -u > /tmp/ignore
+
+          # Candidates = public repos − already-on-site − ignored. grep -vxF (not
+          # comm) so it doesn't depend on locale-collation of the sorted inputs.
+          cat /tmp/onsite /tmp/ignore | sort -u > /tmp/exclude
+          grep -vxF -f /tmp/exclude /tmp/all > /tmp/candidates || true
+          count=$(wc -l < /tmp/candidates | tr -d ' ')
+          echo "candidate repos: $count"
+
+          num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                  --search "in:title \"${TITLE}\"" --json number,title \
+                  --jq 'map(select(.title=="'"${TITLE}"'"))[0].number // empty')
+
+          if [ "$count" -eq 0 ]; then
+            if [ -n "$num" ]; then
+              gh issue close "$num" --repo "$GITHUB_REPOSITORY" \
+                --comment "All public repos are on the site or ignored — nothing pending."
+            fi
+            echo "Nothing to suggest."
+            exit 0
+          fi
+
+          # Build the issue body: one line per candidate with description + stars.
+          {
+            echo "@MarkParker5 — these public repos aren't linked from the site yet. Add the worthwhile ones to \`src/project.tsx\`, or drop them into the workflow's \`IGNORE\` list to silence."
+            echo
+            while read -r name; do
+              [ -z "$name" ] && continue
+              meta=$(jq -r --arg n "$name" '.[] | select(.name==$n) | "\(.stargazerCount)★ — \(.description // "no description") — \(.url)"' /tmp/repos.json)
+              echo "- **${name}** · ${meta}"
+            done < /tmp/candidates
+          } > /tmp/body.md
+
+          if [ -z "$num" ]; then
+            gh label create "site-drift" --repo "$GITHUB_REPOSITORY" --color FBCA04 \
+              --description "Bot: public repos missing from the site" --force >/dev/null 2>&1 || true
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
+              --body-file /tmp/body.md --label "site-drift"
+          else
+            gh issue edit "$num" --repo "$GITHUB_REPOSITORY" --body-file /tmp/body.md
+            echo "Refreshed issue #$num"
+          fi

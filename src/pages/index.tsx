@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { Profile } from '../components/profile'
 import { ArticlesList } from '../components/articles-list'
 import { ProjectsList } from '../components/projects-list'
+import { RecentWorkList } from '../components/recent-work-list'
 import { NotesList } from '../components/notes-list'
 import { SectionHeader } from '../components/section-header'
 import { Reveal } from '../components/reveal'
@@ -50,6 +51,14 @@ export default function Index() {
     getPublicProjects().filter((p) => matchesTagExpression(p.tags, projectsFilter)),
     'interesting',
   ).slice(0, 3)
+
+  // Compact "Recent Work" strip (above Projects) — the most-recently-STARTED
+  // projects (created order), minus whatever's already featured in Projects
+  // below (dedup) and minus contract work (client projects, not my own line).
+  const recentWork = sortProjects(getPublicProjects(), 'created')
+    .filter((p) => !projectsPreview.some((pp) => pp.id === p.id))
+    .filter((p) => p.owner !== 'parker-industries-contract')
+    .slice(0, 4)
 
   const latestArticles = getPublicArticles()
     .filter((a) => matchesTagExpression(a.tags ?? [], articlesFilter))
@@ -123,6 +132,29 @@ export default function Index() {
             </>
           )}
 
+          {recentWork.length > 0 && (
+            <>
+              <SectionHeader
+                id="recent-section"
+                title="Recent Work"
+                href="/projects?sort=created"
+                subtitle="The newest things I've built."
+                context="home.recent"
+                divider
+              />
+              <RecentWorkList projects={recentWork} />
+              <Reveal dataAlignHeading="recent" className="text-center font-sans mt-4 mb-10 block">
+                <Link
+                  style={2}
+                  href="/projects?sort=created"
+                  className="text-xl font-semibold"
+                >
+                  just more →
+                </Link>
+              </Reveal>
+            </>
+          )}
+
           {projectsPreview.length > 0 && (
             <>
               <SectionHeader
@@ -152,6 +184,8 @@ export default function Index() {
                     destination once the morph ends — its point is to reveal
                     the NEWEST projects, which sit at the top of the
                     created-sorted list (see _app.tsx). */}
+                {/* "see the latest" hidden temporarily — the Recent Work
+                    section above now covers recency.
                 <span
                   className="block mt-1.5 text-sm text-muted-light dark:text-muted-dark"
                   data-scroll-top-after-transition
@@ -160,7 +194,7 @@ export default function Index() {
                   <Link style={1} href="/projects?sort=created">
                     see the latest →
                   </Link>
-                </span>
+                </span> */}
               </Reveal>
             </>
           )}

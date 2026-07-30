@@ -50,6 +50,7 @@ const TAG_COLORS: Record<string, string> = {
   web: '#3b82f6',
   hardware: '#f97316',
   'raspberry-pi': '#ef4444',
+  iot: '#06b6d4',
   voice: '#8b5cf6',
   ai: '#ec4899',
   charity: '#14b8a6',
@@ -265,7 +266,8 @@ function MetaLine({ project }: { project: ProjectMeta }) {
   ) : (
     <OwnerLabel owner={project.owner} />
   )
-  const date = <span>{formatProjectDate(project)}</span>
+  const dateStr = formatProjectDate(project)
+  const date = dateStr ? <span>{dateStr}</span> : null
   // Bigger and lighter than the surrounding text — reads as a log/timeline
   // separator ("in 2022 • while at SkyHigh"), not another category tag.
   const bullet = (
@@ -274,7 +276,9 @@ function MetaLine({ project }: { project: ProjectMeta }) {
 
   return (
     <span className="flex flex-wrap items-center gap-2.5 text-base font-medium text-muted-light dark:text-muted-dark">
-      {metaOrder === 'date-first' ? (
+      {!date ? (
+        context
+      ) : metaOrder === 'date-first' ? (
         <>
           {date}
           {bullet}

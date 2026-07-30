@@ -1,0 +1,206 @@
+import { GetStaticProps } from 'next'
+import fs from 'fs'
+import { getProjectById } from '../project'
+
+// Build-time generator for the cross-repo promo banners embedded in many
+// repos' READMEs. Emits compressed WEBP strips in both themes to
+// public/banners/, so copy/art can be updated for every repo at once by
+// rebuilding the site. Wide-and-short (~5:1) so they read as a billboard line,
+// not a viewport-filling hero.
+const BannersGen = () => null
+
+const W = 1280
+// MajorDom brand orange (--md-accent-fg-color at docs.majordom.io).
+const MAJORDOM_ORANGE = '#ff6e42'
+
+type Palette = { bg: string; panel: string; title: string; muted: string; body: string; accent: string; onAccent: string; divider: string; ctaBg: string; ctaFg: string }
+const base = (theme: 'light' | 'dark') =>
+  theme === 'light'
+    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#23272e', ctaFg: '#ffffff' }
+    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#0b0e13', ctaFg: '#c9d1d9' }
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+// Short, bold right-arrow (shaft + chevron head), drawn — not a thin glyph.
+// The exact filled arrow from parker-industries.org's arrow-button (16×16
+// viewBox, apex at right), scaled/centred at (cx, cy). Solid, not a stroke.
+function piArrow(cx: number, cy: number, size: number, color: string): string {
+  const s = size / 16
+  return `<path transform="translate(${cx - 8 * s} ${cy - 8 * s}) scale(${s})" d="M12.1751 9H0.00012207V7H12.1751L6.57512 1.4L8.00012 0L16.0001 8L8.00012 16L6.57512 14.6L12.1751 9Z" fill="${color}"/>`
+}
+
+// CTA = label + PI-style arrow-in-circle: a big thin-bordered circle with a
+// small solid arrow, matching parker-industries.org's arrow-button.
+function cta(xRight: number, cy: number, label: string, color: string, p: Palette): string {
+  const r = 32
+  const circleCx = xRight - r
+  const label_x = circleCx - r - 22
+  return `<text x="${label_x}" y="${cy + 8}" fill="${p.title}" font-size="24" font-weight="700" text-anchor="end">${esc(label)}</text>
+  <circle cx="${circleCx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="2.5"/>
+  ${piArrow(circleCx, cy, r * 0.42, color)}`
+}
+
+// A full-bleed row of variable-width parallelogram cells (the "/ / /" look).
+// Project cells hold a 16:9 hero image (no crop, no overlay/label — the art
+// carries its own branding); a trailing CTA cell is a solid accent tile with
+// an optional label + a circle-arrow. Its LEFT edge slants like every other
+// divider, so the CTA is part of the "/ / /" rhythm, not tacked on.
+type Cell = { img?: string; w: number; cta?: boolean; label?: string }
+function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette): string {
+  const bounds: number[] = [0]
+  let acc = 0
+  for (const c of cells) { acc += c.w; bounds.push(acc) }
+  const n = cells.length
+  const defs: string[] = []
+  const shapes: string[] = []
+  cells.forEach((c, i) => {
+    const x0 = bounds[i]
+    const x1 = bounds[i + 1]
+    // Every edge slants the same "/" — including the two outer ends. The
+    // slanted outer edges leave a triangle of the solid banner background
+    // exposed at each end, so the strip reads as a clean angled cut (into the
+    // full-opacity card, not a ghosted image).
+    const lTop = x0 + skew / 2
+    const lBot = x0 - skew / 2
+    const rTop = x1 + skew / 2
+    const rBot = x1 - skew / 2
+    const poly = `${lTop},${Y0} ${rTop},${Y0} ${rBot},${Y0 + h} ${lBot},${Y0 + h}`
+    const cx = (x0 + x1) / 2
+    const cy = Y0 + h / 2
+
+    if (c.img) {
+      const bx = Math.min(lTop, lBot)
+      const bw = Math.max(rTop, rBot) - bx
+      const id = `clip${i}`
+      defs.push(`<clipPath id="${id}"><polygon points="${poly}"/></clipPath>`)
+      shapes.push(`<g clip-path="url(#${id})"><image href="${c.img}" x="${bx}" y="${Y0}" width="${bw}" height="${h}" preserveAspectRatio="xMidYMid slice"/></g>`)
+    } else {
+      // Muted CTA tile so it recedes behind the project art rather than glaring.
+      shapes.push(`<polygon points="${poly}" fill="${p.ctaBg}"/>`)
+      const r = 26
+      if (c.label) {
+        shapes.push(`<text x="${cx - r - 14}" y="${cy + 9}" fill="${p.ctaFg}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
+        shapes.push(`<circle cx="${cx + 34}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="2.5"/>${piArrow(cx + 34, cy, r * 0.42, p.ctaFg)}`)
+      } else {
+        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="2.5"/>${piArrow(cx, cy, r * 0.42, p.ctaFg)}`)
+      }
+    }
+    // Full-height "/" divider between adjacent cells (bg-coloured seam).
+    if (i > 0) shapes.push(`<line x1="${x0 - skew / 2}" y1="${Y0 + h}" x2="${x0 + skew / 2}" y2="${Y0}" stroke="${p.bg}" stroke-width="5"/>`)
+  })
+  return `<defs>${defs.join('')}</defs>${shapes.join('\n')}`
+}
+
+// Project cells are 16:9 (uncropped); the CTA tile takes whatever width is left.
+const P169 = (img: string, h: number): Cell => ({ img, w: Math.round((h * 16) / 9) })
+
+function svg(H: number, inner: string, p: Palette): string {
+  // Round the whole banner (so full-bleed image cells don't poke square
+  // corners past the radius) and draw the border stroke ON TOP of the content.
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs><clipPath id="frameclip"><rect width="${W}" height="${H}" rx="12"/></clipPath></defs>
+  <g clip-path="url(#frameclip)">
+    <rect width="${W}" height="${H}" fill="${p.bg}"/>
+    ${inner}
+  </g>
+  <rect x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" rx="11" fill="none" stroke="${p.divider}" stroke-width="2"/>
+</svg>`
+}
+
+type Assets = Record<string, string> // project id -> jpeg data URI
+
+// WIP projects are held back from promo slants until they're worth showing off.
+const isPromotable = (id: string) => getProjectById(id)?.status !== 'wip'
+
+// "/ / /" cells: a 16:9 image cell per non-WIP project, then a CTA tile that
+// absorbs whatever width is left (so fewer projects → a wider CTA end-cap).
+function projectCells(ids: string[], a: Assets, h: number, ctaLabel: string): Cell[] {
+  const shown = ids.filter(isPromotable)
+  const projW = Math.round((h * 16) / 9)
+  const rest = W - projW * shown.length
+  return [...shown.map((id) => P169(a[id], h)), { w: rest, cta: true, label: ctaLabel }]
+}
+
+// ---- 1. MajorDom ecosystem (brand orange, circle-arrow CTA) --------------
+function majordom(theme: 'light' | 'dark'): string {
+  const p = { ...base(theme), accent: MAJORDOM_ORANGE, onAccent: '#2a1000' } as Palette
+  const H = 230
+  const inner = `
+  <text x="48" y="86" fill="${p.accent}" font-size="24" font-weight="800" letter-spacing="3">PART OF MAJORDOM</text>
+  <text x="48" y="132" fill="${p.title}" font-size="36" font-weight="800">The next-gen smart home</text>
+  <text x="48" y="172" fill="${p.body}" font-size="22">open source • local-first • user-friendly • truly smart</text>
+  ${cta(W - 44, H / 2, 'Explore MajorDom', p.accent, p)}`
+  return svg(H, inner, p)
+}
+
+// ---- 2. Parker Industries (company) — non-WIP projects + ABOUT US tile ---
+function company(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 168
+  const H = 60 + h + 20
+  const inner = `
+  <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries · currently building:</text>
+  ${cellRow(projectCells(['majordom', 'startbounty'], a, h, 'See more'), 60, h, 44, p)}`
+  return svg(H, inner, p)
+}
+
+// ---- 3. Personal / random repo — non-WIP projects + VISIT tile ----------
+function flagship(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 168
+  const H = 58 + h + 20
+  const inner = `
+  <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project · a few more I'm proud of</text>
+  ${cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'See more'), 58, h, 44, p)}`
+  return svg(H, inner, p)
+}
+
+// ---- 4. Helpful tool — coffee CTA (reciprocity + self-appraisal) --------
+function coffee(theme: 'light' | 'dark'): string {
+  const p = { ...base(theme), accent: '#d97706', onAccent: '#2a1500' } as Palette
+  const H = 214
+  const inner = `
+  <text x="48" y="80" fill="${p.title}" font-size="32" font-weight="800">Did this solve your problem?</text>
+  <text x="48" y="120" fill="${p.body}" font-size="21">It's free — but it wasn't free to make. If it saved you time,</text>
+  <text x="48" y="150" fill="${p.body}" font-size="21">that's worth a coffee, right?</text>
+  ${cta(W - 44, H / 2, 'Buy me a coffee', p.accent, p)}`
+  return svg(H, inner, p)
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const sharp = (await import('sharp')).default
+  const dir = `${process.cwd()}/public/banners`
+  fs.mkdirSync(dir, { recursive: true })
+
+  const toDataUri = async (file: string) => {
+    const buf = await sharp(`${process.cwd()}/public/projects/${file}`)
+      .resize(540, 260, { fit: 'cover' })
+      .jpeg({ quality: 72 })
+      .toBuffer()
+    return `data:image/jpeg;base64,${buf.toString('base64')}`
+  }
+  const assets: Assets = {
+    majordom: await toDataUri('majordom.webp'),
+    startbounty: await toDataUri('startbounty.webp'),
+    stark: await toDataUri('stark.webp'),
+  }
+
+  const banners: Record<string, (t: 'light' | 'dark') => string> = {
+    majordom: (t) => majordom(t),
+    company: (t) => company(t, assets),
+    flagship: (t) => flagship(t, assets),
+    coffee: (t) => coffee(t),
+  }
+  for (const [name, build] of Object.entries(banners)) {
+    for (const theme of ['light', 'dark'] as const) {
+      await sharp(Buffer.from(build(theme)), { density: 144 })
+        .resize(W * 2)
+        .webp({ quality: 82, effort: 6 })
+        .toFile(`${dir}/${name}-${theme}.webp`)
+    }
+  }
+  console.log('generated banners: majordom, company, flagship, coffee (light/dark webp)')
+  return { props: {} }
+}
+
+export default BannersGen
