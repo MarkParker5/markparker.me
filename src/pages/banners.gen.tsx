@@ -16,8 +16,8 @@ const MAJORDOM_ORANGE = '#ff6e42'
 type Palette = { bg: string; panel: string; title: string; muted: string; body: string; accent: string; onAccent: string; divider: string; ctaBg: string; ctaFg: string }
 const base = (theme: 'light' | 'dark') =>
   theme === 'light'
-    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#41506b', ctaFg: '#ffffff' }
-    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#273449', ctaFg: '#e6edf3' }
+    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#525a67', ctaFg: '#ffffff' }
+    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#1e242e', ctaFg: '#c9d1d9' }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
