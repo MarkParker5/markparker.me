@@ -16,35 +16,28 @@ const MAJORDOM_ORANGE = '#ff6e42'
 type Palette = { bg: string; panel: string; title: string; muted: string; body: string; accent: string; onAccent: string; divider: string; ctaBg: string; ctaFg: string }
 const base = (theme: 'light' | 'dark') =>
   theme === 'light'
-    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#363c45', ctaFg: '#ffffff' }
-    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#141922', ctaFg: '#c9d1d9' }
+    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#23272e', ctaFg: '#ffffff' }
+    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#0b0e13', ctaFg: '#c9d1d9' }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 // Short, bold right-arrow (shaft + chevron head), drawn — not a thin glyph.
-function arrow(cx: number, cy: number, size: number, color: string, w = 4.5): string {
-  const half = size / 2
-  const hd = size * 0.36
-  return `<path d="M${cx - half} ${cy} H${cx + half} M${cx + half - hd} ${cy - hd} L${cx + half} ${cy} L${cx + half - hd} ${cy + hd}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`
+// The exact filled arrow from parker-industries.org's arrow-button (16×16
+// viewBox, apex at right), scaled/centred at (cx, cy). Solid, not a stroke.
+function piArrow(cx: number, cy: number, size: number, color: string): string {
+  const s = size / 16
+  return `<path transform="translate(${cx - 8 * s} ${cy - 8 * s}) scale(${s})" d="M12.1751 9H0.00012207V7H12.1751L6.57512 1.4L8.00012 0L16.0001 8L8.00012 16L6.57512 14.6L12.1751 9Z" fill="${color}"/>`
 }
 
-// CTA = label + a thin arrow-in-circle (à la parker-industries.org), no pill.
+// CTA = label + PI-style arrow-in-circle: a big thin-bordered circle with a
+// small solid arrow, matching parker-industries.org's arrow-button.
 function cta(xRight: number, cy: number, label: string, color: string, p: Palette): string {
-  const r = 30
+  const r = 32
   const circleCx = xRight - r
-  const label_x = circleCx - r - 20
+  const label_x = circleCx - r - 22
   return `<text x="${label_x}" y="${cy + 8}" fill="${p.title}" font-size="24" font-weight="700" text-anchor="end">${esc(label)}</text>
-  <circle cx="${circleCx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="3"/>
-  ${arrow(circleCx, cy, r * 0.92, color, 4)}`
-}
-
-// Bottom-right "→ markparker.me" with the short bold arrow before it.
-function mpLink(yBaseline: number, p: Palette): string {
-  const text = 'markparker.me'
-  const tx = W - 44
-  const ax = tx - text.length * 11.5 - 22
-  return `${arrow(ax, yBaseline - 6, 26, p.accent, 4.5)}
-  <text x="${tx}" y="${yBaseline}" fill="${p.accent}" font-size="21" font-weight="800" text-anchor="end">${esc(text)}</text>`
+  <circle cx="${circleCx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="2.5"/>
+  ${piArrow(circleCx, cy, r * 0.42, color)}`
 }
 
 // A full-bleed row of variable-width parallelogram cells (the "/ / /" look).
@@ -84,12 +77,12 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
     } else {
       // Muted CTA tile so it recedes behind the project art rather than glaring.
       shapes.push(`<polygon points="${poly}" fill="${p.ctaBg}"/>`)
-      const r = 22
+      const r = 26
       if (c.label) {
-        shapes.push(`<text x="${cx - r - 12}" y="${cy + 9}" fill="${p.ctaFg}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
-        shapes.push(`<circle cx="${cx + 30}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="3"/>${arrow(cx + 30, cy, r * 1.3, p.ctaFg, 3.6)}`)
+        shapes.push(`<text x="${cx - r - 14}" y="${cy + 9}" fill="${p.ctaFg}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
+        shapes.push(`<circle cx="${cx + 34}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="2.5"/>${piArrow(cx + 34, cy, r * 0.42, p.ctaFg)}`)
       } else {
-        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r + 2}" fill="none" stroke="${p.ctaFg}" stroke-width="3"/>${arrow(cx, cy, r * 1.4, p.ctaFg, 4)}`)
+        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="2.5"/>${piArrow(cx, cy, r * 0.42, p.ctaFg)}`)
       }
     }
     // Full-height "/" divider between adjacent cells (bg-coloured seam).
