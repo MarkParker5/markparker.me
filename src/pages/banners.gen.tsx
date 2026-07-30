@@ -140,7 +140,7 @@ function company(theme: 'light' | 'dark', a: Assets): string {
   const H = 60 + h + 20
   const inner = `
   <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries · currently building:</text>
-  ${cellRow(projectCells(['majordom', 'startbounty'], a, h, 'ABOUT US'), 60, h, 44, p)}`
+  ${cellRow(projectCells(['majordom', 'startbounty'], a, h, 'See more'), 60, h, 44, p)}`
   return svg(H, inner, p)
 }
 
@@ -151,7 +151,7 @@ function flagship(theme: 'light' | 'dark', a: Assets): string {
   const H = 58 + h + 20
   const inner = `
   <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project · a few more I'm proud of</text>
-  ${cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'VISIT'), 58, h, 44, p)}`
+  ${cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'See more'), 58, h, 44, p)}`
   return svg(H, inner, p)
 }
 
