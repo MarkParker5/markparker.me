@@ -150,7 +150,7 @@ function buildProjectsCard(theme: 'light' | 'dark'): string {
     .map(projectRow)
   featured.push(COMING_SOON)
   const featuredIds = new Set(FEATURED_IDS)
-  const recent = sortProjects(pool, 'updated').filter((pj) => !featuredIds.has(pj.id)).slice(0, 4)
+  const recent = sortProjects(pool, 'created').filter((pj) => !featuredIds.has(pj.id)).slice(0, 4)
   const rowH = 108
   const rows = Math.max(featured.length, recent.length)
   const H = ROW_TOP + rows * rowH + PAD - 20
@@ -196,7 +196,7 @@ export const getStaticProps: GetStaticProps = async () => {
         .toFile(`${dir}/${name}-${theme}.webp`)
     }
   }
-  console.log('generated cards: projects, tools, posts (light/dark webp)')
+  console.log(`generated cards: ${Object.keys(cards).join(', ')} (light/dark webp)`)
   return { props: {} }
 }
 

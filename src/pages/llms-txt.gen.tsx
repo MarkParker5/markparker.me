@@ -22,7 +22,8 @@ export const getStaticProps: GetStaticProps = async () => {
   const projectLines = projects
     .map((p) => {
       const link = p.links[0] ? ` (${p.links[0].href})` : ''
-      return `- **${p.title}**${link}: ${p.blurb} [${formatProjectDate(p)}, ${p.status}]`
+      const meta = [formatProjectDate(p), p.status].filter(Boolean).join(', ')
+      return `- **${p.title}**${link}: ${p.blurb} [${meta}]`
     })
     .join('\n')
 

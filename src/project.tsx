@@ -42,6 +42,13 @@ export type ProjectMeta = {
   // start (created/old sorts); `untilMonth` refines `until` (updated sort).
   month?: number
   untilMonth?: number
+  // Sort as if the project started in this year (created/old/recent ordering)
+  // without changing the real `year`. For work whose true start date is vague
+  // or deliberately downplayed while it settles.
+  sortYear?: number
+  // Suppress the displayed date entirely (feeds/sorting still use year). For
+  // WIP work whose "since <year>" reads as stale/vague until it ships.
+  hideDate?: boolean
   status: ProjectStatus
   // Only set when it says something owner doesn't already — e.g. "Hackathon
   // team" (personal), or "Software Engineer" (rendered "@ SkyHigh"). Skip it
@@ -91,6 +98,7 @@ export const TAG_ORDER = [
   'web',
   'hardware',
   'raspberry-pi',
+  'iot',
   'voice',
   'ai',
   'charity',
@@ -105,6 +113,7 @@ const projects: ProjectMeta[] = [
     interest: 82,
     title: 'DogCat Fund',
     year: 2025,
+    month: 8,
     status: 'shipped',
     blurb: 'Charity platform helping animal shelters raise funds transparently.',
     tags: ['web', 'app', 'charity'],
@@ -117,6 +126,10 @@ const projects: ProjectMeta[] = [
     interest: 85,
     title: 'Archie',
     year: 2024,
+    // Sorts as old (won't crowd "recently created"); its real date is hidden
+    // while WIP because "since 2024" reads as vague.
+    sortYear: 2020,
+    hideDate: true,
     status: 'wip',
     blurb: 'Offline-first voice assistant for smart homes, built on STARK, bundled into the MajorDom ecosystem.',
     tags: ['voice', 'hardware', 'app'],
@@ -129,6 +142,8 @@ const projects: ProjectMeta[] = [
     interest: 90,
     title: 'StartBounty',
     year: 2024,
+    // Hide the "since 2024" while it's still WIP.
+    hideDate: true,
     status: 'wip',
     blurb: 'The easiest way to fund GitHub issues via user-placed bounties — get features faster, earn by contributing.',
     tags: ['web', 'app', 'oss'],
@@ -236,10 +251,11 @@ const projects: ProjectMeta[] = [
     interest: 40,
     title: 'parker-aiohomekit',
     year: 2025,
+    month: 3,
     status: 'maintained',
     blurb:
       'An asyncio-focused fork of the unofficial Python HomeKit SDK, kept alive for MajorDom-adjacent HomeKit integration work. Now maintained under Parker Industries.',
-    tags: ['library', 'oss', 'hardware'],
+    tags: ['library', 'oss', 'iot'],
     links: [{ label: 'source', href: 'https://github.com/ParkerIndustries/parker-aiohomekit' }],
     owner: 'parker-industries-in-house',
   },
@@ -252,7 +268,7 @@ const projects: ProjectMeta[] = [
     status: 'maintained',
     blurb:
       'The SDK for building standardized IoT integration libraries for the MajorDom ecosystem — one contract every device speaks.',
-    tags: ['library', 'oss', 'hardware'],
+    tags: ['library', 'oss', 'iot'],
     links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-sdk' }],
     owner: 'parker-industries-in-house',
   },
@@ -265,7 +281,7 @@ const projects: ProjectMeta[] = [
     status: 'maintained',
     blurb:
       'A scaffold and standard for new MajorDom integrations, so every device library lands with the same shape, tests, and CI.',
-    tags: ['library', 'oss', 'hardware'],
+    tags: ['library', 'oss', 'iot'],
     links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-template' }],
     owner: 'parker-industries-in-house',
   },
@@ -278,7 +294,7 @@ const projects: ProjectMeta[] = [
     status: 'maintained',
     blurb:
       'HomeKit integration library for MajorDom — bridges Apple Home devices into the offline-first hub.',
-    tags: ['library', 'oss', 'hardware'],
+    tags: ['library', 'oss', 'iot'],
     links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-homekit' }],
     owner: 'parker-industries-in-house',
   },
@@ -533,6 +549,7 @@ const ONGOING_STATUSES = new Set<ProjectStatus>(['wip', 'active'])
 // the start (began and finished the same year); otherwise ongoing work
 // reads "since <year>" and everything else is a single year.
 export function formatProjectDate(p: ProjectMeta): string {
+  if (p.hideDate) return ''
   if (p.until) return p.until === p.year ? `${p.year}` : `${p.year}–${p.until}`
   if (ONGOING_STATUSES.has(p.status)) return `since ${p.year}`
   return `${p.year}`
@@ -546,10 +563,13 @@ export function formatProjectDate(p: ProjectMeta): string {
 const ONGOING_RECENCY = 9999
 // Year as a fractional value for sorting — month absent means end-of-year.
 const frac = (year: number, month?: number): number => year + ((month ?? 12) - 1) / 12
+// The start point used by created/old (and recency's fallback) — `sortYear`
+// overrides the real `year` for ordering only.
+const startFrac = (p: ProjectMeta): number => frac(p.sortYear ?? p.year, p.month)
 function recencyYear(p: ProjectMeta): number {
   if (p.until) return frac(p.until, p.untilMonth)
   if (ONGOING_STATUSES.has(p.status)) return ONGOING_RECENCY
-  return frac(p.year, p.month)
+  return startFrac(p)
 }
 
 // The top-N (default 3) projects the homepage features — the `spotlight`
@@ -584,8 +604,8 @@ export const PROJECT_SORT_OPTIONS: { value: ProjectSort; label: string }[] = [
 // - old: earliest START first — the "created" axis, other direction.
 export function sortProjects(projects: ProjectMeta[], sort: ProjectSort): ProjectMeta[] {
   const sorted = [...projects]
-  if (sort === 'updated') return sorted.sort((a, b) => recencyYear(b) - recencyYear(a) || frac(b.year, b.month) - frac(a.year, a.month))
-  if (sort === 'created') return sorted.sort((a, b) => frac(b.year, b.month) - frac(a.year, a.month) || recencyYear(b) - recencyYear(a))
-  if (sort === 'old') return sorted.sort((a, b) => frac(a.year, a.month) - frac(b.year, b.month))
+  if (sort === 'updated') return sorted.sort((a, b) => recencyYear(b) - recencyYear(a) || startFrac(b) - startFrac(a))
+  if (sort === 'created') return sorted.sort((a, b) => startFrac(b) - startFrac(a) || recencyYear(b) - recencyYear(a))
+  if (sort === 'old') return sorted.sort((a, b) => startFrac(a) - startFrac(b))
   return sorted.sort((a, b) => (b.interest ?? 0) - (a.interest ?? 0) || recencyYear(b) - recencyYear(a))
 }

@@ -20,9 +20,11 @@ function RecentWorkRow({ project }: { project: ProjectMeta }) {
           >
             {project.title}
           </span>
-          <span className="shrink-0 text-sm text-faint-light dark:text-faint-dark whitespace-nowrap">
-            {formatProjectDate(project)}
-          </span>
+          {formatProjectDate(project) && (
+            <span className="shrink-0 text-sm text-faint-light dark:text-faint-dark whitespace-nowrap">
+              {formatProjectDate(project)}
+            </span>
+          )}
         </div>
         <span
           className="block text-base text-muted-light dark:text-muted-dark mt-1"

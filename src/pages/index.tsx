@@ -52,11 +52,12 @@ export default function Index() {
     'interesting',
   ).slice(0, 3)
 
-  // Compact "Recent Work" strip (above Projects) — the most-recently-active
-  // projects, minus whatever's already featured in Projects below, so a
-  // returning visitor sees what moved without scrolling the full list.
-  const recentWork = sortProjects(getPublicProjects(), 'updated')
+  // Compact "Recent Work" strip (above Projects) — the most-recently-STARTED
+  // projects (created order), minus whatever's already featured in Projects
+  // below (dedup) and minus contract work (client projects, not my own line).
+  const recentWork = sortProjects(getPublicProjects(), 'created')
     .filter((p) => !projectsPreview.some((pp) => pp.id === p.id))
+    .filter((p) => p.owner !== 'parker-industries-contract')
     .slice(0, 4)
 
   const latestArticles = getPublicArticles()
@@ -136,8 +137,8 @@ export default function Index() {
               <SectionHeader
                 id="recent-section"
                 title="Recent Work"
-                href="/projects?sort=updated"
-                subtitle="Freshly shipped, and what's moving right now."
+                href="/projects?sort=created"
+                subtitle="The newest things I've started — some shipped, some still drafts, MVPs, or proofs of concept."
                 context="home.recent"
                 divider
               />
@@ -145,7 +146,7 @@ export default function Index() {
               <Reveal dataAlignHeading="recent" className="text-center font-sans mt-4 mb-10 block">
                 <Link
                   style={2}
-                  href="/projects?sort=updated"
+                  href="/projects?sort=created"
                   className="text-xl font-semibold"
                 >
                   All work →
