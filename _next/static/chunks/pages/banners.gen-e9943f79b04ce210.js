@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[885],{1394:(_,n,e)=>{"use strict";e.r(n),e.d(n,{__N_SSG:()=>u,default:()=>s});var u=!0;let s=()=>null},9832:(_,n,e)=>{(window.__NEXT_P=window.__NEXT_P||[]).push(["/banners.gen",function(){return e(1394)}])}},_=>{_.O(0,[636,593,792],()=>_(_.s=9832)),_N_E=_.O()}]);

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://markparker.me/projects</id>
     <title>Mark Parker — Projects</title>
-    <updated>2026-07-29T15:20:12.310Z</updated>
+    <updated>2026-07-30T19:33:28.685Z</updated>
     <generator>---</generator>
     <author>
         <name>Mark Parker</name>
@@ -14,17 +14,6 @@
     <logo>https://markparker.me/mark-parker.jpg</logo>
     <icon>https://markparker.me/favicon.png</icon>
     <rights>All rights reserved 2026, Mark Parker</rights>
-    <entry>
-        <title type="html"><![CDATA[Archie]]></title>
-        <id>https://markparker.me/projects#archie</id>
-        <link href="https://www.majordom.io/?details=archie"/>
-        <updated>2024-01-01T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Offline-first voice assistant for smart homes, built on STARK, bundled into the MajorDom ecosystem.]]></summary>
-        <author>
-            <name>Mark Parker</name>
-            <uri>https://markparker.me</uri>
-        </author>
-    </entry>
     <entry>
         <title type="html"><![CDATA[StartBounty]]></title>
         <id>https://markparker.me/projects#startbounty</id>
@@ -48,6 +37,17 @@
         </author>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Archie]]></title>
+        <id>https://markparker.me/projects#archie</id>
+        <link href="https://www.majordom.io/?details=archie"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Offline-first voice assistant for smart homes, built on STARK, bundled into the MajorDom ecosystem.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[STARK]]></title>
         <id>https://markparker.me/projects#stark</id>
         <link href="https://stark.markparker.me"/>
@@ -59,11 +59,22 @@
         </author>
     </entry>
     <entry>
-        <title type="html"><![CDATA[DogCat Fund]]></title>
-        <id>https://markparker.me/projects#dogcat-fund</id>
-        <link href="https://dogcat.org.ua"/>
-        <updated>2025-01-01T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Charity platform helping animal shelters raise funds transparently.]]></summary>
+        <title type="html"><![CDATA[MajorDom Integration SDK]]></title>
+        <id>https://markparker.me/projects#majordom-integration-sdk</id>
+        <link href="https://github.com/MajorDom-Systems/integration-sdk"/>
+        <updated>2026-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[The SDK for building standardized IoT integration libraries for the MajorDom ecosystem — one contract every device speaks.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MajorDom Integration Template]]></title>
+        <id>https://markparker.me/projects#majordom-integration-template</id>
+        <link href="https://github.com/MajorDom-Systems/integration-template"/>
+        <updated>2026-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A scaffold and standard for new MajorDom integrations, so every device library lands with the same shape, tests, and CI.]]></summary>
         <author>
             <name>Mark Parker</name>
             <uri>https://markparker.me</uri>
@@ -81,7 +92,29 @@
         </author>
     </entry>
     <entry>
-        <title type="html"><![CDATA[aiohomekit (fork)]]></title>
+        <title type="html"><![CDATA[MajorDom HomeKit Integration]]></title>
+        <id>https://markparker.me/projects#majordom-integration-homekit</id>
+        <link href="https://github.com/MajorDom-Systems/integration-homekit"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[HomeKit integration library for MajorDom — bridges Apple Home devices into the offline-first hub.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DogCat Fund]]></title>
+        <id>https://markparker.me/projects#dogcat-fund</id>
+        <link href="https://dogcat.org.ua"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Charity platform helping animal shelters raise funds transparently.]]></summary>
+        <author>
+            <name>Mark Parker</name>
+            <uri>https://markparker.me</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[parker-aiohomekit]]></title>
         <id>https://markparker.me/projects#aiohomekit-fork</id>
         <link href="https://github.com/ParkerIndustries/parker-aiohomekit"/>
         <updated>2025-01-01T00:00:00.000Z</updated>
