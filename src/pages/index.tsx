@@ -138,7 +138,7 @@ export default function Index() {
                 id="recent-section"
                 title="Recent Work"
                 href="/projects?sort=created"
-                subtitle="The newest things I've started — some shipped, some still drafts, MVPs, or proofs of concept."
+                subtitle="The newest things I've started building."
                 context="home.recent"
                 divider
               />
