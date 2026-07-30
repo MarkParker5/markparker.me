@@ -12,11 +12,11 @@ const W = 1280
 // MajorDom brand orange (--md-accent-fg-color at docs.majordom.io).
 const MAJORDOM_ORANGE = '#ff6e42'
 
-type Palette = { bg: string; panel: string; title: string; muted: string; body: string; accent: string; onAccent: string; divider: string }
+type Palette = { bg: string; panel: string; title: string; muted: string; body: string; accent: string; onAccent: string; divider: string; ctaBg: string; ctaFg: string }
 const base = (theme: 'light' | 'dark') =>
   theme === 'light'
-    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff' }
-    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117' }
+    ? { bg: '#ffffff', panel: '#f6f8fa', title: '#1f2328', muted: '#656d76', body: '#3b424a', divider: '#d0d7de', onAccent: '#ffffff', ctaBg: '#41506b', ctaFg: '#ffffff' }
+    : { bg: '#0d1117', panel: '#161b22', title: '#e6edf3', muted: '#8b949e', body: '#c9d1d9', divider: '#30363d', onAccent: '#0d1117', ctaBg: '#273449', ctaFg: '#e6edf3' }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -81,13 +81,14 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
       defs.push(`<clipPath id="${id}"><polygon points="${poly}"/></clipPath>`)
       shapes.push(`<g clip-path="url(#${id})"><image href="${c.img}" x="${bx}" y="${Y0}" width="${bw}" height="${h}" preserveAspectRatio="xMidYMid slice"/></g>`)
     } else {
-      shapes.push(`<polygon points="${poly}" fill="${p.accent}"/>`)
+      // Muted CTA tile so it recedes behind the project art rather than glaring.
+      shapes.push(`<polygon points="${poly}" fill="${p.ctaBg}"/>`)
       const r = 22
       if (c.label) {
-        shapes.push(`<text x="${cx - r - 12}" y="${cy + 9}" fill="${p.onAccent}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
-        shapes.push(`<circle cx="${cx + 30}" cy="${cy}" r="${r}" fill="none" stroke="${p.onAccent}" stroke-width="3"/>${arrow(cx + 30, cy, r * 1.3, p.onAccent, 3.6)}`)
+        shapes.push(`<text x="${cx - r - 12}" y="${cy + 9}" fill="${p.ctaFg}" font-size="26" font-weight="800" letter-spacing="1" text-anchor="end">${esc(c.label)}</text>`)
+        shapes.push(`<circle cx="${cx + 30}" cy="${cy}" r="${r}" fill="none" stroke="${p.ctaFg}" stroke-width="3"/>${arrow(cx + 30, cy, r * 1.3, p.ctaFg, 3.6)}`)
       } else {
-        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r + 2}" fill="none" stroke="${p.onAccent}" stroke-width="3"/>${arrow(cx, cy, r * 1.4, p.onAccent, 4)}`)
+        shapes.push(`<circle cx="${cx}" cy="${cy}" r="${r + 2}" fill="none" stroke="${p.ctaFg}" stroke-width="3"/>${arrow(cx, cy, r * 1.4, p.ctaFg, 4)}`)
       }
     }
     // Full-height "/" divider between adjacent cells (bg-coloured seam).
