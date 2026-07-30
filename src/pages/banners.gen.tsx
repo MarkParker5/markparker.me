@@ -1,5 +1,6 @@
 import { GetStaticProps } from 'next'
 import fs from 'fs'
+import { getProjectById } from '../project'
 
 // Build-time generator for the cross-repo promo banners embedded in many
 // repos' READMEs. Emits compressed WEBP strips in both themes to
@@ -113,7 +114,19 @@ function svg(H: number, inner: string, p: Palette): string {
 </svg>`
 }
 
-type Assets = { majordom: string; startbounty: string; stark: string }
+type Assets = Record<string, string> // project id -> jpeg data URI
+
+// WIP projects are held back from promo slants until they're worth showing off.
+const isPromotable = (id: string) => getProjectById(id)?.status !== 'wip'
+
+// "/ / /" cells: a 16:9 image cell per non-WIP project, then a CTA tile that
+// absorbs whatever width is left (so fewer projects → a wider CTA end-cap).
+function projectCells(ids: string[], a: Assets, h: number, ctaLabel: string): Cell[] {
+  const shown = ids.filter(isPromotable)
+  const projW = Math.round((h * 16) / 9)
+  const rest = W - projW * shown.length
+  return [...shown.map((id) => P169(a[id], h)), { w: rest, cta: true, label: ctaLabel }]
+}
 
 // ---- 1. MajorDom ecosystem (brand orange, circle-arrow CTA) --------------
 function majordom(theme: 'light' | 'dark'): string {
@@ -127,29 +140,25 @@ function majordom(theme: 'light' | 'dark'): string {
   return svg(H, inner, p)
 }
 
-// ---- 2. Parker Industries (company) — 2 projects @16:9 + ABOUT US tile ---
+// ---- 2. Parker Industries (company) — non-WIP projects + ABOUT US tile ---
 function company(theme: 'light' | 'dark', a: Assets): string {
   const p = { ...base(theme), accent: '#0969da' } as Palette
   const h = 168
-  const projW = Math.round((h * 16) / 9)
-  const rest = W - projW * 2
   const H = 60 + h + 20
   const inner = `
   <text x="${W / 2}" y="42" fill="${p.muted}" font-size="17" text-anchor="middle" letter-spacing="0.5">made by Parker Industries · currently building:</text>
-  ${cellRow([P169(a.majordom, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'ABOUT US' }], 60, h, 44, p)}`
+  ${cellRow(projectCells(['majordom', 'startbounty'], a, h, 'ABOUT US'), 60, h, 44, p)}`
   return svg(H, inner, p)
 }
 
-// ---- 3. Personal / random repo — 3 projects @16:9 + VISIT tile ----------
+// ---- 3. Personal / random repo — non-WIP projects + VISIT tile ----------
 function flagship(theme: 'light' | 'dark', a: Assets): string {
   const p = { ...base(theme), accent: '#0969da' } as Palette
   const h = 168
-  const projW = Math.round((h * 16) / 9)
-  const rest = W - projW * 3
   const H = 58 + h + 20
   const inner = `
   <text x="44" y="42" fill="${p.muted}" font-size="17" letter-spacing="0.5">a Mark Parker project · a few more I'm proud of</text>
-  ${cellRow([P169(a.majordom, h), P169(a.stark, h), P169(a.startbounty, h), { w: rest, cta: true, label: 'VISIT' }], 58, h, 44, p)}`
+  ${cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'VISIT'), 58, h, 44, p)}`
   return svg(H, inner, p)
 }
 

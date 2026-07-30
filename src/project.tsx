@@ -35,6 +35,13 @@ export type ProjectMeta = {
   // status supplies "since") and single-year one-offs. For a FORK this is
   // MY last commit year on the fork, not the upstream project's age.
   until?: number
+  // Optional month (1–12) refining the start / end for SORTING only — the
+  // displayed date stays year-level. Absent → treated as end-of-year (12), so
+  // adding a month only ever makes a project sort EARLIER within its year, and
+  // existing monthless projects keep their relative order. `month` refines the
+  // start (created/old sorts); `untilMonth` refines `until` (updated sort).
+  month?: number
+  untilMonth?: number
   status: ProjectStatus
   // Only set when it says something owner doesn't already — e.g. "Hackathon
   // team" (personal), or "Software Engineer" (rendered "@ SkyHigh"). Skip it
@@ -227,13 +234,52 @@ const projects: ProjectMeta[] = [
   {
     id: 'aiohomekit-fork',
     interest: 40,
-    title: 'aiohomekit (fork)',
+    title: 'parker-aiohomekit',
     year: 2025,
     status: 'maintained',
     blurb:
       'An asyncio-focused fork of the unofficial Python HomeKit SDK, kept alive for MajorDom-adjacent HomeKit integration work. Now maintained under Parker Industries.',
     tags: ['library', 'oss', 'hardware'],
     links: [{ label: 'source', href: 'https://github.com/ParkerIndustries/parker-aiohomekit' }],
+    owner: 'parker-industries-in-house',
+  },
+  {
+    id: 'majordom-integration-sdk',
+    interest: 68,
+    title: 'MajorDom Integration SDK',
+    year: 2026,
+    month: 6,
+    status: 'maintained',
+    blurb:
+      'The SDK for building standardized IoT integration libraries for the MajorDom ecosystem — one contract every device speaks.',
+    tags: ['library', 'oss', 'hardware'],
+    links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-sdk' }],
+    owner: 'parker-industries-in-house',
+  },
+  {
+    id: 'majordom-integration-template',
+    interest: 66,
+    title: 'MajorDom Integration Template',
+    year: 2026,
+    month: 5,
+    status: 'maintained',
+    blurb:
+      'A scaffold and standard for new MajorDom integrations, so every device library lands with the same shape, tests, and CI.',
+    tags: ['library', 'oss', 'hardware'],
+    links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-template' }],
+    owner: 'parker-industries-in-house',
+  },
+  {
+    id: 'majordom-integration-homekit',
+    interest: 64,
+    title: 'MajorDom HomeKit Integration',
+    year: 2025,
+    month: 9,
+    status: 'maintained',
+    blurb:
+      'HomeKit integration library for MajorDom — bridges Apple Home devices into the offline-first hub.',
+    tags: ['library', 'oss', 'hardware'],
+    links: [{ label: 'source', href: 'https://github.com/MajorDom-Systems/integration-homekit' }],
     owner: 'parker-industries-in-house',
   },
   {
@@ -498,10 +544,12 @@ export function formatProjectDate(p: ProjectMeta): string {
 // them above every real year regardless of when they started); a finished
 // project with no `until` falls back to its start year.
 const ONGOING_RECENCY = 9999
+// Year as a fractional value for sorting — month absent means end-of-year.
+const frac = (year: number, month?: number): number => year + ((month ?? 12) - 1) / 12
 function recencyYear(p: ProjectMeta): number {
-  if (p.until) return p.until
+  if (p.until) return frac(p.until, p.untilMonth)
   if (ONGOING_STATUSES.has(p.status)) return ONGOING_RECENCY
-  return p.year
+  return frac(p.year, p.month)
 }
 
 // The top-N (default 3) projects the homepage features — the `spotlight`
@@ -536,8 +584,8 @@ export const PROJECT_SORT_OPTIONS: { value: ProjectSort; label: string }[] = [
 // - old: earliest START first — the "created" axis, other direction.
 export function sortProjects(projects: ProjectMeta[], sort: ProjectSort): ProjectMeta[] {
   const sorted = [...projects]
-  if (sort === 'updated') return sorted.sort((a, b) => recencyYear(b) - recencyYear(a) || b.year - a.year)
-  if (sort === 'created') return sorted.sort((a, b) => b.year - a.year || recencyYear(b) - recencyYear(a))
-  if (sort === 'old') return sorted.sort((a, b) => a.year - b.year)
+  if (sort === 'updated') return sorted.sort((a, b) => recencyYear(b) - recencyYear(a) || frac(b.year, b.month) - frac(a.year, a.month))
+  if (sort === 'created') return sorted.sort((a, b) => frac(b.year, b.month) - frac(a.year, a.month) || recencyYear(b) - recencyYear(a))
+  if (sort === 'old') return sorted.sort((a, b) => frac(a.year, a.month) - frac(b.year, b.month))
   return sorted.sort((a, b) => (b.interest ?? 0) - (a.interest ?? 0) || recencyYear(b) - recencyYear(a))
 }

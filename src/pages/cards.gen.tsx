@@ -7,8 +7,6 @@ import {
   getProjectById,
   ProjectMeta,
 } from '../project'
-import { getPublicArticles } from '../article'
-import { getPreviewNotes } from '../note'
 
 // Build-time generator for the GitHub profile-README cards. Emits compressed
 // WEBP in both themes to public/cards/, embedded in the README via <picture>
@@ -31,6 +29,8 @@ const TOOLS_IDS = [
   'anyobservableobject',
   'rpi-networking',
   'python-app-architecture-demo',
+  'raspi-gpio',
+  'rpi-reactive-gpio',
 ]
 
 // ---- palette per theme ---------------------------------------------------
@@ -137,18 +137,27 @@ const projectRow = (pj: ProjectMeta): Row => ({
   tags: pj.tags.slice(0, 4).join('  ·  '),
 })
 
+// Temporary curated featured set (flagships + a placeholder) instead of the
+// interest-sorted top, while most other work is WIP/unpublished.
+const FEATURED_IDS = ['majordom', 'stark']
+const COMING_SOON: Row = { title: 'Coming soon', body: "New work in progress — I'll surface it here as it ships.", tags: '' }
+
 function buildProjectsCard(theme: 'light' | 'dark'): string {
   const p = THEMES[theme]
   const pool = getPublicProjects().filter((pj) => !PROMO_BLACKLIST.has(pj.id))
-  const top = sortProjects(pool, 'interesting').slice(0, 4)
-  const topIds = new Set(top.map((t) => t.id))
-  const recent = sortProjects(pool, 'updated').filter((pj) => !topIds.has(pj.id)).slice(0, 4)
+  const featured = FEATURED_IDS.map((id) => getProjectById(id))
+    .filter((x): x is ProjectMeta => !!x)
+    .map(projectRow)
+  featured.push(COMING_SOON)
+  const featuredIds = new Set(FEATURED_IDS)
+  const recent = sortProjects(pool, 'updated').filter((pj) => !featuredIds.has(pj.id)).slice(0, 4)
   const rowH = 108
-  const H = ROW_TOP + 4 * rowH + PAD - 20
+  const rows = Math.max(featured.length, recent.length)
+  const H = ROW_TOP + rows * rowH + PAD - 20
   return frame(
     H,
     p,
-    renderColumn(PAD, 'Top projects', top.map(projectRow), rowH, p),
+    renderColumn(PAD, 'Featured projects', featured, rowH, p),
     renderColumn(PAD + COL_W + GAP, 'Recent work', recent.map(projectRow), rowH, p),
   )
 }
@@ -167,29 +176,6 @@ function buildToolsCard(theme: 'light' | 'dark'): string {
   )
 }
 
-function buildPostsCard(theme: 'light' | 'dark'): string {
-  const p = THEMES[theme]
-  const notes = getPreviewNotes(4)
-  const articles = getPublicArticles()
-  const artRow = (a: ReturnType<typeof getPublicArticles>[number]): Row => ({
-    title: a.title,
-    meta: a.date_pretty,
-    body: a.description,
-  })
-  const rowH = 104
-  const rows = 5
-  const H = ROW_TOP + rows * rowH + PAD - 20
-  const fullW = W - PAD * 2
-
-  // Single full-width column (fewer, more legible entries). If short social
-  // "posts" exist they lead; otherwise it's just the latest articles.
-  const items: Row[] = notes.length > 0
-    ? notes.slice(0, rows).map((n) => ({ body: n.body, meta: n.datePretty }))
-    : articles.slice(0, rows).map(artRow)
-  const heading = notes.length > 0 ? 'Recent posts' : 'Latest writing'
-  return frame(H, p, renderColumn(PAD, heading, items, rowH, p, fullW), '', false)
-}
-
 export const getStaticProps: GetStaticProps = async () => {
   const sharp = (await import('sharp')).default
   const dir = `${process.cwd()}/public/cards`
@@ -198,7 +184,8 @@ export const getStaticProps: GetStaticProps = async () => {
   const cards: Record<string, (t: 'light' | 'dark') => string> = {
     projects: buildProjectsCard,
     tools: buildToolsCard,
-    posts: buildPostsCard,
+    // posts card skipped for now — no public notes and the blog isn't
+    // promotion-ready yet. Re-add buildPostsCard here to bring it back.
   }
 
   for (const [name, build] of Object.entries(cards)) {
