@@ -98,11 +98,19 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
 // Project cells are 16:9 (uncropped); the CTA tile takes whatever width is left.
 const P169 = (img: string, h: number): Cell => ({ img, w: Math.round((h * 16) / 9) })
 
-function svg(H: number, inner: string, p: Palette): string {
-  // No border and no rounded corners — a rounded frame clips the slanted end
-  // cells and reads badly against them; the strip is inset from the edges
-  // (EDGE_PAD) so the slants stay clear on their own.
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+function svg(H: number, inner: string, p: Palette, bordered = false): string {
+  const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">`
+  // Text banners (no slant cells) keep the rounded card + border. Slant-cell
+  // banners drop both — a rounded frame clips the slanted end cells and reads
+  // badly against them (the strip is inset from the edges to stay clear).
+  if (bordered) {
+    return `${head}
+  <defs><clipPath id="frameclip"><rect width="${W}" height="${H}" rx="12"/></clipPath></defs>
+  <g clip-path="url(#frameclip)"><rect width="${W}" height="${H}" fill="${p.bg}"/>${inner}</g>
+  <rect x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" rx="11" fill="none" stroke="${p.divider}" stroke-width="2"/>
+</svg>`
+  }
+  return `${head}
   <rect width="${W}" height="${H}" fill="${p.bg}"/>
   ${inner}
 </svg>`
@@ -131,7 +139,7 @@ function majordom(theme: 'light' | 'dark'): string {
   <text x="48" y="132" fill="${p.title}" font-size="36" font-weight="800">The next-gen smart home</text>
   <text x="48" y="172" fill="${p.body}" font-size="22">open source • local-first • user-friendly • truly smart</text>
   ${cta(W - 44, H / 2, 'Explore MajorDom', p.accent, p)}`
-  return svg(H, inner, p)
+  return svg(H, inner, p, true)
 }
 
 // ---- 2. Parker Industries (company) — non-WIP projects + ABOUT US tile ---
@@ -179,7 +187,7 @@ function coffee(theme: 'light' | 'dark'): string {
   <text x="48" y="120" fill="${p.body}" font-size="21">It's free — but it wasn't free to make. If it saved you time,</text>
   <text x="48" y="150" fill="${p.body}" font-size="21">that's worth a coffee, right?</text>
   ${cta(W - 44, H / 2, 'Buy me a coffee', p.accent, p)}`
-  return svg(H, inner, p)
+  return svg(H, inner, p, true)
 }
 
 export const getStaticProps: GetStaticProps = async () => {
