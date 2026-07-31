@@ -126,7 +126,7 @@ function frame(H: number, p: Palette, left: string, right = '', divider = true):
   ${left}
   ${mid}
   ${right}
-  <text x="${W - PAD}" y="${H - 16}" fill="${p.muted}" font-size="13" text-anchor="end">markparker.me</text>
+  <text x="${W - PAD}" y="${H - 16}" fill="${p.muted}" font-size="13" text-anchor="end">→ markparker.me</text>
 </svg>`
 }
 

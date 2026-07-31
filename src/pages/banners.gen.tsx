@@ -99,15 +99,12 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
 const P169 = (img: string, h: number): Cell => ({ img, w: Math.round((h * 16) / 9) })
 
 function svg(H: number, inner: string, p: Palette): string {
-  // Round the whole banner (so full-bleed image cells don't poke square
-  // corners past the radius) and draw the border stroke ON TOP of the content.
+  // No border and no rounded corners — a rounded frame clips the slanted end
+  // cells and reads badly against them; the strip is inset from the edges
+  // (EDGE_PAD) so the slants stay clear on their own.
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <defs><clipPath id="frameclip"><rect width="${W}" height="${H}" rx="12"/></clipPath></defs>
-  <g clip-path="url(#frameclip)">
-    <rect width="${W}" height="${H}" fill="${p.bg}"/>
-    ${inner}
-  </g>
-  <rect x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" rx="11" fill="none" stroke="${p.divider}" stroke-width="2"/>
+  <rect width="${W}" height="${H}" fill="${p.bg}"/>
+  ${inner}
 </svg>`
 }
 
@@ -159,6 +156,20 @@ function flagship(theme: 'light' | 'dark', a: Assets): string {
   return svg(H, inner, p)
 }
 
+// ---- Header-less variants — just the "/ / /" cells + CTA tile -----------
+function flagshipBare(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 176
+  const H = h + 32
+  return svg(H, cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'See more'), 16, h, 44, p), p)
+}
+function companyBare(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 176
+  const H = h + 32
+  return svg(H, cellRow(projectCells(['majordom', 'startbounty'], a, h, 'See more'), 16, h, 44, p), p)
+}
+
 // ---- 4. Helpful tool — coffee CTA (reciprocity + self-appraisal) --------
 function coffee(theme: 'light' | 'dark'): string {
   const p = { ...base(theme), accent: '#d97706', onAccent: '#2a1500' } as Palette
@@ -194,6 +205,8 @@ export const getStaticProps: GetStaticProps = async () => {
     company: (t) => company(t, assets),
     flagship: (t) => flagship(t, assets),
     coffee: (t) => coffee(t),
+    'company-bare': (t) => companyBare(t, assets),
+    'flagship-bare': (t) => flagshipBare(t, assets),
   }
   for (const [name, build] of Object.entries(banners)) {
     for (const theme of ['light', 'dark'] as const) {
