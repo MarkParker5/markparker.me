@@ -98,16 +98,21 @@ function cellRow(cells: Cell[], Y0: number, h: number, skew: number, p: Palette)
 // Project cells are 16:9 (uncropped); the CTA tile takes whatever width is left.
 const P169 = (img: string, h: number): Cell => ({ img, w: Math.round((h * 16) / 9) })
 
-function svg(H: number, inner: string, p: Palette): string {
-  // Round the whole banner (so full-bleed image cells don't poke square
-  // corners past the radius) and draw the border stroke ON TOP of the content.
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+function svg(H: number, inner: string, p: Palette, bordered = false): string {
+  const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">`
+  // Text banners (no slant cells) keep the rounded card + border. Slant-cell
+  // banners drop both — a rounded frame clips the slanted end cells and reads
+  // badly against them (the strip is inset from the edges to stay clear).
+  if (bordered) {
+    return `${head}
   <defs><clipPath id="frameclip"><rect width="${W}" height="${H}" rx="12"/></clipPath></defs>
-  <g clip-path="url(#frameclip)">
-    <rect width="${W}" height="${H}" fill="${p.bg}"/>
-    ${inner}
-  </g>
+  <g clip-path="url(#frameclip)"><rect width="${W}" height="${H}" fill="${p.bg}"/>${inner}</g>
   <rect x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" rx="11" fill="none" stroke="${p.divider}" stroke-width="2"/>
+</svg>`
+  }
+  return `${head}
+  <rect width="${W}" height="${H}" fill="${p.bg}"/>
+  ${inner}
 </svg>`
 }
 
@@ -134,7 +139,7 @@ function majordom(theme: 'light' | 'dark'): string {
   <text x="48" y="132" fill="${p.title}" font-size="36" font-weight="800">The next-gen smart home</text>
   <text x="48" y="172" fill="${p.body}" font-size="22">open source • local-first • user-friendly • truly smart</text>
   ${cta(W - 44, H / 2, 'Explore MajorDom', p.accent, p)}`
-  return svg(H, inner, p)
+  return svg(H, inner, p, true)
 }
 
 // ---- 2. Parker Industries (company) — non-WIP projects + ABOUT US tile ---
@@ -159,6 +164,20 @@ function flagship(theme: 'light' | 'dark', a: Assets): string {
   return svg(H, inner, p)
 }
 
+// ---- Header-less variants — just the "/ / /" cells + CTA tile -----------
+function flagshipBare(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 176
+  const H = h + 32
+  return svg(H, cellRow(projectCells(['majordom', 'stark', 'startbounty'], a, h, 'See more'), 16, h, 44, p), p)
+}
+function companyBare(theme: 'light' | 'dark', a: Assets): string {
+  const p = { ...base(theme), accent: '#0969da' } as Palette
+  const h = 176
+  const H = h + 32
+  return svg(H, cellRow(projectCells(['majordom', 'startbounty'], a, h, 'See more'), 16, h, 44, p), p)
+}
+
 // ---- 4. Helpful tool — coffee CTA (reciprocity + self-appraisal) --------
 function coffee(theme: 'light' | 'dark'): string {
   const p = { ...base(theme), accent: '#d97706', onAccent: '#2a1500' } as Palette
@@ -168,7 +187,7 @@ function coffee(theme: 'light' | 'dark'): string {
   <text x="48" y="120" fill="${p.body}" font-size="21">It's free — but it wasn't free to make. If it saved you time,</text>
   <text x="48" y="150" fill="${p.body}" font-size="21">that's worth a coffee, right?</text>
   ${cta(W - 44, H / 2, 'Buy me a coffee', p.accent, p)}`
-  return svg(H, inner, p)
+  return svg(H, inner, p, true)
 }
 
 export const getStaticProps: GetStaticProps = async () => {
@@ -194,6 +213,8 @@ export const getStaticProps: GetStaticProps = async () => {
     company: (t) => company(t, assets),
     flagship: (t) => flagship(t, assets),
     coffee: (t) => coffee(t),
+    'company-bare': (t) => companyBare(t, assets),
+    'flagship-bare': (t) => flagshipBare(t, assets),
   }
   for (const [name, build] of Object.entries(banners)) {
     for (const theme of ['light', 'dark'] as const) {
