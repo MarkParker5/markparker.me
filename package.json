@@ -29,7 +29,7 @@
     "eslint-config-standard": "17.1.0",
     "feed": "^4.2.2",
     "highlight.js": "^11.11.1",
-    "next": "^15.5.22",
+    "next": "^16.3.0",
     "next-mdx-remote": "^4.1.0",
     "postcss-flexbugs-fixes": "^5.0.2",
     "react": "^18.1.0",
